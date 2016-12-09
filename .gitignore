@@ -1,0 +1,58 @@
+# Libraries
+*.lvlibp
+*.llb
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+*.o
+*.lib
+*.a
+
+# Executables
+*.exe
+imageclipper/bin/imageclipper
+**/imageclipper
+convert_cassade
+createsamples
+haartraining
+performance
+convert_cascade
+facedetect
+cascade_training/mergevec/src/mergevec
+vec2img
+gaTesting
+C920VideoCap/C920VideoCap
+CaffeBatchPrediction
+CaffePrediction
+display
+scalefactor
+vo
+zv
+iteration_data.dat
+fovis_zed_test
+GenInitNegFromVideo
+GenInitNegFromFile
+*.stackdump
+goal_detect
+
+# Metadata
+*.aliases
+*.lvlps
+
+# backup files
+*~
+*.bak
+*.sw[op]
+x
+
+# Cmake stuff
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+Makefile
+
+*.avi
+*.zms
