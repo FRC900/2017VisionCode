@@ -1,0 +1,116 @@
+input: "data"
+input_shape {
+  dim: 1
+  dim: 3
+  dim: 24
+  dim: 24
+}
+layer {
+  name: "conv1_c24"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "pool1_c24"
+  type: "Pooling"
+  bottom: "conv1_c24"
+  top: "pool1_c24"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "relu1_c24"
+  type: "ReLU"
+  bottom: "pool1_c24"
+  top: "pool1_c24"
+}
+layer {
+  name: "fc1_c24"
+  type: "InnerProduct"
+  bottom: "pool1_c24"
+  top: "fc1_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 64
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu2_c24"
+  type: "ReLU"
+  bottom: "fc1_c24"
+  top: "fc1_c24"
+}
+layer {
+  name: "drop1"
+  type: "Dropout"
+  bottom: "fc1_c24"
+  top: "fc1_c24"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layer {
+  name: "fc2_c24"
+  type: "InnerProduct"
+  bottom: "fc1_c24"
+  top: "fc2_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 45
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "softmax"
+  type: "Softmax"
+  bottom: "fc2_c24"
+  top: "softmax"
+}

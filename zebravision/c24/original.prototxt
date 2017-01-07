@@ -1,0 +1,165 @@
+name: "C24"
+layer {
+  name: "train-data"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    stage: "train"
+  }
+  transform_param {
+    scale: 0.015164888
+    mean_value: 127.5
+  }
+  data_param {
+    batch_size: 128
+  }
+}
+layer {
+  name: "val-data"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    stage: "val"
+  }
+  transform_param {
+    scale: 0.015164888
+    mean_value: 127.5
+  }
+  data_param {
+    batch_size: 128
+  }
+}
+layer {
+  name: "conv1_c24"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  convolution_param {
+    num_output: 32
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "pool1_c24"
+  type: "Pooling"
+  bottom: "conv1_c24"
+  top: "pool1_c24"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "relu1_c24"
+  type: "ReLU"
+  bottom: "pool1_c24"
+  top: "pool1_c24"
+}
+layer {
+  name: "fc1_c24"
+  type: "InnerProduct"
+  bottom: "pool1_c24"
+  top: "fc1_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 64
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu2_c24"
+  type: "ReLU"
+  bottom: "fc1_c24"
+  top: "fc1_c24"
+}
+layer {
+  name: "drop1"
+  type: "Dropout"
+  bottom: "fc1_c24"
+  top: "fc1_c24"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layer {
+  name: "fc2_c24"
+  type: "InnerProduct"
+  bottom: "fc1_c24"
+  top: "fc2_c24"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 45
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "fc2_c24"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    stage: "val"
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fc2_c24"
+  bottom: "label"
+  top: "loss"
+  exclude {
+    stage: "deploy"
+  }
+}
+layer {
+  name: "softmax"
+  type: "Softmax"
+  bottom: "fc2_c24"
+  top: "softmax"
+  include {
+    stage: "deploy"
+  }
+}

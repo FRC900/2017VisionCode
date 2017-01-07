@@ -1,0 +1,156 @@
+layer {
+  name: "train-data"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  }
+  transform_param {
+    scale: 0.015164888
+    mean_value: 127.5
+  }
+  data_param {
+    source: "/home/kjaget/DIGITS/digits/jobs/20160819-183237-3f4a/train_db"
+    batch_size: 128
+    backend: LMDB
+  }
+}
+layer {
+  name: "val-data"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    scale: 0.015164888
+    mean_value: 127.5
+  }
+  data_param {
+    source: "/home/kjaget/DIGITS/digits/jobs/20160819-183237-3f4a/val_db"
+    batch_size: 128
+    backend: LMDB
+  }
+}
+layer {
+  name: "conv1_c12"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1_c12"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  convolution_param {
+    num_output: 48
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "pool1_c12"
+  type: "Pooling"
+  bottom: "conv1_c12"
+  top: "pool1_c12"
+  pooling_param {
+    pool: MAX
+    kernel_size: 3
+    stride: 2
+  }
+}
+layer {
+  name: "relu1_c12"
+  type: "ReLU"
+  bottom: "pool1_c12"
+  top: "pool1_c12"
+}
+layer {
+  name: "fc1_c12"
+  type: "InnerProduct"
+  bottom: "pool1_c12"
+  top: "fc1_c12"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 128
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu2_c12"
+  type: "ReLU"
+  bottom: "fc1_c12"
+  top: "fc1_c12"
+}
+layer {
+  name: "drop1"
+  type: "Dropout"
+  bottom: "fc1_c12"
+  top: "fc1_c12"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layer {
+  name: "fc2_c12"
+  type: "InnerProduct"
+  bottom: "fc1_c12"
+  top: "fc2_c12"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1.0
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0.0
+  }
+  inner_product_param {
+    num_output: 45
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "accuracy"
+  type: "Accuracy"
+  bottom: "fc2_c12"
+  bottom: "label"
+  top: "accuracy"
+  include {
+    phase: TEST
+  }
+}
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "fc2_c12"
+  bottom: "label"
+  top: "loss"
+}

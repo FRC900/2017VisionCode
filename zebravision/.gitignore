@@ -1,0 +1,11 @@
+*.jpg
+*.png
+
+fpstest
+gputest
+convertzms
+mergezms
+predict_one
+rank_imagelist
+version.cpp
+settings.xml

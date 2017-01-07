@@ -1,0 +1,4 @@
+C12_20160819_48c128fc_001LR
+Trained from chroma-key grabs from videos plus imageclipper
+hand-picked data. Everything rotated and chroma-keyed onto
+random background images

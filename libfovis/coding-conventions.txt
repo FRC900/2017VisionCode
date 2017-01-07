@@ -1,0 +1,25 @@
+These are the coding and style conventions for the fovis repository.  All code
+contributed to fovis should follow these guidelines.
+
+Last updated April 20, 2011
+
+
+Style
+=====
+
+Follow the Google C++ style guide.  The guide can be found here:
+
+  http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+
+The exceptions to this rule are:
+ - lines may be up to 100 characters in length.
+
+
+libfovis guidelines
+===================
+
+libfovis should never have an external dependency that is not Eigen3.
+
+Public data structures that are part of the external API should never use or
+require EIGEN_MAKE_ALIGNED_OPERATOR_NEW.  Data structures internal to libfovis
+may use EIGEN_MAKE_ALIGNED_OPERATOR_NEW.
