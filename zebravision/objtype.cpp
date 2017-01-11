@@ -29,7 +29,7 @@ ObjectType::ObjectType(int contour_type_id=1) {
 			name_="bin";
 			break;
 
-		case 3: //the vision goal
+		case 3: //2016 Goal
 			{
 				depth_ = 0;
 				float max_y = .3048;
@@ -44,7 +44,16 @@ ObjectType::ObjectType(int contour_type_id=1) {
 				name_="goal";
 			}
 			break;
-
+		case 4: //top piece of tape (2017)
+			contour_.push_back(Point2f(0,0));
+			contour_.push_back(Point2f(0, 0.1010));
+			contour_.push_back(Point2f(0.381, 0.1010));
+			contour_.push_back(Point2f(0.381, 0));
+		case 5: //bottom piece of tape (2017)
+			contour_.push_back(Point2f(0,0));
+			contour_.push_back(Point2f(0, 0.1010/2.0));
+			contour_.push_back(Point2f(0.381, 0.1010/2.0));
+			contour_.push_back(Point2f(0.381, 0));
 		default:
 			cerr << "error initializing object!" << endl;
 	}

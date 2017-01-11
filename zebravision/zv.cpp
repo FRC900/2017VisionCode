@@ -715,6 +715,12 @@ int main( int argc, const char** argv )
 				if (detectState)
 					detectState->toggleCascade();
 			}
+			else if (c == '|')
+			{
+				Mat frameCopy, depthCopy;
+				if(cap->getFrame(frameCopy, depthCopy))
+				imwrite("savedImage.png",frameCopy);
+			}
 			else if (c == 'G') // toggle GPU/CPU detection mode
 			{
 				if (detectState)
@@ -804,6 +810,7 @@ int main( int argc, const char** argv )
 				if (detectState)
 				detectState->changeC24Model(false);
 			}
+			
 			else if (isdigit(c)) // save a single detected image
 			{
 				Mat frameCopy, depthCopy;
