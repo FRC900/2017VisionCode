@@ -5,17 +5,17 @@ gpu=true
 #process args
 while [ $# -gt 0 ]
 do
-    case "$1" in
-        -jx) jetson=true;;
+	case "$1" in
+		-jx) jetson=true;;
 	-jk) jetson=true; version=tk;;
 	-amd64) jetson=false;;
-	-g) gpu=true;;
+	-c) gpu=false;;
 	-h) echo >&2 \
-	    "usage: $0 [-jx or -jk or -amd64] [-g] [-h]"
-	    exit 1;;
+		"usage: $0 [-jx or -jk or -amd64] [-c] [-h]"
+		exit 1;;
 	*)  break;;	# terminate while loop
-    esac
-    shift
+	esac
+	shift
 done
 
 #install basic dependencies
