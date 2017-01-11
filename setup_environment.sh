@@ -97,8 +97,8 @@ rm ./$ext
 #TODO : rethink this - how are we getting the script if the
 #       repo isn't there in the first place?
 cd
-git clone https://github.com/FRC900/2016VisionCode.git
-cd 2016VisionCode
+git clone https://github.com/FRC900/2017VisionCode.git
+cd 2017VisionCode
 
 #build stuff
 cd libfovis
