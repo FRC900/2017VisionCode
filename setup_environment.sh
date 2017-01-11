@@ -114,15 +114,15 @@ make -j4
 #mount and setup autostart script
 if [ "$jetson" = true ] ; then
 	sudo mkdir /mnt/900_2
-	sudo cp ~/2016VisionCode/zv.conf /etc/init
+	sudo cp ~/2017VisionCode/zv.conf /etc/init
 	sudo mkdir -p /usr/local/zed/settings
 	sudo chmod 755 /usr/local/zed/settings
-	sudo cp ~/2016VisionCode/calibration_files/*.conf /usr/local/zed/settings
+	sudo cp ~/2017VisionCode/calibration_files/*.conf /usr/local/zed/settings
 	sudo chmod 644 /usr/local/zed/settings/*
 fi
 
-cp ~/2016VisionCode/.vimrc ~/2016VisionCode/.gvimrc ~
-sudo cp ~/2016VisionCode/kjaget.vim /usr/share/vim/vim74/colors
+cp ~/2017VisionCode/.vimrc ~/2017VisionCode/.gvimrc ~
+sudo cp ~/2017VisionCode/kjaget.vim /usr/share/vim/vim74/colors
 
 git config --global user.email "progammers@team900.org"
 git config --global user.name "Team900 Jetson TX1"
