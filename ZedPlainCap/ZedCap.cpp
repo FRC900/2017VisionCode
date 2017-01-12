@@ -13,7 +13,7 @@ using namespace cv;
 
 int main(int argc, char *argv[])
 {
-	ZedIn *camera;
+	MediaIn *camera;
 	if (argc == 2)
 		camera = new ZMSIn(argv[1]);
 	else
