@@ -21,7 +21,7 @@ class SmartRect
 class GoalDetector
 {
 	public:
-		GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui = false);
+		GoalDetector(int obj_type, cv::Point2f fov_size, cv::Size frame_size, bool gui = false);
 
 		float dist_to_goal(void) const;
 		float angle_to_goal(void) const;

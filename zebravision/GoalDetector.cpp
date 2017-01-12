@@ -7,8 +7,8 @@ using namespace cv;
 
 #define VERBOSE
 
-GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) :
-	_goal_shape(5),
+GoalDetector::GoalDetector(int obj_type, cv::Point2f fov_size, cv::Size frame_size, bool gui) :
+	_goal_shape(obj_type),
 	_fov_size(fov_size),
 	_frame_size(frame_size),
 	_isValid(false),
@@ -184,23 +184,28 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 
 		//width to height ratio
 		float actualRatio = goal_actual.width() / goal_actual.height();
-		if ((actualRatio <= (1.0/2.25)) || (actualRatio >= 2.25))
-		{
-#ifdef VERBOSE
-			cout << "Contour " << i << " aspectRatio out of range:" << actualRatio << endl;
-#endif
-			_confidence.push_back(0);
-			continue;
-		}
+
+		/* I don't think this block of code works but I'll leave it in here
+		Mat test_contour = Mat::zeros(640,640,CV_8UC1);
+		std::vector<Point> upscaled_contour;
+		for(int j = 0; j < _goal_shape.shape().size(); j++) {
+			upscaled_contour.push_back(Point(_goal_shape.shape()[j].x * 100, _goal_shape.shape()[j].y * 100));
+			cout << "Upscaled contour point: " << Point(_goal_shape.shape()[j].x * 100, _goal_shape.shape()[j].y * 100) << endl;
+			} 
+		std::vector< std::vector<Point> > upscaled_contours;
+		upscaled_contours.push_back(upscaled_contour);
+		drawContours(test_contour, upscaled_contours, 0, Scalar(0,0,0));
+		imshow("Goal shape", test_contour);
+		*/
 
 		//parameters for the normal distributions
 		//values for standard deviation were determined by
 		//taking the standard deviation of a bunch of values from the goal
 		//confidence is near 0.5 when value is near the mean
 		//confidence is small or large when value is not near mean
-		float confidence_height      = createConfidence(_goal_height, 0.4/4.0, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
-		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125/4.0,  com_percent_actual.x);
-		float confidence_com_y       = createConfidence(com_percent_expected.y, 0.1539207/4.0,  com_percent_actual.y);
+		float confidence_height      = createConfidence(_goal_height, 0.4, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
+		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125,  com_percent_actual.x);
+		float confidence_com_y       = createConfidence(com_percent_expected.y, 0.1539207,  com_percent_actual.y);
 		float confidence_filled_area = createConfidence(filledPercentageExpected, 0.33,   filledPercentageActual);
 		float confidence_ratio       = createConfidence(expectedRatio, 0.3,  actualRatio);
 		float confidence_screen_area = createConfidence(1.0, 0.75,  actualScreenArea);
