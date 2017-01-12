@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 	vector<string> files = clio.getClassifierFiles();
 	for (auto it = files.begin(); it != files.end(); ++it)
 	{
-		*it = "/home/ubuntu/2016VisionCode/zebravision/" + *it;
+		*it = "/home/ubuntu/2017VisionCode/zebravision/" + *it;
 		cout << *it << endl;
 	}
 
