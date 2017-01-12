@@ -5,10 +5,10 @@
 using namespace std;
 using namespace cv;
 
-//#define VERBOSE
+#define VERBOSE
 
-GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) :
-	_goal_shape(3),
+GoalDetector::GoalDetector(int obj_type, cv::Point2f fov_size, cv::Size frame_size, bool gui) :
+	_goal_shape(obj_type),
 	_fov_size(fov_size),
 	_frame_size(frame_size),
 	_isValid(false),
@@ -54,6 +54,7 @@ struct GoalInfo
 
 void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 {
+	vector<GoalInfo> best_goals_updated;
 	// Use to mask the contour off from the rest of the
 	// image - used when grabbing depth data for the contour
 	Mat contour_mask(image.rows, image.cols, CV_8UC1, Scalar(0));
@@ -103,49 +104,6 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 		Rect br(boundingRect(_contours[i]));
 
 			
-		if(_general){
-		//create a transform that will transform from the skewed shape to the
-		//non skewed shape
-		Point2f input_points[4];
-		Point2f output_points[4];
-			//create a rotatedrect surrounding the contour and input the points into an array
-			RotatedRect warped_shape = minAreaRect(_contours[i]);
-			warped_shape.points(input_points);
-
-			//find how far slanted the goal is away from the screen
-			Mat contour_mask = Mat::zeros(depth.size(), CV_8UC1);
-			drawContours(contour_mask,_contours,i,Scalar(255), CV_FILLED);
-			std::pair<double,double> slope_of_shape = utils::slopeOfMasked(ObjectType(1), depth, contour_mask, _fov_size);
-			float x_angle = atan(slope_of_shape.first);
-			float y_angle = atan(slope_of_shape.second);
-			cout << "Contour  " << i << " angle of goal away from screen: " << x_angle * (180/M_PI) << " " << y_angle * (180/M_PI) << endl;
-			//create another rotatedrect to transform the points into. This is in the same spot
-			//as the actual contour but the size is changed to match what it would be if facing it straight on
-			RotatedRect unwarped_shape(warped_shape.center, Size(cos(x_angle)*warped_shape.size.width, cos(y_angle)*warped_shape.size.height), 0);
-
-			//something about opencv's handling of rotatedrects causes the contours to spin 90 if the width < height
-			//if(unwarped_shape.size.width < unwarped_shape.size.height)
-			//	unwarped_shape.angle = -90;
-
-			unwarped_shape.points(output_points);
-
-			//create a transformation that maps points from warped to unwarped goal
-			Mat warp_transform(3,3,CV_32FC1);
-			warp_transform = getPerspectiveTransform(input_points, output_points);
-
-			//apply the transformation to the contour
-			//in order to do this the points to be transformed have to be floats
-			vector<Point2f> unwarped_contour_f;
-			vector<Point> unwarped_contour;
-			for(size_t j = 0; j < _contours[i].size(); j++)
-				unwarped_contour_f.push_back(Point2f((float)((_contours[i])[j]).x,(float)((_contours[i])[j]).y));
-
-			cv::perspectiveTransform(unwarped_contour_f,unwarped_contour_f, warp_transform);
-
-			//convert back from floats and apply to contours list
-			for(size_t j = 0; j < unwarped_contour_f.size(); j++)
-	    			_contours[i][j] = Point((int)unwarped_contour_f[j].x,(int)unwarped_contour_f[j].y);
-		}
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
@@ -158,9 +116,7 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 			continue;
 		}
 
-		// Remove objects too low on the screen - these can't
-		// be goals. Should stop the robot from admiring its
-		// reflection in the diamond-plate at the end of the field
+		// Remove objects too low on the screen
 		if (br.br().y > (image.rows * 0.7f))
 		{
 #ifdef VERBOSE
@@ -174,7 +130,7 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 		//create a mask which is the same shape as the contour
 		contour_mask.setTo(Scalar(0));
 		drawContours(contour_mask, _contours, i, Scalar(255), CV_FILLED);
-
+	
 		// get the minimum and maximum depth values in the contour,
 		// copy them into individual floats
 		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
@@ -185,7 +141,7 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 		// the target. This isn't perfect but better than nothing
 		if ((depth_z_min <= 0.) || (depth_z_max <= 0.))
 			depth_z_min = depth_z_max = distanceUsingFOV(br);
-
+		
 		// TODO : Figure out how well this works in practice
 		// Filter out goals which are too close or too far
 		if ((depth_z_max < 1.) || (depth_z_min > 6.2))
@@ -197,59 +153,6 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 			continue;
 		}
 
-		// Since the goal is a U shape, there should be bright pixels
-		// at the bottom center of the contour and dimmer ones in the
-		// middle going towards the top. Check for that here
-		Mat topMidCol(threshold_image(Rect(cvRound(br.tl().x + br.width * .35f), br.tl().y, cvRound(br.width * .3f), cvRound(br.height * .4f))));
-		Mat botMidCol(threshold_image(Rect(br.tl().x, cvRound(br.tl().y + br.height * .85f), br.width, cvRound(br.height * .15f))));
-		double topMaxCol;
-		minMaxLoc(topMidCol, NULL, &topMaxCol);
-		double botMaxCol;
-		minMaxLoc(botMidCol, NULL, &botMaxCol);
-		// The max pixel value in the bottom rows of the
-		// middle column should be > 0 and the max pixel
-		// value in the top rows of that same column should be 0
-		if ((topMaxCol >= 1.0) || (botMaxCol < 1.0))
-		{
-#ifdef VERBOSE
-			cout << "Contour " << i << " middle column values wrong (top/bot):" << (int)topMaxCol << "/" << (int)botMaxCol << endl;
-#endif
-			_confidence.push_back(0);
-			continue;
-		}
-
-		// Grab max pixel values along a line through
-		// the middle row of the bounding rect. There
-		// should be high values on the left and
-		// right and no high values in the middle
-		// Sample the edges at both .35 and .65 of the way
-		// down the rect to find goals which look
-		// angled due to their offset
-		Mat leftTopMidRow(threshold_image(Rect(br.tl().x, cvRound(br.tl().y + br.height * .35f), cvRound(br.width * .15f), 1)));
-		Mat leftBotMidRow(threshold_image(Rect(br.tl().x, cvRound(br.tl().y + br.height * .65f), cvRound(br.width * .15f), 1)));
-		Mat rightTopMidRow(threshold_image(Rect(br.tl().x + cvRound(br.width * .85f), cvRound(br.tl().y + br.height * .35f), cvRound(br.width * .15f), 1)));
-		Mat rightBotMidRow(threshold_image(Rect(br.tl().x + cvRound(br.width * .85f), cvRound(br.tl().y + br.height * .65f), cvRound(br.width * .15f), 1)));
-		Mat centerMidRow(threshold_image(Rect(br.tl().x + cvRound(br.width * 3.f / 8.f), cvRound(br.tl().y + br.height / 4.f), cvRound(br.width / 4.f), 1)));
-		double dummy;
-		double rightMaxRow;
-		minMaxLoc(rightTopMidRow, NULL, &dummy);
-		minMaxLoc(rightBotMidRow, NULL, &rightMaxRow);
-		rightMaxRow = max(dummy, rightMaxRow);
-		double leftMaxRow;
-		minMaxLoc(leftTopMidRow, NULL, &dummy);
-		minMaxLoc(leftBotMidRow, NULL, &leftMaxRow);
-		leftMaxRow = max(dummy, leftMaxRow);
-		double centerMaxRow;
-		minMaxLoc(centerMidRow, NULL, &centerMaxRow);
-		if ((leftMaxRow < 1.0) || (centerMaxRow > 0.) || (rightMaxRow < 1.0))
-		{
-#ifdef VERBOSE
-			cout << "Contour " << i << " middle row wrong (left / center / right):" << (int)leftMaxRow << "/" <<(int)centerMaxRow << "/" << (int)rightMaxRow << endl;
-			cout << "\tRight(x2): " << rightTopMidRow << "/" << rightBotMidRow << " Center: " << centerMidRow << " Left(x2): " << leftTopMidRow << "/" << leftBotMidRow << endl;
-#endif
-			_confidence.push_back(0);
-			continue;
-		}
 
 		//create a trackedobject to get various statistics
 		//including area and x,y,z position of the goal
@@ -281,14 +184,19 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 
 		//width to height ratio
 		float actualRatio = goal_actual.width() / goal_actual.height();
-		if ((actualRatio <= (1.0/2.25)) || (actualRatio >= 2.25))
-		{
-#ifdef VERBOSE
-			cout << "Contour " << i << " aspectRatio out of range:" << actualRatio << endl;
-#endif
-			_confidence.push_back(0);
-			continue;
-		}
+
+		/* I don't think this block of code works but I'll leave it in here
+		Mat test_contour = Mat::zeros(640,640,CV_8UC1);
+		std::vector<Point> upscaled_contour;
+		for(int j = 0; j < _goal_shape.shape().size(); j++) {
+			upscaled_contour.push_back(Point(_goal_shape.shape()[j].x * 100, _goal_shape.shape()[j].y * 100));
+			cout << "Upscaled contour point: " << Point(_goal_shape.shape()[j].x * 100, _goal_shape.shape()[j].y * 100) << endl;
+			} 
+		std::vector< std::vector<Point> > upscaled_contours;
+		upscaled_contours.push_back(upscaled_contour);
+		drawContours(test_contour, upscaled_contours, 0, Scalar(0,0,0));
+		imshow("Goal shape", test_contour);
+		*/
 
 		//parameters for the normal distributions
 		//values for standard deviation were determined by
@@ -299,7 +207,7 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125,  com_percent_actual.x);
 		float confidence_com_y       = createConfidence(com_percent_expected.y, 0.1539207,  com_percent_actual.y);
 		float confidence_filled_area = createConfidence(filledPercentageExpected, 0.33,   filledPercentageActual);
-		float confidence_ratio       = createConfidence(expectedRatio, 0.537392,  actualRatio);
+		float confidence_ratio       = createConfidence(expectedRatio, 0.3,  actualRatio);
 		float confidence_screen_area = createConfidence(1.0, 0.75,  actualScreenArea);
 
 		// higher is better
@@ -350,59 +258,62 @@ void GoalDetector::processFrame(const Mat& image, const Mat& depth)
 		info.push_back(to_string(goal_to_center_deg));
 		info_writer.log(info); */
 	}
+#ifdef VERBOSE
+	cout << best_goals.size() << " goals passed first detection" << endl;
+#endif
+	//at this point we have both the top and bottom pieces of tape recognized
 	if(best_goals.size() > 0)
 	{
 		int best_index = 0;
 		if (best_goals.size() > 1)
 		{
+			vector<bool> for_removal(best_goals.size());
+			for_removal = { false };	
+			//filter out the bottom tape
+			for(int i = 0; i < best_goals.size(); i++) { //top
+				for(int j = 0; j < best_goals.size(); j++) { //bottom
+					//if i is above j
+					if(abs((best_goals[i].pos.z - best_goals[j].pos.z) - 0.0508) < 0.01) //last number here is a tolerance
+					if(best_goals[i].pos.y - best_goals[j].pos.y < 0.01) { //also a tolerance
+						//mark this goal to be removed
+						for_removal[j] = true;
 #ifdef VERBOSE
-			cout << best_goals.size() << " goals passed first detection" << endl;
+						cout << "Marked a goal for removal" << endl;
 #endif
-			// Remove down to 3 goals based on confidence
-			// Sort by decreasing confidence - first entries will
-			// have the highest confidence
-			sort (best_goals.begin(), best_goals.end(), [ ] (const GoalInfo &lhs, const GoalInfo &rhs)
-			{
-				return lhs.confidence > rhs.confidence;
-			});
+					}
+				}
+			}
+			for(int i = 0; i < best_goals.size(); i++) {
+				if(!for_removal[i])
+					best_goals_updated.push_back(best_goals[i]);
+			}
+#ifdef VERBOSE
+			cout << "Marked " << best_goals.size() - best_goals_updated.size() << " goals for removal" << endl;
+#endif
+			//if there are multiple goals sort by confidence
+			if(best_goals_updated.size() >= 2) {
+				sort (best_goals_updated.begin(), best_goals_updated.end(), [ ] (const GoalInfo &lhs, const GoalInfo &rhs)
+				{
+					return lhs.confidence > rhs.confidence;
+				});
 
-			// Sort the top 3 entries by width
-			sort (best_goals.begin(), min(best_goals.end(), best_goals.begin()+3), [ ] (const GoalInfo &lhs, const GoalInfo &rhs)
-			{
-				return lhs.rect.width > rhs.rect.width;
-			});
-			//decide between final 2 goals based on either width or position on screen
-			//decide how to decide based on if the goals have extremely similar widths
-			//note that goals near the edge of the screen will appear wider
-			//due to camera distortions
-			if(abs(best_goals[0].rect.width - best_goals[1].rect.width) > 5)
-			{
-#ifdef VERBOSE
-				cout << "Deciding based on width" << endl;
-#endif
-				if(best_goals[0].rect.width > best_goals[1].rect.width)
-					best_index = 0;
-				else
-					best_index = 1;
 			}
-			else
-			{
-#ifdef VERBOSE
-				cout << "Deciding based on position " << endl;
-#endif
-				if(best_goals[0].rect.br().x < best_goals[1].rect.br().x)
-					best_index = 1;
-				else
-					best_index = 0;
-			}
+			
+			best_index = 0;
+			// Save a bunch of info about the goal
+			_goal_pos      = best_goals_updated[best_index].pos;
+			_dist_to_goal  = best_goals_updated[best_index].distance;
+			_angle_to_goal = best_goals_updated[best_index].angle;
+			_goal_rect     = best_goals_updated[best_index].rect;
+		} else {
+		
+			// Save a bunch of info about the goal
+			_goal_pos      = best_goals[best_index].pos;
+			_dist_to_goal  = best_goals[best_index].distance;
+			_angle_to_goal = best_goals[best_index].angle;
+			_goal_rect     = best_goals[best_index].rect;
+		
 		}
-
-		// Save a bunch of info about the goal
-		_goal_pos      = best_goals[best_index].pos;
-		_dist_to_goal  = best_goals[best_index].distance;
-		_angle_to_goal = best_goals[best_index].angle;
-		_goal_rect     = best_goals[best_index].rect;
-
 		_pastRects.push_back(SmartRect(_goal_rect));
 	}
 	else

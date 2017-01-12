@@ -337,8 +337,9 @@ int main( int argc, const char** argv )
 	FlowLocalizer fllc(frame);
 
 	//Creating Goaldetection object
-	GoalDetector gd(camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
+	GoalDetector gd(4, camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
 
+	GoalDetector gd2(5, camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
 	// Start of the main loop
 	//  -- grab a frame
 	//  -- update the angle of tracked objects
@@ -361,7 +362,9 @@ int main( int argc, const char** argv )
 			break;
 
 		// run Goaldetector
+		Mat frameCopy;
 		gd.processFrame(frame, depth);
+		gd2.processFrame(frame,depth);
 
 		if (gd.goal_pos() != Point3f())
 			cout << "Goal Position=" << gd.goal_pos() << endl;
@@ -583,8 +586,10 @@ int main( int argc, const char** argv )
 			}
 
 			//draw the goal along with debugging info if that's enabled
-			if (gdDraw)
+			if (gdDraw) {
 				gd.drawOnFrame(frame);
+				gd2.drawOnFrame(frame);
+			}
 			if (args.rects)
 				rectangle(frame, gd.goal_rect(), Scalar(0, 255, 0));
 
@@ -715,6 +720,12 @@ int main( int argc, const char** argv )
 				if (detectState)
 					detectState->toggleCascade();
 			}
+			else if (c == '|')
+			{
+				Mat frameCopy, depthCopy;
+				if(cap->getFrame(frameCopy, depthCopy))
+				imwrite("savedImage.png",frameCopy);
+			}
 			else if (c == 'G') // toggle GPU/CPU detection mode
 			{
 				if (detectState)
@@ -804,6 +815,7 @@ int main( int argc, const char** argv )
 				if (detectState)
 				detectState->changeC24Model(false);
 			}
+			
 			else if (isdigit(c)) // save a single detected image
 			{
 				Mat frameCopy, depthCopy;

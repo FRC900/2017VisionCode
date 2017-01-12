@@ -5,17 +5,17 @@ gpu=true
 #process args
 while [ $# -gt 0 ]
 do
-    case "$1" in
-        -jx) jetson=true;;
+	case "$1" in
+		-jx) jetson=true;;
 	-jk) jetson=true; version=tk;;
 	-amd64) jetson=false;;
-	-g) gpu=true;;
+	-c) gpu=false;;
 	-h) echo >&2 \
-	    "usage: $0 [-jx or -jk or -amd64] [-g] [-h]"
-	    exit 1;;
+		"usage: $0 [-jx or -jk or -amd64] [-c] [-h]"
+		exit 1;;
 	*)  break;;	# terminate while loop
-    esac
-    shift
+	esac
+	shift
 done
 
 #install basic dependencies
@@ -97,8 +97,8 @@ rm ./$ext
 #TODO : rethink this - how are we getting the script if the
 #       repo isn't there in the first place?
 cd
-git clone https://github.com/FRC900/2016VisionCode.git
-cd 2016VisionCode
+git clone https://github.com/FRC900/2017VisionCode.git
+cd 2017VisionCode
 
 #build stuff
 cd libfovis
@@ -114,15 +114,15 @@ make -j4
 #mount and setup autostart script
 if [ "$jetson" = true ] ; then
 	sudo mkdir /mnt/900_2
-	sudo cp ~/2016VisionCode/zv.conf /etc/init
+	sudo cp ~/2017VisionCode/zv.conf /etc/init
 	sudo mkdir -p /usr/local/zed/settings
 	sudo chmod 755 /usr/local/zed/settings
-	sudo cp ~/2016VisionCode/calibration_files/*.conf /usr/local/zed/settings
+	sudo cp ~/2017VisionCode/calibration_files/*.conf /usr/local/zed/settings
 	sudo chmod 644 /usr/local/zed/settings/*
 fi
 
-cp ~/2016VisionCode/.vimrc ~/2016VisionCode/.gvimrc ~
-sudo cp ~/2016VisionCode/kjaget.vim /usr/share/vim/vim74/colors
+cp ~/2017VisionCode/.vimrc ~/2017VisionCode/.gvimrc ~
+sudo cp ~/2017VisionCode/kjaget.vim /usr/share/vim/vim74/colors
 
 git config --global user.email "progammers@team900.org"
 git config --global user.name "Team900 Jetson TX1"
