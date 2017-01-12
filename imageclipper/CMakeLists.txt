@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.6) 
 project(imageclipper)
+set(CMAKE_BUILD_TYPE Release)
 
 option(WITH_TBB "Turn on support for TBB, Threading Building Blocks. You must have an OpenCV compiled with support for this" OFF)
 
@@ -17,7 +18,8 @@ if (MSVC)
 	set(Boost_USE_STATIC_RUNTIME ON)
 	set(Boost_DETAILED_FAILURE_MSG ON)
 else()
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto -ffast-math")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Ofast -flto -fno-finite-math-only")
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
