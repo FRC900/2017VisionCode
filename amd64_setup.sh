@@ -16,10 +16,25 @@ cd /usr/local
 sudo tar -xzvf ~/cudnn-8.0-linux-x64-v5.1-tgz
 rm ~/cudnn-8.0-linux-x64-v5.1-tgz
 
+# Enable multiverse repository. The ZED installer requires packages from
+# multiverse.
+sudo -s
+cat <<'EOF' > /etc/apt/sources.list.d/multiverse.list
+deb http://archive.ubuntu.com/ubuntu/ xenial multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ xenial multiverse
+deb http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ xenial-updates multiverse
+deb http://archive.ubuntu.com/ubuntu/ xenial-security multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ xenial-security multiverse
+EOF
+apt-get update
+exit
+
 cd
 wget https://www.stereolabs.com/download_327af3/ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run
 chmod 755 ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run
 ./ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run
+rm ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run
 
 # Install ffmpeg. This is a prereq for OpenCV, so 
 # unless you're installing that skip this as well.

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+XSOCK='/tmp/.X11-unix'
+ZV_IMAGE='eblau1/zebravision:latest'
+docker run -it --user ubuntu --privileged -v $XSOCK:$XSOCK -e DISPLAY=:0 $ZV_IMAGE /bin/bash
