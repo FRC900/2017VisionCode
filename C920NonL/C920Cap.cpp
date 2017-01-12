@@ -14,6 +14,7 @@
 #include <iostream>
 #include <stdio.h>
 #include "camerain.cpp"
+#include "ZvSettings.hpp"
 
 using namespace std;
 using namespace cv;
@@ -21,7 +22,8 @@ using namespace cv;
 
 int main(int argc, char *argv[])
 {
-    CameraIn vidIn(1, NULL);
+	ZvSettings zvSettings("settings.xml");
+    CameraIn vidIn(0, &zvSettings);
     char name[PATH_MAX];
     int  index = 0;
     int  rc;
@@ -40,17 +42,17 @@ int main(int argc, char *argv[])
         if (vidIn.getFrame(frame, depth, false) && !frame.empty())
         {
             outputVideo << frame;
+			imshow("Frame", frame);
+			int wait_key = cv::waitKey(5);
+			if ((wait_key == 27) || (wait_key == 32))
+			{
+				break;
+			}
         }
         else
         {
             fprintf(stderr, "Unable to grab frame.\n");
-            break;
-        }
-        imshow("Frame", frame);
-        int wait_key = cv::waitKey(5);
-        if ((wait_key == 27) || (wait_key == 32))
-        {
-            break;
+			break;
         }
     }
     fprintf(stdout, "Closing camera.\n");
