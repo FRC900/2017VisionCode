@@ -1,0 +1,10 @@
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles
+NavXTimeStamp
+Makefile
+*.o
+*.bin
+*.so
+*~
+*.sw?
