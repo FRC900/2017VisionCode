@@ -13,11 +13,12 @@ using namespace cv;
 
 int main(int argc, char *argv[])
 {
+	ZvSettings zvSettings("settings.xml");
 	MediaIn *camera;
 	if (argc == 2)
 		camera = new ZMSIn(argv[1]);
 	else
-		camera = new ZedCameraIn(true);
+		camera = new ZedCameraIn(true, &zvSettings);
 
 	VideoWriter outputVideo;
 	if (argc < 3)
