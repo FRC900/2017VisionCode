@@ -49,9 +49,9 @@ class BallDetector {
 };
 
 float distance(Rect r) {
-	float k=1;
+	float k=.0001;
 	float h=0;
-	return sqrt(k*pow((r.width+r.height)/2,2)-pow(h,2));
+	return 1/sqrt(k*pow((r.width+r.height)/2,2)-pow(h,2));
 
 }
 
