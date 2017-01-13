@@ -78,7 +78,7 @@ include_directories(
    	${EIGEN3_INCLUDE_DIR}
 	.
 	../fovis
-	/home/ubuntu/2016VisionCode/libfovis/build/include/fovis
+	/home/ubuntu/2017VisionCode/libfovis/build/include/fovis
 	../../GIE/include
 	..
 	../navXTimeSync)
@@ -91,7 +91,7 @@ endif()
 link_directories(/opt/intel/ipp90legacy/linux/lib/intel64/threaded)
 link_directories(${ZED_LIBRARY_DIR})
 link_directories(${CUDA_LIBRARY_DIRS})
-link_directories(/home/ubuntu/2016VisionCode/libfovis/build/lib/)
+link_directories(/home/ubuntu/2017VisionCode/libfovis/build/lib/)
 link_directories(/usr/local/cuda/lib64/stubs)
 
 # Without this, nvcc grabs --std=c++11 which looks like
