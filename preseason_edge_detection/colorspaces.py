@@ -2,22 +2,23 @@
 import cv2
 import numpy as np
 
+
 def nothing(x):
     pass
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 cv2.namedWindow('frame1')
 kernel = np.ones((5,5),np.uint8)
 
 # create trackbars for color change
 # lower
-cv2.createTrackbar('HLo','frame1',120,179,nothing)
-cv2.createTrackbar('SLo','frame1',72,255,nothing)
-cv2.createTrackbar('VLo','frame1',120,255,nothing)
+cv2.createTrackbar('HLo','frame1',19,179,nothing)
+cv2.createTrackbar('SLo','frame1',57,255,nothing)
+cv2.createTrackbar('VLo','frame1',123,255,nothing)
 # upper
-cv2.createTrackbar('HUp','frame1',179,179,nothing)
-cv2.createTrackbar('SUp','frame1',255,255,nothing)
-cv2.createTrackbar('VUp','frame1',255,255,nothing)
+cv2.createTrackbar('HUp','frame1',52,179,nothing)
+cv2.createTrackbar('SUp','frame1',197,255,nothing)
+cv2.createTrackbar('VUp','frame1',223,255,nothing)
 
 cv2.createTrackbar('areaTrackbar','frame1',10000,50000,nothing)
 
@@ -35,6 +36,8 @@ while(1):
 	vUp = cv2.getTrackbarPos('VUp','frame1')
 
 	areaTrackbar = cv2.getTrackbarPos('areaTrackbar','frame1')
+
+
 
 	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -54,35 +57,46 @@ while(1):
 	sobelx = cv2.Sobel(closing,cv2.CV_64F,1,0,ksize=5)
 	sobely = cv2.Sobel(closing,cv2.CV_64F,0,1,ksize=5)
 
-	# contours!
-	contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-	cv2.drawContours(frame,contours,-1,(0,255,0),3)
+	cv2.imshow("closing", closing)
 
-	if len(contours) > 0:
-		# loops through each contour in the giant contour array, finds the min and max x and y, then draws a rectangle
-		for x in range(0, len(contours)):
+
+	# contours!
+	contours = cv2.findContours(closing,cv2.cv.CV_RETR_TREE,cv2.cv.CV_CHAIN_APPROX_SIMPLE)[0]
+
+	approx_contours = []
+
+	for c in contours:
+		moments = cv2.moments(c)
+		center = (int(moments['m10']/moments['m00']), (int (moments['m01']/moments['m00'])))
+		area = cv2.contourArea(c)
+		if area < areaTrackbar: continue
+		perim = cv2.arcLength(c, True)
+		approx = cv2.approxPolyDP(c, 0.00005*perim, True)
+
+		if len(approx) > 20:
+			approx_contours.append(approx)
+
+
+		for x in range(0, len(approx_contours)):
 			minX = 10000
 			minY = 10000
 			maxX = 0
 			maxY = 0
-			for y in range(0, len(contours[x])):
+			cx = (minX + maxX)//2
+			cy = (minY + maxY)//2
 
-				if contours[x][y][0][0] < minX:
-					minX = contours[x][y][0][0]
-				if contours[x][y][0][1] < minY:
-					minY = contours[x][y][0][1]
-				if contours[x][y][0][0] > maxX:
-					maxX = contours[x][y][0][0]
-				if contours[x][y][0][1] > maxY:
-					maxY = contours[x][y][0][1]
-
-			# if the area is above the area trackbar value, display the rectangle
-			area = cv2.contourArea(contours[x])
-			if area > areaTrackbar:			
+			for y in range(0, len(approx_contours[x])):
+				if approx_contours[x][y][0][0] < minX:
+					minX = approx_contours[x][y][0][0]
+				if approx_contours[x][y][0][1] < minY:
+					minY = approx_contours[x][y][0][1]
+				if approx_contours[x][y][0][0] > maxX:
+					maxX = approx_contours[x][y][0][0]
+				if approx_contours[x][y][0][1] > maxY:
+					maxY = approx_contours[x][y][0][1]
+			if approx_contours:
+				cv2.drawContours(frame, approx_contours, -1, (255, 0, 0),3)
 				cv2.rectangle(frame,(minX, minY),(maxX, maxY),(255,255,0),3)
-				cx = (minX + maxX)//2
-				cy = (minY + maxY)//2
-				cv2.circle(frame, (cx, cy), 10, (0, 0, 255))
 
 
 	cv2.imshow('frame',frame)
