@@ -48,11 +48,19 @@ class BallDetector {
 	}
 };
 
-float distance(Rect r) {
+float sizeToDist(Rect r) {
 	float k=.0001;
 	float h=0;
 	return 1/sqrt(k*pow((r.width+r.height)/2,2)-pow(h,2));
 
+}
+
+float angleToDist(Rect r) {
+	float a=.001;	//angle of each pixel
+	float b=1.4; //angle from top of view of camera to straight down in radians
+	float h=1;
+	cout << b-a*(r.y+r.height/2) << endl;
+	return h*tan(b-a*(r.y+r.height/2));
 }
 
 int main(int, char**)
@@ -108,7 +116,7 @@ int main(int, char**)
 		rects = b.ballDetect(frame);
 
 		for (int i = 0; i < rects.size(); i++) {
-			cout << distance(rects[i]) << endl;;
+			cout << angleToDist(rects[i]) << endl;
 			rectangle(frame, rects[i], Scalar(0, 0, 255), 3);
 		}
 		imshow("frame", frame);
