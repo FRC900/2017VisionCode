@@ -2,15 +2,17 @@
 #include <opencv2/opencv.hpp>
 #include <math.h>
 
+#include "C920Camera.h"
+
 using namespace cv;
 using namespace std;
-class BallDetector {
+class FuelDetector {
 
 		Scalar min;
 		Scalar max;
 		int minArea;
-
-		vector<Rect> out;
+		float h;
+		vector<vector<Point> > out;
 		int area;
 		Mat hsv;
 		Mat mask;
@@ -20,14 +22,19 @@ class BallDetector {
 		Mat kernel;
 		vector<vector<Point> > contours;
 
-	public: BallDetector(Scalar mi, Scalar ma, int minAre=2000) {
-		min = mi;
-		max = ma;
-		minArea = minAre;
+	public: FuelDetector(float he) {
+		max = Scalar(0,255,255);
+		minArea=100;
+		h=he;
 		kernel = Mat(5,5, CV_8U);
 	}
 
-	vector<Rect> ballDetect(Mat frame)
+	void changeMin(int hLo,int hUp,int sLo,int vLo) {
+		min = Scalar(hLo,sLo,vLo);
+		max.val[0] = hUp;
+	}
+
+	vector<vector<Point> > getFuel(Mat frame)
 	{
 		out.clear();	//reset the output list
 		cvtColor(frame, hsv, CV_BGR2HSV);	//create an hsv image for filtering
@@ -39,64 +46,96 @@ class BallDetector {
 		findContours(closing,contours,RETR_TREE,CHAIN_APPROX_SIMPLE);
 		if (contours.size()>0) {	//check is there are any contours
 			for (int x = 0; x < contours.size(); x++) {	//for each contours do stuff
-				if (contourArea(contours[x]) > minArea) {	//check to see the size of the contours
-					out.push_back(boundingRect(contours[x]));	//add contours to output list
+				Rect rec = boundingRect(contours[x]);
+				if (contourArea(contours[x]) > minArea && rec.width*rec.height < (frame.rows-40)*(frame.cols-40) ) {	//check to see the size of the contours
+					out.push_back(contours[x]);	//add contours to output list
 				}
 			}
 		}
 		return out;
 	}
+
+	float angleToDist(vector<Point> c) {
+		if (c.size() == 0) throw invalid_argument("received empty contour");
+		float a=.0010496;	//angle of each pixel .0010496 for c920 at 720p
+		float b=1.54; //angle from top of view of camera to straight down in radians
+		int sumOfY=0;
+		for (int i = 0; i < c.size(); i++) {
+			sumOfY+=c[i].y;
+		}
+		return h*tan(b-a*(sumOfY/c.size()));
+	}
+
+
+
+	float expectedSize(float dist) {
+		float sizeConstant=6430;		//try 4669
+		return sizeConstant/sqrt(pow(h,2)+pow(dist,2));
+
+	}
+
+	float fuelCount(vector<Point> c) {
+		if (c.size() == 0) throw invalid_argument("received empty contour");
+		double dist = angleToDist(c);
+		double eSize = expectedSize(dist);
+		return contourArea(c)/eSize;
+	}
 };
 
-float distance(Rect r) {
-	float k=.0001;
-	float h=0;
-	return 1/sqrt(k*pow((r.width+r.height)/2,2)-pow(h,2));
 
-}
 
 int main(int, char**)
 {
-    VideoCapture cap(0); // open the default camera
-    if(!cap.isOpened())  // check if we succeeded
+	v4l2::C920Camera camera(1);
+	camera.SetBrightness(60);
+	camera.SetWhiteBalanceTemperature(30);
+	camera.SetGain(45);
+	camera.SetSaturation(190);
+	camera.SetContrast(130);
+	camera.ChangeCaptureSize(v4l2::CAPTURE_SIZE_1280x720);
+	//VideoCapture cap(1); // open the default camera
+    if(!camera.IsOpen())  // check if we succeeded
         return -1;
+
 
     namedWindow("frame",1);
 
 	// create trackbars for color change
 	// lower
-	//int hLo = 120;
-	//int sLo = 72;
-	//int vLo = 120;
-	//int hUp = 179;
+	int hLo = 29;
+	int sLo = 65;
+	int vLo = 80;
+	int hUp = 38;
 	//int sUp = 255;
 	//int vUp = 255;
 	//int areaTrackbar = 10000;
-	Scalar	min(20, 80, 120);
-	Scalar	max(50, 255, 255);
-	/*
+
 	createTrackbar("HLo","frame",&hLo,179);
 	createTrackbar("SLo","frame",&sLo,255);
 	createTrackbar("VLo","frame",&vLo,255);
-	// upper
 	createTrackbar("HUp","frame",&hUp,179);
+	/*
+	// upper
 	createTrackbar("SUp","frame",&sUp,255);
 	createTrackbar("VUp","frame",&vUp,255);
 
 	createTrackbar("areaTrackbar","frame",&areaTrackbar,50000);
 */
-
-	vector<Rect> rects;
+	double total;
+	vector<vector<Point> > fuel;
 	Mat frame;
-	BallDetector b = BallDetector(min, max, 2000);
+	FuelDetector b = FuelDetector(.70);
 	while (true) {
-		cap >> frame; // get a new frame from camera
-		/*
+		camera.GrabFrame();
+		camera.RetrieveMat(frame);
+		//cap >> frame; // get a new frame from camera
+
 		// get current positions of four trackbars
 		hLo = getTrackbarPos("HLo","frame");
 		sLo = getTrackbarPos("SLo","frame");
 		vLo = getTrackbarPos("VLo","frame");
 		hUp = getTrackbarPos("HUp","frame");
+		/*
 		sUp = getTrackbarPos("SUp","frame");
 		vUp = getTrackbarPos("VUp","frame");
 
@@ -105,12 +144,15 @@ int main(int, char**)
 		Scalar	min(hLo, sLo, vLo);
 	    Scalar	max(hUp, sUp, vUp);
 */
-		rects = b.ballDetect(frame);
-
-		for (int i = 0; i < rects.size(); i++) {
-			cout << distance(rects[i]) << endl;;
-			rectangle(frame, rects[i], Scalar(0, 0, 255), 3);
+		b.changeMin(hLo,hUp,sLo,vLo);
+		fuel = b.getFuel(frame);
+		total=0;
+		drawContours(frame,fuel,-1,Scalar(255,0,0),2);
+		for (int i = 0; i < fuel.size(); i++) {
+			total += b.fuelCount(fuel[i]);
+			cout << "Dist " << i << ": " << b.angleToDist(fuel[i]) << " ";
 		}
+		cout <<"Fuel:" << total  << endl;
 		imshow("frame", frame);
         if(waitKey(30) >= 0) break;
     }
