@@ -33,7 +33,7 @@ class ZedSVOIn : public SyncIn
 		// and bolts of grabbing a frame from a given
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
-		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth);
+		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 		bool postLockFrameNumber(int framenumber);
 #ifdef ZED_SUPPORT
 	private:

@@ -45,6 +45,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	InitParams parameters;
 	parameters.mode = PERFORMANCE;
 	parameters.unit = MILLIMETER;
+	parameters.coordinate = RIGHT_HANDED; // OpenGL compatible
 	parameters.verbose = 1;
 
 	// init computation mode of the zed
@@ -62,7 +63,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	height_ = zed_->getImageSize().height;
 
 	if (!loadSettings())
-		cerr << "Failed to load ULLZedCameraIn settings from XML" << endl;
+		cerr << "Failed to load ZedCameraIn settings from XML" << endl;
 
 	zedBrightnessCallback(brightness_, this);
 	zedContrastCallback(contrast_, this);
@@ -112,12 +113,12 @@ ZedCameraIn::~ZedCameraIn()
 bool ZedCameraIn::loadSettings(void)
 {
 	if (settings_) {
-		settings_->getInt(getClassName(), "brightness",   brightness_);
-		settings_->getInt(getClassName(), "contrast",     contrast_);
-		settings_->getInt(getClassName(), "hue",          hue_);
-		settings_->getInt(getClassName(), "saturation",   saturation_);
-		settings_->getInt(getClassName(), "gain",         gain_);
-		settings_->getInt(getClassName(), "exposure",     exposure_);
+		settings_->getInt(getClassName(), "brightness", brightness_);
+		settings_->getInt(getClassName(), "contrast",   contrast_);
+		settings_->getInt(getClassName(), "hue",        hue_);
+		settings_->getInt(getClassName(), "saturation", saturation_);
+		settings_->getInt(getClassName(), "gain",       gain_);
+		settings_->getInt(getClassName(), "exposure",   exposure_);
 		return true;
 	}
 	return false;
@@ -127,12 +128,12 @@ bool ZedCameraIn::loadSettings(void)
 bool ZedCameraIn::saveSettings(void) const
 {
 	if (settings_) {
-		settings_->setInt(getClassName(), "brightness",   brightness_);
-		settings_->setInt(getClassName(), "contrast",     contrast_);
-		settings_->setInt(getClassName(), "hue",          hue_);
-		settings_->setInt(getClassName(), "saturation",   saturation_);
-		settings_->setInt(getClassName(), "gain",         gain_);
-		settings_->setInt(getClassName(), "exposure",     exposure_);
+		settings_->setInt(getClassName(), "brightness", brightness_);
+		settings_->setInt(getClassName(), "contrast",   contrast_);
+		settings_->setInt(getClassName(), "hue",        hue_);
+		settings_->setInt(getClassName(), "saturation", saturation_);
+		settings_->setInt(getClassName(), "gain",       gain_);
+		settings_->setInt(getClassName(), "exposure",   exposure_);
 		settings_->save();
 		return true;
 	}
@@ -152,12 +153,17 @@ CameraParams ZedCameraIn::getCameraParams(void) const
 }
 
 
+// Code for grabbing data from camera into local buffers
+// Doesn't need a lock since these aren't shared buffers
+// with the main thread
 bool ZedCameraIn::preLockUpdate(void)
 {
 	const bool left = true;
 	int badReadCounter = 0;
 	while (zed_->grab(SENSING_MODE::STANDARD))
 	{
+		// grab() will return true if the next
+		// frame isn't ready yet
 		boost::this_thread::interruption_point();
 		// Wait a bit to see if the next
 		// frame shows up
@@ -174,14 +180,36 @@ bool ZedCameraIn::preLockUpdate(void)
 	sl::zed::Mat slDepth = zed_->retrieveMeasure(MEASURE::DEPTH);
 	slMat2cvMat(slDepth).copyTo(localDepth_);
 
+	const float *pCloud = (const float *)zed_->retrieveMeasure(MEASURE::XYZRGBA).data;
+	localCloud_.clear();
+	for (int i = 0; i < (localDepth_.rows * localDepth_.cols); i++)
+	{
+		if (isValidMeasure(pCloud[i * 4]))
+		{
+			pcl::PointXYZRGB pt;
+			pt.x = pCloud[i * 4 + 0];
+			pt.y = pCloud[i * 4 + 1];
+			pt.z = pCloud[i * 4 + 2];
+			float color = pCloud[i * 4 + 3];
+			// Color conversion (RGBA as float32 -> RGB as uint32)
+			uint32_t color_uint = *(uint32_t*) &color;
+			unsigned char* color_uchar = (unsigned char*) &color_uint;
+			color_uint = ((uint32_t) color_uchar[0] << 16 | (uint32_t) color_uchar[1] << 8 | (uint32_t) color_uchar[2]);
+			pt.rgb = *reinterpret_cast<float*> (&color_uint);
+			localCloud_.push_back(pt);
+		}
+	}
+
 	return true;
 }
 
 
-bool ZedCameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool ZedCameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	localFrame_.copyTo(frame);
 	localDepth_.copyTo(depth);
+	cloud = localCloud_;
+
 	return true;
 }
 

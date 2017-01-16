@@ -47,7 +47,7 @@ void AsyncIn::update(void)
 		// Now have exclusive access to frame_
 		// and depth_.  Update them from the input
 		// source here
-		if (!good || !postLockUpdate(frame_, depth_))
+		if (!good || !postLockUpdate(frame_, depth_, cloud_))
 		{
 			good = false;
 			frame_ = Mat();
@@ -75,38 +75,66 @@ void AsyncIn::update(void)
 }
 
 
+// Used to copy data read from input
+// into buffers used to return them to callers
+// of getFrame() and the like
+bool AsyncIn::copyBuffers(void)
+{
+	// Make sure only one thread is accessing
+	// shared frame_ and depth_ buffers at once
+	boost::mutex::scoped_lock guard(mtx_);
+
+	// Only needed to make sure the first
+	// frame is processed in update() before
+	// grabbing it here
+	while (!updateStarted_)
+		condVar_.wait(guard);
+
+	// Use an empty mat to signal an error
+	// happened in update
+	if (frame_.empty())
+		return false;
+
+	// Lock in the time and frame number associated
+	// with depth_ and frame_ so they're returned when
+	// queried from the main code
+	lockTimeStamp();
+	lockFrameNumber();
+	frame_.copyTo(pausedFrame_);
+	depth_.copyTo(pausedDepth_);
+	pausedCloud_ = cloud_;
+	return true;
+}
+
+bool AsyncIn::getFrame(Mat &frame, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	// Use an empty mat to signal an error
+	// happened in update
+	if (pausedFrame_.empty())
+		return false;
+
+	pausedFrame_.copyTo(frame);
+	return true;
+}
+
+
 bool AsyncIn::getFrame(Mat &frame, Mat &depth, bool pause)
 {
 	if (!isOpened())
 		return false;
-	
+
 	if (!pause)
-	{
-		// Make sure only one thread is accessing
-		// shared frame_ and depth_ buffers at once
-		boost::mutex::scoped_lock guard(mtx_);
-
-		// Only needed to make sure the first
-		// frame is processed in update() before
-		// grabbing it here
-		while (!updateStarted_)
-			condVar_.wait(guard);
-
-		// Use an empty mat to signal an error 
-		// happened in update
-		if (frame_.empty())
+		if (!copyBuffers())
 			return false;
 
-		// Lock in the time and frame number associated
-		// with depth_ and frame_ so they're returned when
-		// queried from the main code
-		lockTimeStamp();
-		lockFrameNumber();
-		frame_.copyTo(pausedFrame_);
-		depth_.copyTo(pausedDepth_);
-	}
-
-	// Use an empty mat to signal an error 
+	// Use an empty mat to signal an error
 	// happened in update
 	if (pausedFrame_.empty())
 		return false;
@@ -116,3 +144,62 @@ bool AsyncIn::getFrame(Mat &frame, Mat &depth, bool pause)
 	return true;
 }
 
+bool AsyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	// Use an empty mat to signal an error
+	// happened in update
+	if (pausedFrame_.empty())
+		return false;
+
+	pausedFrame_.copyTo(frame);
+	pausedDepth_.copyTo(depth);
+	cloud = cloud_;
+	return true;
+}
+
+bool AsyncIn::getDepth(Mat &depth, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	// Use an empty mat to signal an error
+	// happened in update
+	if (pausedFrame_.empty())
+		return false;
+
+	pausedDepth_.copyTo(depth);
+	return true;
+}
+
+// Grab point cloud.  If pause is false this copies and latches the
+// most recent RGB, depth and point cloud data along with their
+// fram number and timestamp.  If pause is true, return the data from
+// the most recent call with pause == false.
+// The expected use of this function is to have it called with pause = true
+// in almost all cases. This way the point cloud data will agree with 
+// the RGB + D info from the most recent call to getFrame().
+// If there's ever a case where we decide not to call getFrame() - maybe
+// we don't actually need the RGB + D frames? - then call this with pause == false
+bool AsyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	cloud = cloud_;
+	return true;
+}

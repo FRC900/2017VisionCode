@@ -17,7 +17,12 @@ class SyncIn : public MediaIn
 	public:
 		SyncIn(ZvSettings *settings = NULL);
 
+		bool getFrame(cv::Mat &frame, bool pause = false);
 		bool getFrame(cv::Mat &frame, cv::Mat &depth, bool pause = false);
+		bool getFrame(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = false);
+		bool getDepth(cv::Mat &depth, bool pause = true);
+		bool getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = true);
+
 		void frameNumber(int framenumber);
 
 	protected:
@@ -33,19 +38,23 @@ class SyncIn : public MediaIn
 		// and bolts of grabbing a frame from a given
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
-		virtual bool postLockUpdate(cv::Mat &frame, cv::Mat &depth) = 0;
+		virtual bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud) = 0;
 		virtual bool postLockFrameNumber(int framenumber) = 0;
 
 	private:
 		// frame_ is the most recent frame grabbed from 
 		// the camera
-		// prevGetFrame_ is the last frame returned from
+		// pausedFrame_ is the last frame returned from
 		// getFrame().  If paused, code needs to keep returning
 		// this frame rather than getting a new one from frame_
 		cv::Mat           frame_;
 		cv::Mat           depth_;
-		cv::Mat           prevGetFrame_;
-		cv::Mat           prevGetDepth_;
+		cv::Mat           pausedFrame_;
+		cv::Mat           pausedDepth_;
+
+		// Same thing for point cloud data
+		pcl::PointCloud<pcl::PointXYZRGB> cloud_;
+		pcl::PointCloud<pcl::PointXYZRGB> pausedCloud_;
 
 		// Mutex used to protect frame_
 		// from simultaneous accesses 
@@ -64,4 +73,5 @@ class SyncIn : public MediaIn
 		boost::thread    thread_;
 
 		void update(void);
+		bool copyBuffers(void);
 };

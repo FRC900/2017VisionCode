@@ -46,14 +46,44 @@ unsigned int MediaIn::height(void) const
    return height_;
 }
 
-bool MediaIn::getFrame(Mat &frame, Mat &depth, bool pause)
+bool MediaIn::getFrame(Mat &frame, bool pause)
 {
 	(void)pause;
 	frame = Mat();
+	return false;
+}
+
+bool MediaIn::getFrame(Mat &frame, Mat &depth, bool pause)
+{
+	(void)pause;
+	depth = Mat();
+	// Call derived class version of non-depth method
+	// to get frame data, if any
+	return getFrame(frame, pause);
+}
+
+bool MediaIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	(void)pause;
+	cloud = pcl::PointCloud<pcl::PointXYZRGB>();
+	// Call derived class version of non-point cloud method
+	// to get frame+depth data, if any
+	return getFrame(frame, depth, pause);
+}
+
+bool MediaIn::getDepth(Mat &depth, bool pause)
+{
+	(void)pause;
 	depth = Mat();
 	return false;
 }
 
+bool MediaIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	(void)pause;
+	cloud = pcl::PointCloud<pcl::PointXYZRGB>();
+	return false;
+}
 bool MediaIn::isOpened(void) const
 {
 	return false;

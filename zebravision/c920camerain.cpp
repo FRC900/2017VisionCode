@@ -171,10 +171,11 @@ bool C920CameraIn::preLockUpdate(void)
 }
 
 
-bool C920CameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool C920CameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	localFrame_.copyTo(frame);
 	depth = Mat();
+	cloud.clear();
 	return true;
 }
 

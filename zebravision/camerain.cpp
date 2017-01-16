@@ -83,10 +83,11 @@ bool CameraIn::preLockUpdate(void)
 	return cap_.grab() && cap_.retrieve(localFrame_);
 }
 
-bool CameraIn::postLockUpdate(Mat &frame, Mat &depth)
+bool CameraIn::postLockUpdate(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	localFrame_.copyTo(frame);
 	depth = Mat();
+	cloud.clear();
 	return true;
 }
 

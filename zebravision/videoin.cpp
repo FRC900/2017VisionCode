@@ -42,10 +42,11 @@ bool VideoIn::isOpened(void) const
 }
 
 
-bool VideoIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool VideoIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	cap_ >> frame;
 	depth = Mat();
+	cloud.clear();
 	return true;
 }
 

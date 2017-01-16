@@ -45,7 +45,7 @@ void SyncIn::update(void)
 		while (frameReady_)
 			condVar_.wait(guard);
 
-		if (postLockUpdate(frame_, depth_))
+		if (postLockUpdate(frame_, depth_, cloud_))
 		{
 			setTimeStamp();
 			incFrameNumber();
@@ -70,45 +70,145 @@ void SyncIn::update(void)
 	while (!frame_.empty());
 }
 
+// Used to copy data read from input
+// into buffers used to return them to callers
+// of getFrame() and the like
+bool SyncIn::copyBuffers(void)
+{
+	// Wait until a valid frame is in frame_
+	boost::mutex::scoped_lock guard(mtx_);
+	while (!frameReady_)
+		condVar_.wait(guard);
+
+	if (frame_.empty())
+		return false;
+
+	// Save copies of the previously
+	// returned frame's data. This lets
+	// the code return it again if paused
+	frame_.copyTo(pausedFrame_);
+	depth_.copyTo(pausedDepth_);
+	pausedCloud_ = cloud_;
+	lockTimeStamp();
+	lockFrameNumber();
+
+	// Let update() know that getFrame has copied
+	// the current frame out of frame_
+	frameReady_ = false;
+	condVar_.notify_all();
+
+	// Release the mutex so that update() can
+	// start getting the next frame while the
+	// current one is returned and processed
+	// in the main thread.
+	return true;
+}
+
+
+bool SyncIn::getFrame(Mat &frame, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	// If not paused, copy the next frame data from
+	// frame_. This is the Mat holding the next
+	// frame read from the video that update()
+	// fills in a separate thread
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	if (pausedFrame_.empty())
+		return false;
+	pausedFrame_.copyTo(frame);
+	return true;
+}
+
 
 bool SyncIn::getFrame(Mat &frame, Mat &depth, bool pause)
 {
 	if (!isOpened())
 		return false;
 
-	// If not paused, copy the next frame from
+	// If not paused, copy the next frame data from
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
 	if (!pause)
-	{
-		// Wait until a valid frame is in frame_
-		boost::mutex::scoped_lock guard(mtx_);
-		while (!frameReady_)
-			condVar_.wait(guard);
-
-		if (frame_.empty())
+		if (!copyBuffers())
 			return false;
 
-		frame_.copyTo(prevGetFrame_);
-		depth_.copyTo(prevGetDepth_);
-		lockTimeStamp();
-		lockFrameNumber();
-
-		// Let update() know that getFrame has copied
-		// the current frame out of frame_
-		frameReady_ = false;
-		condVar_.notify_all();
-
-		// Release the mutex so that update() can
-		// start getting the next frame while the 
-		// current one is returned and processed
-		// in the main thread.
-	}
-	if (prevGetFrame_.empty())
+	if (pausedFrame_.empty())
 		return false;
-	prevGetFrame_.copyTo(frame);
-	prevGetDepth_.copyTo(depth);
+	pausedFrame_.copyTo(frame);
+	pausedDepth_.copyTo(depth);
+	return true;
+}
+
+bool SyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	// If not paused, copy the next frame data from
+	// frame_. This is the Mat holding the next
+	// frame read from the video that update()
+	// fills in a separate thread
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	if (pausedFrame_.empty())
+		return false;
+	pausedFrame_.copyTo(frame);
+	pausedDepth_.copyTo(depth);
+	cloud = pausedCloud_;
+	return true;
+}
+
+bool SyncIn::getDepth(Mat &depth, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	// If not paused, copy the next frame data from
+	// frame_. This is the Mat holding the next
+	// frame read from the video that update()
+	// fills in a separate thread
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	if (pausedFrame_.empty())
+		return false;
+	pausedDepth_.copyTo(depth);
+	return true;
+}
+
+
+// Grab point cloud.  If pause is false this copies and latches the
+// most recent RGB, depth and point cloud data along with their
+// fram number and timestamp.  If pause is true, return the data from
+// the most recent call with pause == false.
+// The expected use of this function is to have it called with pause = true
+// in almost all cases. This way the point cloud data will agree with
+// the RGB + D info from the most recent call to getFrame().
+// If there's ever a case where we decide not to call getFrame() - maybe
+// we don't actually need the RGB + D frames? - then call this with pause == false
+bool SyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
+{
+	if (!isOpened())
+		return false;
+
+	// If not paused, copy the next frame data from
+	// frame_. This is the Mat holding the next
+	// frame read from the video that update()
+	// fills in a separate thread
+	if (!pause)
+		if (!copyBuffers())
+			return false;
+
+	cloud = pausedCloud_;
 	return true;
 }
 

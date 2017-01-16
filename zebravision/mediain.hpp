@@ -8,11 +8,12 @@
 
 #include <opencv2/core/core.hpp>
 #include <tinyxml2.h>
+#include <pcl/common/common_headers.h>
 
 #include "cameraparams.hpp"
 #include "frameticker.hpp"
 #include "ZvSettings.hpp"
-#include <navXTimeSync/AHRS.h>
+#include "navXTimeSync/AHRS.h"
 
 // Base class for input.  Derived classes are cameras, videos, etc
 class MediaIn
@@ -28,7 +29,20 @@ class MediaIn
 		// These should be implemented by each derived class
 		// Include defaults here which return false just in case
 		virtual bool isOpened(void) const;
+
+		// Get data from current frame. Note the pause parameter. If it is
+		// false it returns the newest data from the input. If pause
+		// is true is returns data corresponding to the data returned last
+		// time these functions were called with pause == false. That way
+		// if, say, video is paused multiple calls to getFrame will all return
+		// the same data. Likewise, a call to getDepth() will return depth data
+		// which lines up with the last call to getFrame() rather than newer
+		// data from a random frame.
+		virtual bool getFrame(cv::Mat &frame, bool pause = false);
 		virtual bool getFrame(cv::Mat &frame, cv::Mat &depth, bool pause = false);
+		virtual bool getFrame(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = false);
+		virtual bool getDepth(cv::Mat &depth, bool pause = true);
+		virtual bool getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = true);
 
 		// Image size
 		unsigned int width() const;
