@@ -18,21 +18,41 @@ class SmartRect
         cv::Rect myRect;
         bool operator== (const SmartRect &thatRect)const;
 };
+
+//this contains all the info we need to decide between goals once we are certain if it is a goal
+struct GoalInfo
+{
+	bool operator () (GoalInfo a, GoalInfo b) {
+		return (a.confidence > b.confidence);
+	}
+	cv::Point3f pos;
+	float confidence;
+	float distance;
+	float angle;
+	cv::Rect rect;
+};
+
 class GoalDetector
 {
 	public:
-		GoalDetector(int obj_type, cv::Point2f fov_size, cv::Size frame_size, bool gui = false);
+		GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui = false);
 
 		float dist_to_goal(void) const;
 		float angle_to_goal(void) const;
 		cv::Rect goal_rect(void) const;
 		cv::Point3f goal_pos(void) const;
-		void processFrame(const cv::Mat& image, const cv::Mat& depth); //this updates dist_to_goal, angle_to_goal, and _goal_rect
 		void drawOnFrame(cv::Mat &image) const;
 
+		//These are the three functions to call to run GoalDetector
+		//they fill in _contours, _infos, _confidence, _depth_mins, etc
+		void clear(void);
+		//If your objectypes have the same width it's safe to run
+		//getContours and computeConfidences with different types
+		void findBoilers(const cv::Mat& image, const cv::Mat& depth);
+		void getContours(int objtype, const cv::Mat& image, const cv::Mat& depth);
+		void computeConfidences(int objtype);		
 	private:
-		bool _general = false;
-		ObjectType _goal_shape;
+	
 		cv::Point2f _fov_size;
 		cv::Size _frame_size;
 		const float _goal_height = 1.524;  // TODO : remeasure me!
@@ -50,6 +70,9 @@ class GoalDetector
 		// Save all contours found in case we want to display
 		std::vector<std::vector<cv::Point> > _contours;
 		std::vector<float> _confidence;
+		std::vector<GoalInfo> _infos;
+		std::vector< float > _depth_maxs;
+		std::vector< float > _depth_mins;
 
 		float _min_valid_confidence;
 
@@ -60,7 +83,7 @@ class GoalDetector
 int _camera_angle;
 
 		float createConfidence(float expectedVal, float expectedStddev, float actualVal);
-		float distanceUsingFOV(const cv::Rect &rect) const;
+		float distanceUsingFOV(ObjectType _goal_shape, const cv::Rect &rect) const;
 		bool generateThresholdAddSubtract(const cv::Mat& imageIn, cv::Mat& imageOut);
 		void isValid();
 };
