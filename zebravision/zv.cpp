@@ -337,9 +337,8 @@ int main( int argc, const char** argv )
 	FlowLocalizer fllc(frame);
 
 	//Creating Goaldetection object
-	GoalDetector gd(4, camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
+	GoalDetector gd(camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
 
-	GoalDetector gd2(5, camParams.fov, Size(cap->width(),cap->height()), !args.batchMode);
 	// Start of the main loop
 	//  -- grab a frame
 	//  -- update the angle of tracked objects
@@ -363,8 +362,7 @@ int main( int argc, const char** argv )
 
 		// run Goaldetector
 		Mat frameCopy;
-		gd.processFrame(frame, depth);
-		gd2.processFrame(frame,depth);
+		gd.findBoilers(frame,depth);
 
 		if (gd.goal_pos() != Point3f())
 			cout << "Goal Position=" << gd.goal_pos() << endl;
@@ -588,7 +586,6 @@ int main( int argc, const char** argv )
 			//draw the goal along with debugging info if that's enabled
 			if (gdDraw) {
 				gd.drawOnFrame(frame);
-				gd2.drawOnFrame(frame);
 			}
 			if (args.rects)
 				rectangle(frame, gd.goal_rect(), Scalar(0, 255, 0));
