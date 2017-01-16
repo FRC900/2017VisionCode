@@ -38,13 +38,14 @@ class ZedCameraIn : public AsyncIn
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
 		bool preLockUpdate(void);
-		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth);
+		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 #ifdef ZED_SUPPORT
 	private:
 		sl::zed::Camera *zed_;
 		cv::Mat          localFrame_;
 		cv::Mat          localDepth_;
-                         
+        pcl::PointCloud<pcl::PointXYZRGB> localCloud_;
+
 		int              brightness_;
 		int              contrast_;
 		int              hue_;

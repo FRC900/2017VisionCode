@@ -19,7 +19,11 @@ class AsyncIn: public MediaIn
 	public:
 		AsyncIn(ZvSettings *settings = NULL);
 
+		bool getFrame(cv::Mat &frame, bool pause = false);
 		bool getFrame(cv::Mat &frame, cv::Mat &depth, bool pause = false);
+		bool getFrame(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = false);
+		bool getDepth(cv::Mat &depth, bool pause = true);
+		bool getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause = true);
 
 	protected:
 		// Derived classes need to start and stop
@@ -35,7 +39,7 @@ class AsyncIn: public MediaIn
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
 		virtual bool preLockUpdate(void) = 0;
-		virtual bool postLockUpdate(cv::Mat &frame, cv::Mat &depth) = 0;
+		virtual bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud) = 0;
 
 	private:
 		// Input is buffered several times
@@ -49,6 +53,10 @@ class AsyncIn: public MediaIn
 		cv::Mat           depth_;
 		cv::Mat           pausedFrame_;
 		cv::Mat           pausedDepth_;
+
+		// Same thing for point cloud data
+		pcl::PointCloud<pcl::PointXYZRGB> cloud_;
+		pcl::PointCloud<pcl::PointXYZRGB> pausedCloud_;
 
 		// Mutex used to protect frame_
 		// from simultaneous accesses 
@@ -66,4 +74,5 @@ class AsyncIn: public MediaIn
 		cv::VideoCapture cap_;
 
 		void update(void);
+		bool copyBuffers(void);
 };

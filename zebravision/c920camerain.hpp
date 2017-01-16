@@ -31,7 +31,7 @@ class C920CameraIn : public AsyncIn
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
 		bool preLockUpdate(void);
-		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth);
+		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 
 	private:
 		// The camera object itself

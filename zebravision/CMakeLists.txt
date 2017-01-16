@@ -44,6 +44,8 @@ find_package(MKL QUIET)
 if (MKL_FOUND)
 	add_definitions(-DUSE_MKL=1)
 endif()
+find_package(PCL COMPONENTS common)
+add_definitions(${PCL_DEFINITIONS})
 
 include (GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -76,6 +78,7 @@ include_directories(
 	${Boost_INCLUDE_DIR}
 	${ZMQ_INCLUDE_DIRS}
    	${EIGEN3_INCLUDE_DIR}
+	${PCL_INCLUDE_DIRS}
 	.
 	../fovis
 	/home/ubuntu/2017VisionCode/libfovis/build/include/fovis
@@ -93,6 +96,7 @@ link_directories(${ZED_LIBRARY_DIR})
 link_directories(${CUDA_LIBRARY_DIRS})
 link_directories(/home/ubuntu/2017VisionCode/libfovis/build/lib/)
 link_directories(/usr/local/cuda/lib64/stubs)
+link_directories(${PCL_LIBRARY_DIRS})
 
 # Without this, nvcc grabs --std=c++11 which looks like
 # it breaks builds for some reason

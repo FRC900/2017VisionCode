@@ -177,8 +177,9 @@ bool ZMSIn::isOpened(void) const
 }
 
 
-bool ZMSIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool ZMSIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
+	cloud.clear();
 	// Ugly try-catch to detect EOF
 	try
 	{

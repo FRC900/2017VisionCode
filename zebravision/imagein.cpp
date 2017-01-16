@@ -31,13 +31,12 @@ bool ImageIn::isOpened(void) const
 	return image_.empty();
 }
 
-bool ImageIn::getFrame(Mat &frame, Mat &depth, bool pause)
+bool ImageIn::getFrame(Mat &frame, bool pause)
 {
 	(void)pause;
 	if (image_.empty())
 		return false;
 	frame = image_.clone();
-	depth = Mat();
 	return true;
 }
 
