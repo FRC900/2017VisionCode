@@ -2,7 +2,7 @@ CMake_minimum_required(VERSION 2.8)
 project(zv)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-std=c++11 -Wall -Wextra -Wno-switch)
+add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 # Without -fno-finite-math-only, NaN checks are optimized away
 # This is bad since the Zed outputs NaN for invalid depth data
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto -fno-finite-math-only")
