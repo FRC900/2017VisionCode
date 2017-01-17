@@ -26,7 +26,7 @@ class CameraIn : public AsyncIn
 		// source.  preLock happens before the mutex
 		// while postLock happens inside it
 		bool preLockUpdate(void);
-		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth);
+		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 
 	private:
 		double           fps_;  // FPS requested/set for camera

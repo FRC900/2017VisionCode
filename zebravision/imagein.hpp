@@ -13,7 +13,7 @@ class ImageIn : public MediaIn
 		ImageIn(const char *outpath, ZvSettings *settings = NULL);
 		~ImageIn() {}
 		bool isOpened(void) const;
-		bool getFrame(cv::Mat &frame, cv::Mat &depth, bool pause = false);
+		bool getFrame(cv::Mat &frame, bool pause = false);
 
 		int frameCount(void) const;
 

@@ -40,14 +40,14 @@ rm ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run
 # unless you're installing that skip this as well.
 sudo apt-get install yasm
 cd
-wget --no-check-certificate https://github.com/FFmpeg/FFmpeg/archive/n3.1.3.zip
-unzip n3.1.3.zip
-cd FFmpeg-n3.1.3
+wget --no-check-certificate https://github.com/FFmpeg/FFmpeg/archive/n3.2.2.zip
+unzip n3.2.2.zip
+cd FFmpeg-n3.2.2
 ./configure --enable-shared
 make -j4
 sudo make install
 cd ..
-rm -rf FFmpeg-n3.1.3 n3.1.3.zip
+rm -rf FFmpeg-n3.2.2 n3.2.2.zip
 
 # OpenCV build info. Not needed for Jetson, might be
 # needed for x86 PCs to enable CUDA support 

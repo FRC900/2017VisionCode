@@ -80,6 +80,21 @@ sudo make install
 cd ../..
 rm -rf tinyxml2
 
+
+# Install Point Cloud Library
+cd
+sudo apt-get install libflann-dev
+wget --no-check-certificate https://github.com/PointCloudLibrary/pcl/archive/pcl-1.8.0.zip
+unzip pcl-1.8.0.zip
+cd pcl-pcl-1.8.0
+mkdir build
+cd build
+cmake ..
+make -j4
+sudo make install
+cd ../..
+rm -rf pcl-1.8.0.zip pcl-pcl-1.8.0
+
 #install zed sdk
 if [ "$version" = tk1 ] && [ "$jetson" = true ] ; then
 	ext="ZED_SDK_Linux_JTK1_v1.1.0.run"

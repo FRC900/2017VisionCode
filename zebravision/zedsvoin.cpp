@@ -64,7 +64,7 @@ CameraParams ZedSVOIn::getCameraParams(void) const
 }
 
 
-bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	if (!zed_)
 		return false;
@@ -77,6 +77,26 @@ bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
 
 	sl::zed::Mat slDepth = zed_->retrieveMeasure(MEASURE::DEPTH);
 	slMat2cvMat(slDepth).copyTo(depth);
+
+	const float *pCloud = (const float *)zed_->retrieveMeasure(MEASURE::XYZRGBA).data;
+	cloud.clear();
+	for (int i = 0; i < (depth.rows * depth.cols); i++)
+	{
+		if (isValidMeasure(pCloud[i * 4]))
+		{
+			pcl::PointXYZRGB pt;
+			pt.x = pCloud[i * 4 + 0];
+			pt.y = pCloud[i * 4 + 1];
+			pt.z = pCloud[i * 4 + 2];
+			float color = pCloud[i * 4 + 3];
+			// Color conversion (RGBA as float32 -> RGB as uint32)
+			uint32_t color_uint = *(uint32_t*) &color;
+			unsigned char* color_uchar = (unsigned char*) &color_uint;
+			color_uint = ((uint32_t) color_uchar[0] << 16 | (uint32_t) color_uchar[1] << 8 | (uint32_t) color_uchar[2]);
+			pt.rgb = *reinterpret_cast<float*> (&color_uint);
+			cloud.push_back(pt);
+		}
+	}
 
 	return true;
 }

@@ -2,7 +2,7 @@ CMake_minimum_required(VERSION 2.8)
 project(zv)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 set(CMAKE_BUILD_TYPE Release)
-add_definitions(-std=c++11 -Wall -Wextra -Wno-switch)
+add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 # Without -fno-finite-math-only, NaN checks are optimized away
 # This is bad since the Zed outputs NaN for invalid depth data
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto -fno-finite-math-only")
@@ -44,6 +44,8 @@ find_package(MKL QUIET)
 if (MKL_FOUND)
 	add_definitions(-DUSE_MKL=1)
 endif()
+find_package(PCL COMPONENTS common)
+add_definitions(${PCL_DEFINITIONS})
 
 include (GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
@@ -76,6 +78,7 @@ include_directories(
 	${Boost_INCLUDE_DIR}
 	${ZMQ_INCLUDE_DIRS}
    	${EIGEN3_INCLUDE_DIR}
+	${PCL_INCLUDE_DIRS}
 	.
 	../fovis
 	/home/ubuntu/2017VisionCode/libfovis/build/include/fovis
@@ -93,6 +96,7 @@ link_directories(${ZED_LIBRARY_DIR})
 link_directories(${CUDA_LIBRARY_DIRS})
 link_directories(/home/ubuntu/2017VisionCode/libfovis/build/lib/)
 link_directories(/usr/local/cuda/lib64/stubs)
+link_directories(${PCL_LIBRARY_DIRS})
 
 # Without this, nvcc grabs --std=c++11 which looks like
 # it breaks builds for some reason

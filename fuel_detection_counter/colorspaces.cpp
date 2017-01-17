@@ -80,6 +80,16 @@ class FuelDetector {
 		double eSize = expectedSize(dist);
 		return contourArea(c)/eSize;
 	}
+
+	float angleToCluster(vector<Point> c) {
+		float x =.0009602;
+		int sumOfX=0;
+		for(int i = 0; i < c.size(); i++) {
+			sumOfX+=c[i].x;
+		}
+		return (-x*640+x*sumOfX/c.size());
+	}
+
 };
 
 
@@ -125,16 +135,13 @@ int main(int, char**)
 	vector<vector<Point> > fuel;
 	Mat frame;
 	FuelDetector b = FuelDetector(.70);
+	b.changeMin(hLo,hUp,sLo,vLo);
 	while (true) {
 		camera.GrabFrame();
 		camera.RetrieveMat(frame);
 		//cap >> frame; // get a new frame from camera
 
 		// get current positions of four trackbars
-		hLo = getTrackbarPos("HLo","frame");
-		sLo = getTrackbarPos("SLo","frame");
-		vLo = getTrackbarPos("VLo","frame");
-		hUp = getTrackbarPos("HUp","frame");
 		/*
 		sUp = getTrackbarPos("SUp","frame");
 		vUp = getTrackbarPos("VUp","frame");
@@ -144,7 +151,6 @@ int main(int, char**)
 		Scalar	min(hLo, sLo, vLo);
 	    Scalar	max(hUp, sUp, vUp);
 */
-		b.changeMin(hLo,hUp,sLo,vLo);
 		fuel = b.getFuel(frame);
 		total=0;
 		drawContours(frame,fuel,-1,Scalar(255,0,0),2);
