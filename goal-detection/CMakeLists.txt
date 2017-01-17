@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_BUILD_TYPE Release)
 project( goal_detect )
-set(CMAKE_CXX_FLAGS "-std=c++11 -DZED_SUPPORT -Wall")
+add_definitions(-std=c++11 -DZED_SUPPORT -Wall -ftrack-macro-expansion=0)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../zebravision/cmake")
 find_package(OpenCV REQUIRED )
 find_package(ZED REQUIRED)

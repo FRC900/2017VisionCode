@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 project(ZedCap)
 set(CMAKE_BUILD_TYPE Relase)
-set(CMAKE_CXX_FLAGS "-std=c++11")
+add_definitions(-std=c++11 -Wall -Wextra -ftrack-macro-expansion=0)
 find_package(OpenCV REQUIRED)
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(ZED REQUIRED)
@@ -16,7 +16,7 @@ find_library (LibTinyXML2 tinyxml2)
 
 include_directories( ${OpenCV_INCLUDE_DIRS} ${ZED_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ../zebravision ../navXTimeSync  ..)
 link_directories(/usr/local/cuda/lib64/stubs)
-set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g -Wall -Ofast")
+set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast")
  
 add_definitions(-DZED_SUPPORT)
 set (NAVX_SRCS

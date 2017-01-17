@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_CXX_FLAGS "-std=c++11")
 project( C920NonL )
 set(CMAKE_BUILD_TYPE Release)
 
+add_definitions(--std=c++11 -ftrack-macro-expansion=0)
 find_package(OpenCV REQUIRED )
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(PCL 1.3 REQUIRED COMPONENTS common)
