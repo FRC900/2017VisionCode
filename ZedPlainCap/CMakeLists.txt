@@ -8,6 +8,10 @@ find_package(Boost COMPONENTS filesystem system serialization iostreams thread R
 find_package(ZED REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(PCL 1.3 REQUIRED COMPONENTS common)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 find_library (LibTinyXML2 tinyxml2)
 
 include_directories( ${OpenCV_INCLUDE_DIRS} ${ZED_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ../zebravision ../navXTimeSync  ..)
