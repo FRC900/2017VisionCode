@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <stdio.h>
-#include "camerain.cpp"
+#include "c920camerain.hpp"
 #include "ZvSettings.hpp"
 
 using namespace std;
@@ -23,7 +23,7 @@ using namespace cv;
 int main(int argc, char *argv[])
 {
 	ZvSettings zvSettings("settings.xml");
-    CameraIn vidIn(0, &zvSettings);
+    C920CameraIn vidIn(1, true, &zvSettings);
     char name[PATH_MAX];
     int  index = 0;
     int  rc;
