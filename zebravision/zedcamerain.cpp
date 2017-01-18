@@ -286,7 +286,7 @@ bool ZedCameraIn::preLockUpdate(void)
 }
 
 
-bool ZedCameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool ZedCameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth,pcl::PointCloud<pcl::PointXYZRGB> &cloud )
 {
 	(void)frame;
 	(void)depth;

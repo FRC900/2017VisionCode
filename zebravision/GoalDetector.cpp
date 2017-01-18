@@ -24,7 +24,7 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 		createTrackbar("Blue Scale","Goal Detect Adjustments", &_blue_scale, 100);
 		createTrackbar("Red Scale","Goal Detect Adjustments", &_red_scale, 100);
 		createTrackbar("Otsu Threshold","Goal Detect Adjustments", &_otsu_threshold, 255);
-		createTrackbar("Camera Angle","Goal Detect Adjustments", &_camera_angle, 255);
+		createTrackbar("Camera Angle","Goal Detect Adjustments", &_camera_angle, 600);
 	}
 }
 
@@ -45,15 +45,14 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//ObjectType(4) == top piece of tape
 	//ObjectType(5) == bottom piece of tape
 	clear();
-	getContours(4,image,depth);
-
+	vector<vector<Point>> goal_contours = getContours(image);
+	vector<float> top_goal_depths = getDepths(depth,goal_contours,4, 1.0);
+	vector<float> bottom_goal_depths = getDepths(depth,goal_contours,5, 0.9);
 	//compute confidences for both the top piece of tape and the bottom piece of tape
-	computeConfidences(4);
-	vector<GoalInfo> top_info = _infos;
+	vector<GoalInfo> top_info = getInfo(goal_contours,top_goal_depths,4);
 	if(top_info.size() == 0)
 		return;
-	computeConfidences(5);
-	vector<GoalInfo> bottom_info = _infos;
+	vector<GoalInfo> bottom_info = getInfo(goal_contours,bottom_goal_depths,5);
 	if(bottom_info.size() == 0)
 		return;
 	cout << top_info.size() << " top goals found and " << bottom_info.size() << " bottom" << endl;	
@@ -61,12 +60,19 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	int best_result_index_top = 0;
 	int best_result_index_bottom = 0;
 	bool found_goal = false;
+	bool initialized = false;
 	//loop through every combination of top and bottom goal and check for the following conditions:
 	//top is above bottom
 	//confidences are higher than any previous one
 	for(size_t i = 0; i < top_info.size(); i++) {
 		for(size_t j = 0; j < bottom_info.size(); j++) {
 			if(top_info[i].pos.z > 0.01 + bottom_info[j].pos.z) //won't pick the same goal for top and bottom because the z values would be the same
+			if(!initialized) {
+				best_result_index_top = i;
+				best_result_index_bottom = j;
+				initialized = true;
+				continue;
+				}
 			if(top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence <= top_info[i].confidence + bottom_info[j].confidence) {
 				found_goal = true;
 				best_result_index_top = i;
@@ -100,23 +106,19 @@ void GoalDetector::clear()
 	_angle_to_goal = -1.0;
 	_goal_rect = Rect();
 	_goal_pos  = Point3f();
-	_confidence.clear();
-	_contours.clear();
-	_infos.clear();
-	_depth_maxs.clear();
-	_depth_mins.clear();
 
 
 }
 
-void GoalDetector::getContours(int objtype, const Mat& image, const Mat& depth) {
+vector< vector < Point > > GoalDetector::getContours(const Mat& image) {
 	// Look for parts the the image which are within the
 	// expected bright green color range
 	Mat threshold_image;
+	vector < vector < Point > > return_contours;
 	if (!generateThresholdAddSubtract(image, threshold_image))
 	{
 		_pastRects.push_back(SmartRect(Rect()));
-		return;
+		return return_contours;
 	}
 
 	// find contours in the thresholded image - these will be blobs
@@ -125,21 +127,22 @@ void GoalDetector::getContours(int objtype, const Mat& image, const Mat& depth) 
 	// Note : findContours modifies the input mat
 	Mat threshold_copy = threshold_image.clone();
 	vector<Vec4i>          hierarchy;
-	findContours(threshold_copy, _contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+	findContours(threshold_copy, return_contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-	
-	vector<GoalInfo> best_goals_updated;
+	return return_contours;
+}
+
+vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point > > contours, int objtype, float expected_height) {
 	// Use to mask the contour off from the rest of the
 	// image - used when grabbing depth data for the contour
-	Mat contour_mask(image.rows, image.cols, CV_8UC1, Scalar(0));
-	for(size_t i = 0; i < _contours.size(); i++) {
+	Mat contour_mask(_frame_size.width, _frame_size.height, CV_8UC1, Scalar(0));
+	vector< float > return_vec;
+	for(size_t i = 0; i < contours.size(); i++) {
 		// get the minimum and maximum depth values in the contour,
-		// ObjectType computes a ton of useful properties so create
-		// one for what we're looking at
-		Rect br(boundingRect(_contours[i]));
+		Rect br(boundingRect(contours[i]));
 		//create a mask which is the same shape as the contour
 		contour_mask.setTo(Scalar(0));
-		drawContours(contour_mask, _contours, i, Scalar(255), CV_FILLED);
+		drawContours(contour_mask, contours, i, Scalar(255), CV_FILLED);
 		// copy them into individual floats
 		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
 		float depth_z_min = minMax.first;
@@ -149,15 +152,16 @@ void GoalDetector::getContours(int objtype, const Mat& image, const Mat& depth) 
 		// the target. This isn't perfect but better than nothing
 		if ((depth_z_min <= 0.) || (depth_z_max <= 0.)) {
 			ObjectType ot(objtype);
-			depth_z_min = depth_z_max = distanceUsingFOV(ot,br);
+			depth_z_min = depth_z_max = distanceUsingFixedHeight(br,expected_height);
 		}
-		_depth_mins.push_back(depth_z_min);
-		_depth_maxs.push_back(depth_z_max);
+		return_vec.push_back(depth_z_max);
 	}
+	return return_vec;
 }
 
-void GoalDetector::computeConfidences(int objtype) {
+vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<float> _depth_maxs, int objtype) {
 	ObjectType _goal_shape(objtype);
+	vector<GoalInfo> return_info;
 	// Create some target stats based on our idealized goal model
 	//center of mass as a percentage of the object size from top left
 	const Point2f com_percent_expected(_goal_shape.com().x / _goal_shape.width(),
@@ -202,10 +206,10 @@ void GoalDetector::computeConfidences(int objtype) {
 		
 		// TODO : Figure out how well this works in practice
 		// Filter out goals which are too close or too far
-		if ((_depth_maxs[i] < 1.) || (_depth_mins[i] > 6.2))
+		if ( 6.2 <_depth_maxs[i] || _depth_maxs[i] < .1)
 		{
 #ifdef VERBOSE
-			cout << "Contour " << i << " depth out of range "<< _depth_mins[i] << " / " << _depth_maxs[i] << endl;
+			cout << "Contour " << i << " depth out of range " << _depth_maxs[i] << endl;
 #endif
 			_confidence.push_back(0);
 			continue;
@@ -228,7 +232,7 @@ void GoalDetector::computeConfidences(int objtype) {
 		if (((exp_area / br.area()) < 0.20) || ((exp_area / br.area()) > 5.00))
 		{
 #ifdef VERBOSE
-			cout << "Contour " << i << " area out of range for depth (depth_min/depth_max/act/exp/ratio):" << _depth_mins[i] << "/" << _depth_maxs[i] << "/" << br.area() << "/" << exp_area << "/" << actualScreenArea << endl;
+			cout << "Contour " << i << " area out of range for depth (depth/act/exp/ratio):" << _depth_maxs[i] << "/" << br.area() << "/" << exp_area << "/" << actualScreenArea << endl;
 #endif
 			_confidence.push_back(0);
 			continue;
@@ -283,7 +287,7 @@ void GoalDetector::computeConfidences(int objtype) {
 		cout << "confidence_screen_area: " << confidence_screen_area << endl;
 		cout << "confidence: " << confidence << endl;
 		cout << "Height exp/act: " << _goal_height << "/" <<  goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0 << endl;
-		cout << "Depth min/max: " << _depth_mins[i] << "/" << _depth_maxs[i] << endl;
+		cout << "Depth max: " << _depth_maxs[i] << endl;
 		cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
 		cout << "Aspect ratio exp/act : " << expectedRatio << "/" << actualRatio << endl;
 		cout << "br.br().y: " << br.br().y << endl;
@@ -300,8 +304,9 @@ void GoalDetector::computeConfidences(int objtype) {
 		goal_info.angle 	 = atan2f(goal_info.pos.x, goal_info.pos.y) * 180. / M_PI;
 		goal_info.rect   	 = br;
 
-		_infos.push_back(goal_info);
-}
+		return_info.push_back(goal_info);
+	}
+	return return_info;
 }
 
 
@@ -361,6 +366,16 @@ float GoalDetector::distanceUsingFOV(ObjectType _goal_shape, const Rect &rect) c
 	return _goal_shape.height() / (2.0 * tanf(size_fov / 2.0));
 }
 
+float GoalDetector::distanceUsingFixedHeight(const Rect &rect, float expected_delta_height) const {
+	Point center(rect.tl().x+rect.size().width/2, rect.tl().y+rect.size().height/2);
+	cout << "Center: " << center << endl;
+	float percent_image = ((float)_frame_size.height/2 - (float)center.y) / (float)_frame_size.height;
+	cout << "Percent Image: " << percent_image << endl;
+	float size_fov = (percent_image * _fov_size.y) - (((float)_camera_angle/10.0) * (M_PI/180.0));
+	cout << "Size FOV: " << size_fov << endl;
+	return expected_delta_height / (tanf(size_fov));
+}
+
 float GoalDetector::dist_to_goal(void) const
 {
  	//floor distance to goal in m
@@ -417,17 +432,17 @@ Point3f GoalDetector::goal_pos(void) const
 // Draw debugging info on frame - all non-filtered contours
 // plus their confidence. Highlight the best bounding rect in
 // a different color
-void GoalDetector::drawOnFrame(Mat &image) const
+void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) const
 {
 	for (size_t i = 0; i < _contours.size(); i++)
 	{
 		drawContours(image, _contours, i, Scalar(0,0,255), 3);
 		Rect br(boundingRect(_contours[i]));
 		rectangle(image, br, Scalar(255,0,0), 2);
-		stringstream confStr;
-		confStr << fixed << setprecision(2) << _confidence[i];
-		putText(image, confStr.str(), br.tl(), FONT_HERSHEY_PLAIN, 1, Scalar(255,0,0));
-		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
+//		stringstream confStr;
+//		confStr << fixed << setprecision(2) << _confidence[i];
+//		putText(image, confStr.str(), br.tl(), FONT_HERSHEY_PLAIN, 1, Scalar(255,0,0));
+//		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
 	}
 
 	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect())))

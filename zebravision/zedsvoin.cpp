@@ -135,7 +135,7 @@ ZedSVOIn::~ZedSVOIn()
 }
 
 
-bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth)
+bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
 	(void)frame;
 	(void)depth;

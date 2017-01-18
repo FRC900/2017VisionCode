@@ -41,7 +41,7 @@ class GoalDetector
 		float angle_to_goal(void) const;
 		cv::Rect goal_rect(void) const;
 		cv::Point3f goal_pos(void) const;
-		void drawOnFrame(cv::Mat &image) const;
+		void drawOnFrame(cv::Mat &image,std::vector< std::vector< cv::Point>> _contours) const;
 
 		//These are the three functions to call to run GoalDetector
 		//they fill in _contours, _infos, _confidence, _depth_mins, etc
@@ -49,8 +49,9 @@ class GoalDetector
 		//If your objectypes have the same width it's safe to run
 		//getContours and computeConfidences with different types
 		void findBoilers(const cv::Mat& image, const cv::Mat& depth);
-		void getContours(int objtype, const cv::Mat& image, const cv::Mat& depth);
-		void computeConfidences(int objtype);		
+		std::vector< std::vector< cv::Point > > getContours(const cv::Mat& image);
+		std::vector< float > getDepths(const cv::Mat &depth, std::vector< std::vector< cv::Point > > contours, int objtype, float expected_height);
+		std::vector< GoalInfo > getInfo(std::vector< std::vector< cv::Point > > _contours, std::vector< float > _depth_maxs, int objtype);		
 	private:
 	
 		cv::Point2f _fov_size;
@@ -68,11 +69,7 @@ class GoalDetector
 		cv::Point3f _goal_pos;
 
 		// Save all contours found in case we want to display
-		std::vector<std::vector<cv::Point> > _contours;
 		std::vector<float> _confidence;
-		std::vector<GoalInfo> _infos;
-		std::vector< float > _depth_maxs;
-		std::vector< float > _depth_mins;
 
 		float _min_valid_confidence;
 
@@ -84,6 +81,7 @@ int _camera_angle;
 
 		float createConfidence(float expectedVal, float expectedStddev, float actualVal);
 		float distanceUsingFOV(ObjectType _goal_shape, const cv::Rect &rect) const;
+		float distanceUsingFixedHeight(const cv::Rect &rect, float expected_delta_height) const;
 		bool generateThresholdAddSubtract(const cv::Mat& imageIn, cv::Mat& imageOut);
 		void isValid();
 };

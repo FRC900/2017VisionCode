@@ -585,7 +585,7 @@ int main( int argc, const char** argv )
 
 			//draw the goal along with debugging info if that's enabled
 			if (gdDraw) {
-				gd.drawOnFrame(frame);
+				gd.drawOnFrame(frame,gd.getContours(frame));
 			}
 			if (args.rects)
 				rectangle(frame, gd.goal_rect(), Scalar(0, 255, 0));
