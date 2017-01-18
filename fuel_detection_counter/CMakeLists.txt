@@ -9,5 +9,5 @@ project( framegrabber )
 include_directories(../zebravision)
 find_package( OpenCV REQUIRED )
 
-add_executable( Colorspaces colorspaces.cpp ../zebravision/C920Camera.cpp)
-target_link_libraries( Colorspaces ${OpenCV_LIBS} )
+add_executable( FuelDetect fuelDetect.cpp ../zebravision/C920Camera.cpp)
+target_link_libraries( FuelDetect ${OpenCV_LIBS} )
