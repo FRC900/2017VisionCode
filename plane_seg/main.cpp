@@ -8,14 +8,17 @@
 #include <pcl/filters/extract_indices.h>
 
 #include "zedsvoin.hpp"
+#include "zedcamerain.hpp"
+#include "ZvSettings.hpp"
 
 using namespace cv;
 using namespace std;
 
-
 int main(void)
 {
-	MediaIn *cap = new ZedSVOIn("/home/kjaget/Downloads/wall.svo");
+	//MediaIn *cap = new ZedSVOIn("/home/kjaget/Downloads/wall.svo");
+	ZvSettings zvSettings("settings.xml");
+	MediaIn *cap = new ZedCameraIn(true, &zvSettings);
 
 	Mat frame;
 	Mat depth;

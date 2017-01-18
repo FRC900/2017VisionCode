@@ -25,5 +25,7 @@ set (NAVX_SRCS
 	../navXTimeSync/SerialPort.cpp )
 
 
-add_executable( plane_segment main.cpp ../zebravision/mediain.cpp ../zebravision/syncin.cpp ../zebravision/asyncin.cpp ../zebravision/zedcamerain.cpp ../zebravision/zedsvoin.cpp ../zebravision/zmsin.cpp ../zebravision/cameraparams.cpp ../zebravision/zedparams.cpp  ../zebravision/portable_binary_iarchive.cpp ../zebravision/portable_binary_oarchive.cpp ../zebravision/ZvSettings.cpp ${NAVX_SRCS})
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+
+add_executable( plane_segment main.cpp ../zebravision/mediain.cpp ../zebravision/syncin.cpp ../zebravision/asyncin.cpp ../zebravision/zedcamerain.cpp ../zebravision/zedsvoin.cpp ../zebravision/zedcamerain.cpp ../zebravision/ZvSettings.cpp ../zebravision/zmsin.cpp ../zebravision/cameraparams.cpp ../zebravision/zedparams.cpp  ../zebravision/portable_binary_iarchive.cpp ../zebravision/portable_binary_oarchive.cpp ../zebravision/ZvSettings.cpp ${NAVX_SRCS})
 target_link_libraries( plane_segment ${OpenCV_LIBS} ${ZED_LIBRARIES} ${Boost_LIBRARIES} ${LibTinyXML2} ${PCL_LIBRARIES})
