@@ -29,7 +29,10 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	exposure_(1) // Should set exposure = -1 => auto exposure/auto-gain
 {
 	if (!Camera::isZEDconnected()) // Open an actual camera for input
+	{
+		cerr << "ZED camera not found" << endl;
 		return;
+	}
 
 	// Ball detection runs at ~10 FPS on Jetson
 	// so run camera capture more slowly
