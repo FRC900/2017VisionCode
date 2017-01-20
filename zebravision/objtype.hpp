@@ -32,6 +32,7 @@ class ObjectType
 		float area (void) const { return area_; }
 		float boundingArea (void) const { return width_ * height_; }
 		std::string name (void) const { return name_; }
+		float real_height (void) const { return real_height_; }
 
 		//comparison operator overload just checks if the contours are equal
 		bool operator== (const ObjectType &t1) const;
@@ -52,6 +53,7 @@ class ObjectType
 		float height_;
 		float depth_;
 		float area_;
+		float real_height_ = 0;
 		std::string name_;
 		cv::Point2f com_; //center of mass
 

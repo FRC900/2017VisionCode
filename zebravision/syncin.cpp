@@ -49,7 +49,7 @@ void SyncIn::update(void)
 		{
 			setTimeStamp();
 			incFrameNumber();
-			while (frame_.rows > 700)
+			while (frame_.rows > 800)
 			{
 				pyrDown(frame_, frame_);
 				if (!depth_.empty())

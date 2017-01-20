@@ -17,7 +17,7 @@ VideoIn::VideoIn(const char *inpath, ZvSettings *settings) :
 
 		// getNextFrame scales down large inputs
 		// make width and height match adjusted frame size
-		while (height_ > 700)
+		while (height_ > 800)
 		{
 			width_ /= 2;
 			height_ /= 2;

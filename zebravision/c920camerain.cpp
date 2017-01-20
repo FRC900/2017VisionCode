@@ -150,7 +150,7 @@ bool C920CameraIn::initCamera(bool gui)
 
 	// getNextFrame sizes down large images
 	// adjust width and height to match that
-	while (height_ > 700)
+	while (height_ > 800)
 	{
 		width_ /= 2;
 		height_ /= 2;

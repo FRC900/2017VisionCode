@@ -46,8 +46,8 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//ObjectType(5) == bottom piece of tape
 	clear();
 	vector<vector<Point>> goal_contours = getContours(image);
-	vector<float> top_goal_depths = getDepths(depth,goal_contours,4, 1.0);
-	vector<float> bottom_goal_depths = getDepths(depth,goal_contours,5, 0.9);
+	vector<float> top_goal_depths = getDepths(depth,goal_contours,4, ObjectType(4).real_height());
+	vector<float> bottom_goal_depths = getDepths(depth,goal_contours,5, ObjectType(5).real_height());
 	//compute confidences for both the top piece of tape and the bottom piece of tape
 	vector<GoalInfo> top_info = getInfo(goal_contours,top_goal_depths,4);
 	if(top_info.size() == 0)
@@ -183,7 +183,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 350.0) || (br.area() > 8500))
+		if ((br.area() <= 100.0) || (br.area() > 8500))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
@@ -228,7 +228,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		// close to 1.0 with some variance due to perspective
 		float exp_area = goal_tracked_obj.getScreenPosition(_fov_size, _frame_size).area();
 		float actualScreenArea = (float)br.area() / exp_area;
-
+/*
 		if (((exp_area / br.area()) < 0.20) || ((exp_area / br.area()) > 5.00))
 		{
 #ifdef VERBOSE
@@ -236,7 +236,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 #endif
 			_confidence.push_back(0);
 			continue;
-		}
+		}*/
 		//percentage of the object filled in
 		float filledPercentageActual = goal_actual.area() / goal_actual.boundingArea();
 
@@ -265,7 +265,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		//taking the standard deviation of a bunch of values from the goal
 		//confidence is near 0.5 when value is near the mean
 		//confidence is small or large when value is not near mean
-		float confidence_height      = createConfidence(_goal_height, 0.4, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
+		float confidence_height      = createConfidence(_goal_shape.real_height(), 0.4, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
 		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125,  com_percent_actual.x);
 		float confidence_com_y       = createConfidence(com_percent_expected.y, 0.1539207,  com_percent_actual.y);
 		float confidence_filled_area = createConfidence(filledPercentageExpected, 0.33,   filledPercentageActual);
@@ -286,7 +286,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		cout << "confidence_ratio: " << confidence_ratio << endl;
 		cout << "confidence_screen_area: " << confidence_screen_area << endl;
 		cout << "confidence: " << confidence << endl;
-		cout << "Height exp/act: " << _goal_height << "/" <<  goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0 << endl;
+		cout << "Height exp/act: " << _goal_shape.real_height() << "/" <<  goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0 << endl;
 		cout << "Depth max: " << _depth_maxs[i] << endl;
 		cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
 		cout << "Aspect ratio exp/act : " << expectedRatio << "/" << actualRatio << endl;
@@ -368,12 +368,37 @@ float GoalDetector::distanceUsingFOV(ObjectType _goal_shape, const Rect &rect) c
 
 float GoalDetector::distanceUsingFixedHeight(const Rect &rect, float expected_delta_height) const {
 	Point center(rect.tl().x+rect.size().width/2, rect.tl().y+rect.size().height/2);
+	/*
 	cout << "Center: " << center << endl;
-	float percent_image = ((float)_frame_size.height/2 - (float)center.y) / (float)_frame_size.height;
+	float percent_image = ((float)center.y - (float)_frame_size.height/2.0)  / (float)_frame_size.height;
 	cout << "Percent Image: " << percent_image << endl;
-	float size_fov = (percent_image * _fov_size.y) - (((float)_camera_angle/10.0) * (M_PI/180.0));
+	cout << "FOV Size: " << _fov_size << endl;
+	float size_fov = (percent_image * 1.3714590199999497) + (((float)_camera_angle/10.0) * (M_PI/180.0));
 	cout << "Size FOV: " << size_fov << endl;
-	return expected_delta_height / (tanf(size_fov));
+	cout << "Depth: " << expected_delta_height / (2.0 * tanf(size_fov/2.0)) << endl;
+	return expected_delta_height / (2.0 * tanf(size_fov / 2.0));*/
+
+	/*float focal_length_px = 0.5 * _frame_size.height / tanf(_fov_size.y / 2.0);
+	cout << "Focal Length: " << focal_length_px << endl;
+	float distance_centerline = (expected_delta_height * focal_length_px) / ((float)center.y - (float)_frame_size.height/2);
+	cout << "Distance to centerline: " << distance_centerline << endl;
+	float distance_ground = cos((_camera_angle/10.0) * (M_PI/180.0)) * distance_centerline;
+	cout << "Distance to ground: " << distance_ground << endl;
+	return distance_ground; */
+
+	//float focal_length_px = 0.5 * _frame_size.height / tanf(0.777 / 2.0);
+	float focal_length_px = 973.94;
+	cout << "Focal Length Pixels: " << focal_length_px << endl;
+	cout << "Image size: " << _frame_size << endl;
+	float to_center = (402.2 - (float)center.y);
+	cout << "Distance to center of image (px): " << to_center << endl;
+	cout << "Camera angle: " << (_camera_angle/10.0) * (M_PI/180.0) << endl;
+	cout << "Expected Height: " << expected_delta_height << endl; 
+	float distance_diagonal = (focal_length_px * expected_delta_height) / (focal_length_px * sin((_camera_angle/10.0) * (M_PI/180.0)) + to_center);
+	cout << "Distance Diagonal: " << distance_diagonal << endl;
+	float distance_ground = distance_diagonal * cosf((_camera_angle/10.0) * (M_PI/180.0));
+	cout << "Distance Ground: " << distance_ground << endl;
+	return distance_diagonal;
 }
 
 float GoalDetector::dist_to_goal(void) const
