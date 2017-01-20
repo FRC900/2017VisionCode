@@ -27,7 +27,7 @@ class FuelDetector {
 		max = Scalar(0,255,255);
 		minArea=100;
 		h=he;
-		kernel = Mat(5,5, CV_8U);
+		kernel = Mat(7,7, CV_8U);
 	}
 
 	void changeMin(int hLo,int hUp,int sLo,int vLo) {
@@ -52,8 +52,8 @@ class FuelDetector {
 		if (contours.size()>0) {	//check is there are any contours
 			for (int x = 0; x < contours.size(); x++) {
 				Rect rec = boundingRect(contours[x]); //to implement screentoWorld want to pass this rectangle
-				if (contourArea(contours[x]) > minArea && rec.width*rec.height < (frame.rows-40)*(frame.cols-40) ) {	//check to see the size of the contours
-					out.push_back(contours[x]);	//add contours to output list
+				if (contourArea(contours[x]) > minArea && rec.width*rec.height < (frame.rows-60)*(frame.cols-60) ) {	//check to see the size of the contours
+					out.push_back(contours[x]);	//add contours to output list Also Jude is the best.
 				}
 			}
 		}
