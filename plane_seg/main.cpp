@@ -23,6 +23,26 @@ int main(void)
 	Mat frame;
 	Mat depth;
 	pcl::PointCloud<pcl::PointXYZRGB> cloud;
+	Mat mask;
+
+	namedWindow("parameters", 1);
+	Scalar min;
+	Scalar max;
+
+	int hLo = 29;
+	int sLo = 57;
+	int vLo = 120;
+	int hUp = 38;
+	int sUp = 187;
+	int vUp = 255;
+
+	createTrackbar("HLo", "parameters", &hLo, 179);
+	createTrackbar("SLo", "parameters", &sLo, 255);
+	createTrackbar("VLo", "parameters", &vLo, 255);
+	createTrackbar("HUp", "parameters", &hUp, 179);
+	createTrackbar("SUp", "parameters", &sUp, 255);
+	createTrackbar("VUp", "parameters", &vUp, 255);
+
 
 	pcl::ModelCoefficients coefficients;
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
@@ -33,7 +53,7 @@ int main(void)
 	// Mandatory
 	seg.setModelType (pcl::SACMODEL_PLANE);
 	seg.setMethodType (pcl::SAC_RANSAC);
-	seg.setDistanceThreshold (100);
+	seg.setDistanceThreshold (150);
 
 	pcl::ExtractIndices<pcl::PointXYZRGB> extract;
 	while (cap->getFrame(frame, depth, cloud))
@@ -41,6 +61,9 @@ int main(void)
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudP(new pcl::PointCloud<pcl::PointXYZRGB>(cloud));
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out(new pcl::PointCloud<pcl::PointXYZRGB>);
 		const size_t origSize = cloudP->points.size();
+
+
+
 		while (cloudP->points.size() > (0.1 * origSize))
 		{
 			seg.setInputCloud (cloudP);
@@ -57,6 +80,23 @@ int main(void)
 				<< coefficients.values[3] << endl;
 
 			cerr << "Model inliers: " << inliers->indices.size () << endl;
+			
+			Mat rgb(0, 1, CV_8UC3);
+
+			for (size_t i = 0; i < inliers->indices.size (); ++i) {
+				rgb.push_back(Vec3b(cloud.points[inliers->indices[i]].b, cloud.points[inliers->indices[i]].g, cloud.points[inliers->indices[i]].r));
+			}
+			Mat hsv;
+			
+			cv::cvtColor(rgb, hsv, cv::COLOR_BGR2HSV);
+			cv::inRange(hsv, min, max, mask);
+			
+			int nonZero = countNonZero(mask);
+			cerr << "HSV Mat Size " << nonZero << endl;
+
+			min = Scalar(hLo, sLo, vLo);
+			max = Scalar(hUp, sUp, vUp);
+			cerr << hLo << endl;
 
 			// Filter out inliner points 
 			// to get a set of points not in the
@@ -76,8 +116,13 @@ int main(void)
 					<< cloud.points[inliers.indices[i]].z << endl;
 #endif
 		}
+		Mat reg;
+		Mat mask2;
+		cv::cvtColor(frame, reg, cv::COLOR_BGR2HSV);
+		cv::inRange(reg, min, max, mask2);
 		imshow("Window", frame);
-		if ((uchar)waitKey(0) == 27)
+		imshow("mask2", mask2);
+		if ((uchar)waitKey(5) == 27)
 			break;
 	}
 	return 0;

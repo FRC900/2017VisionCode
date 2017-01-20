@@ -160,6 +160,7 @@ bool AsyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB>
 
 	pausedFrame_.copyTo(frame);
 	pausedDepth_.copyTo(depth);
+	cloud.clear();
 	cloud = cloud_;
 	return true;
 }
