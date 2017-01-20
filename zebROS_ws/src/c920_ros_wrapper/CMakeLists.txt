@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(goal_detection)
-set(CMAKE_BUILD_TYPE Release)
-
-set(CMAKE_CXX_FLAGS "-std=c++11 -DZED_SUPPORT -Wall")
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../bindetection/cmake")
+project(c920_ros_wrapper)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -46,17 +41,6 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-find_package(OpenCV REQUIRED)
-find_package(ZED REQUIRED)
-find_package(CUDA REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
-# find_package(ZMQ REQUIRED)
-find_library (LibTinyXML2 tinyxml2)
-include_directories( ${OpenCV_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIRS} ${ZED_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIR} ../../../zebravision ../../..)
-link_directories(${ZED_LIBRARY_DIR})
-link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 
 ## Generate messages in the 'msg' folder
 # add_message_files(
@@ -116,7 +100,7 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES goal_detection
+#  LIBRARIES c920_ros_wrapper
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
 )
@@ -133,29 +117,26 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(goal_detection
-#   src/${PROJECT_NAME}/goal_detection.cpp
+# add_library(c920_ros_wrapper
+#   src/${PROJECT_NAME}/c920_ros_wrapper.cpp
 # )
-
-
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(goal_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(c920_ros_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable( goal_detection_node src/goal_detect.cpp ../../../zebravision/GoalDetector.cpp ../../../zebravision/mediain.cpp ../../../zebravision/syncin.cpp ../../../zebravision/asyncin.cpp ../../../zebravision/zedcamerain.cpp ../../../zebravision/zedsvoin.cpp ../../../zebravision/zmsin.cpp ../../../zebravision/cameraparams.cpp ../../../zebravision/zedparams.cpp ../../../zebravision/Utilities.cpp ../../../zebravision/objtype.cpp ../../../zebravision/track3d.cpp ../../../zebravision/kalman.cpp ../../../zebravision/hungarian.cpp ../../../zebravision/portable_binary_iarchive.cpp ../../../zebravision/portable_binary_oarchive.cpp ../../../zebravision/ZvSettings.cpp)
+# add_executable(c920_ros_wrapper_node src/c920_ros_wrapper_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(goal_detection_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(c920_ros_wrapper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(goal_detection_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries( goal_detection_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_nppi_LIBRARY} ${CUDA_npps_LIBRARY} ${Boost_LIBRARIES} ${ZMQ_LIBRARIES} ${LibTinyXML2})
+# target_link_libraries(c920_ros_wrapper_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -172,7 +153,7 @@ target_link_libraries( goal_detection_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUD
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS goal_detection goal_detection_node
+# install(TARGETS c920_ros_wrapper c920_ros_wrapper_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -197,7 +178,7 @@ target_link_libraries( goal_detection_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUD
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_goal_detection.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_c920_ros_wrapper.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
