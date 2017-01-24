@@ -93,6 +93,27 @@ class FuelDetector {
 		double eSize = expectedSize(location);
 		return contourArea(c)/eSize;
 	}
+	/* Found this online to possibly correct the fisheye distortion
+	 * R_u = f*tan(theta) //projection by a pin whole camera, theta is the angle in rad between a point in the real world and the optical axis which goes from the center of the image through the center of the lens
+	 * R_d = 2*f*sin(theta/2) //projection by common fisheye lens cameras (that is, distorted)
+	 * R_u = f*tan(2*asin(R_d/(2*f))) //already know R_d and theta and if you knew the camera's focal length (represented by f) then correcting the image would amount to computing R_u in terms of R_d and theta.
+	 * http://stackoverflow.com/questions/2477774/correcting-fisheye-distortion-programmatically
+	 * http://wiki.panotools.org/Fisheye_Projection	
+	Point correct_fisheye(const Point& p,const Size& img) 
+	{
+		// to polar
+		const Point centre = {img.width/2,img.height/2};
+		const Point rel = {p.x-centre.x,p.y-centre.y};
+		const double theta = atan2(rel.y,rel.x);
+		double R = sqrt((rel.x*rel.x)+(rel.y*rel.y));
+		// fisheye undistortion in here please
+		//... change R ...
+		// back to rectangular
+		const Point ret = Point(centre.x+R*cos(theta),centre.y+R*sin(theta));
+		fprintf(stderr,"(%d,%d) in (%d,%d) = %f,%f = (%d,%d)\n",p.x,p.y,img.width,img.height,theta,R,ret.x,ret.y);
+		return ret;
+	}
+	*/
 
 };
 
@@ -121,26 +142,35 @@ int main(int, char**)
 	int vLo = 80;
 	int hUp = 38;
 
+	Mat distCoeffs = Mat_<double> (5,1) << ( 1.7278156840527176e-01, -5.5081789263980618e-01, 7.3542979608589376e-03, 8.9178305138385983e-03, 6.5427562481680634e-01 );
+	Mat cameraMatrix = Mat_<double>(3,3) << ( 9.5963091759762221e+02, 0., 6.7262624894813689e+02, 0., 9.7394188192143622e+02, 4.0219821536082321e+02, 0., 0., 1. );
+
 	createTrackbar("HLo","frame",&hLo,179);
 	createTrackbar("SLo","frame",&sLo,255);
 	createTrackbar("VLo","frame",&vLo,255);
 	createTrackbar("HUp","frame",&hUp,179);
 	//double total;
 	vector<vector<Point> > fuel;
+	Mat oframe;
 	Mat frame;
 	FuelDetector b = FuelDetector(.70);
 	b.changeMin(hLo,hUp,sLo,vLo);
 	while (true) {
 		camera.GrabFrame();
-		camera.RetrieveMat(frame);
+		camera.RetrieveMat(oframe);
+		imshow("test1", oframe);
+		undistort(oframe,frame, cameraMatrix, distCoeffs);
+		imshow("test2", frame);
+		/*
 		fuel = b.getFuel(frame);
 		drawContours(frame,fuel,-1,Scalar(255,0,0),2);
 		for (int i = 0; i < fuel.size(); i++)
 		{
 			cout << "Location: " << b.angleToDist(fuel[i]) << endl;
-			//cout << "Fuel Count: " << b.fuelCount(fuel[i]) <<endl;
+			cout << "Fuel Count: " << b.fuelCount(fuel[i]) <<endl;
 		}
 		imshow("frame", frame);
+		*/
         if(waitKey(30) >= 0) break;
     }
     // the camera will be deinitialized automatically in VideoCapture destructor
