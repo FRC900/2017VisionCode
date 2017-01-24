@@ -16,7 +16,7 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	_otsu_threshold(5),
 	_blue_scale(87),
 	_red_scale(60),
-	_camera_angle(90)
+	_camera_angle(422)
 {
 	if (gui)
 	{
@@ -66,12 +66,12 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//confidences are higher than any previous one
 	for(size_t i = 0; i < top_info.size(); i++) {
 		for(size_t j = 0; j < bottom_info.size(); j++) {
-			if(top_info[i].pos.z > 0.01 + bottom_info[j].pos.z) //won't pick the same goal for top and bottom because the z values would be the same
+			if(top_info[i].pos.z < bottom_info[j].pos.z)
+				continue;
 			if(!initialized) {
 				best_result_index_top = i;
 				best_result_index_bottom = j;
 				initialized = true;
-				continue;
 				}
 			if(top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence <= top_info[i].confidence + bottom_info[j].confidence) {
 				found_goal = true;
@@ -79,17 +79,21 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 				best_result_index_bottom = j;
 			}
 		}
-	}	
+	}
+	cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
 	cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
 	cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
+	cout << "Found Goal: " << found_goal;
 	
 	//say a goal is found if the sum of the confidences is higher than 0.5
-	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > 0.5) {
+	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > 0.3) {
+		cout << "Found goal with confidence: " << top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence << endl;
 		_pastRects.push_back(SmartRect(top_info[best_result_index_top].rect));
 		_goal_pos      = top_info[best_result_index_top].pos;
 		_dist_to_goal  = top_info[best_result_index_top].distance; 
 		_angle_to_goal = top_info[best_result_index_top].angle;
-		_goal_rect     = top_info[best_result_index_top].rect;
+		_goal_top_rect     = top_info[best_result_index_top].rect;
+		_goal_bottom_rect = bottom_info[best_result_index_bottom].rect;
 	} else
 		_pastRects.push_back(SmartRect(Rect()));
 	
@@ -104,7 +108,8 @@ void GoalDetector::clear()
 	_isValid = false;
 	_dist_to_goal = -1.0;
 	_angle_to_goal = -1.0;
-	_goal_rect = Rect();
+	_goal_top_rect = Rect();
+	_goal_bottom_rect = Rect();
 	_goal_pos  = Point3f();
 
 
@@ -140,6 +145,10 @@ vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point 
 	for(size_t i = 0; i < contours.size(); i++) {
 		// get the minimum and maximum depth values in the contour,
 		Rect br(boundingRect(contours[i]));
+		Moments mu = moments(contours[i], false);
+		Point com = Point(mu.m10 / mu.m00, mu.m01 / mu.m00);
+		//Point center(rect.tl().x+rect.size().width/2, rect.tl().y+rect.size().height/2);
+		
 		//create a mask which is the same shape as the contour
 		contour_mask.setTo(Scalar(0));
 		drawContours(contour_mask, contours, i, Scalar(255), CV_FILLED);
@@ -152,7 +161,7 @@ vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point 
 		// the target. This isn't perfect but better than nothing
 		if ((depth_z_min <= 0.) || (depth_z_max <= 0.)) {
 			ObjectType ot(objtype);
-			depth_z_min = depth_z_max = distanceUsingFixedHeight(br,expected_height);
+			depth_z_min = depth_z_max = distanceUsingFixedHeight(br,com,expected_height);
 		}
 		return_vec.push_back(depth_z_max);
 	}
@@ -183,7 +192,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 100.0) || (br.area() > 8500))
+		if ((br.area() <= 1000.0) || (br.area() > 30000))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
@@ -193,14 +202,14 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		}
 
 		// Remove objects too low on the screen
-		if (br.br().y > (_frame_size.width * 0.7f))
+		/*if (br.br().y > (_frame_size.width * 0.4f))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " br().y out of range "<< br.br().y << endl;
 #endif
 			_confidence.push_back(0);
 			continue;
-		}
+		}*/
 
 
 		
@@ -219,7 +228,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		//create a trackedobject to get various statistics
 		//including area and x,y,z position of the goal
 		ObjectType goal_actual(_contours[i], "Actual Goal", 0);
-		TrackedObject goal_tracked_obj(0, _goal_shape, br, _depth_maxs[i], _fov_size, _frame_size, -((float)_camera_angle/10.) * M_PI / 180.0);
+		TrackedObject goal_tracked_obj(0, _goal_shape, br, _depth_maxs[i], _fov_size, _frame_size,-((float)_camera_angle/10.) * M_PI / 180.0);
 		//TrackedObject goal_tracked_obj(0, _goal_shape, br, _depth_maxs[i], _fov_size, _frame_size, -16 * M_PI / 180.0);
 
 		// Gets the bounding box area observed divided by the
@@ -267,13 +276,12 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		//confidence is small or large when value is not near mean
 		float confidence_height      = createConfidence(_goal_shape.real_height(), 0.4, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
 		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125,  com_percent_actual.x);
-		float confidence_com_y       = createConfidence(com_percent_expected.y, 0.1539207,  com_percent_actual.y);
 		float confidence_filled_area = createConfidence(filledPercentageExpected, 0.33,   filledPercentageActual);
-		float confidence_ratio       = createConfidence(expectedRatio, 2,  actualRatio);
+		float confidence_ratio       = createConfidence(expectedRatio, 4,  actualRatio);
 		float confidence_screen_area = createConfidence(1.0, 0.75,  actualScreenArea);
 
 		// higher is better
-		float confidence = (confidence_height + confidence_com_x + confidence_com_y + confidence_filled_area + confidence_ratio/2. + confidence_screen_area/2.) / 5.0;
+		float confidence = (confidence_height + confidence_com_x + confidence_filled_area + confidence_ratio/2. + confidence_screen_area/2.) / 5.0;
 		_confidence.push_back(confidence);
 
 #ifdef VERBOSE
@@ -281,7 +289,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		cout << "Contour " << i << endl;
 		cout << "confidence_height: " << confidence_height << endl;
 		cout << "confidence_com_x: " << confidence_com_x << endl;
-		cout << "confidence_com_y: " << confidence_com_y << endl;
 		cout << "confidence_filled_area: " << confidence_filled_area << endl;
 		cout << "confidence_ratio: " << confidence_ratio << endl;
 		cout << "confidence_screen_area: " << confidence_screen_area << endl;
@@ -300,7 +307,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		goal_info.pos        = goal_tracked_obj.getPosition();
 		goal_info.confidence = confidence;
-		goal_info.distance   = hypotf(goal_info.pos.x, goal_info.pos.y);
+		goal_info.distance   = _depth_maxs[i] * cosf((_camera_angle/10.0) * (M_PI/180.0));
 		goal_info.angle 	 = atan2f(goal_info.pos.x, goal_info.pos.y) * 180. / M_PI;
 		goal_info.rect   	 = br;
 
@@ -366,8 +373,7 @@ float GoalDetector::distanceUsingFOV(ObjectType _goal_shape, const Rect &rect) c
 	return _goal_shape.height() / (2.0 * tanf(size_fov / 2.0));
 }
 
-float GoalDetector::distanceUsingFixedHeight(const Rect &rect, float expected_delta_height) const {
-	Point center(rect.tl().x+rect.size().width/2, rect.tl().y+rect.size().height/2);
+float GoalDetector::distanceUsingFixedHeight(const Rect &rect, Point center , float expected_delta_height) const {
 	/*
 	cout << "Center: " << center << endl;
 	float percent_image = ((float)center.y - (float)_frame_size.height/2.0)  / (float)_frame_size.height;
@@ -387,17 +393,9 @@ float GoalDetector::distanceUsingFixedHeight(const Rect &rect, float expected_de
 	return distance_ground; */
 
 	//float focal_length_px = 0.5 * _frame_size.height / tanf(0.777 / 2.0);
-	float focal_length_px = 973.94;
-	cout << "Focal Length Pixels: " << focal_length_px << endl;
-	cout << "Image size: " << _frame_size << endl;
+	float focal_length_px = 750.0;
 	float to_center = (402.2 - (float)center.y);
-	cout << "Distance to center of image (px): " << to_center << endl;
-	cout << "Camera angle: " << (_camera_angle/10.0) * (M_PI/180.0) << endl;
-	cout << "Expected Height: " << expected_delta_height << endl; 
 	float distance_diagonal = (focal_length_px * expected_delta_height) / (focal_length_px * sin((_camera_angle/10.0) * (M_PI/180.0)) + to_center);
-	cout << "Distance Diagonal: " << distance_diagonal << endl;
-	float distance_ground = distance_diagonal * cosf((_camera_angle/10.0) * (M_PI/180.0));
-	cout << "Distance Ground: " << distance_ground << endl;
 	return distance_diagonal;
 }
 
@@ -445,7 +443,7 @@ float GoalDetector::angle_to_goal(void) const
 // Screen rect bounding the goal
 Rect GoalDetector::goal_rect(void) const
 {
-	return _isValid ? _goal_rect : Rect();
+	return _isValid ? _goal_top_rect : Rect();
 }
 
 // Goal x,y,z position relative to robot
@@ -469,9 +467,11 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 //		putText(image, confStr.str(), br.tl(), FONT_HERSHEY_PLAIN, 1, Scalar(255,0,0));
 //		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
 	}
-
-	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect())))
-		rectangle(image, _pastRects[_pastRects.size() - 1].myRect, Scalar(0,255,0), 2);
+	cout << "Pastrects last item: " << _pastRects[_pastRects.size() - 1] << endl;
+	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect()))) {
+		rectangle(image, _goal_top_rect, Scalar(0,255,0), 2);	
+		rectangle(image, _goal_bottom_rect, Scalar(0,140,255), 2);	
+	}
 }
 
 // Look for the N most recent detected rectangles to be
@@ -516,4 +516,12 @@ bool SmartRect::operator== (const SmartRect &thatRect)const
 	double unionArea     = myRect.area() + thatRect.myRect.area() - intersectArea;
 
 	return (intersectArea / unionArea) >= .8;
+}
+
+std::ostream& operator<<(std::ostream& os, const SmartRect &obj) {
+	if(obj.myRect == Rect())
+		os << "NULL";
+	else
+		os << obj.myRect;
+	return os;
 }

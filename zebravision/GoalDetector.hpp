@@ -17,6 +17,8 @@ class SmartRect
         SmartRect(const cv::Rect &myRect);
         cv::Rect myRect;
         bool operator== (const SmartRect &thatRect)const;
+	friend std::ostream& operator<<(std::ostream& os, const SmartRect& obj);
+	
 };
 
 //this contains all the info we need to decide between goals once we are certain if it is a goal
@@ -65,7 +67,8 @@ class GoalDetector
 		boost::circular_buffer<SmartRect> _pastRects;
 		float _dist_to_goal;
 		float _angle_to_goal;
-		cv::Rect _goal_rect;
+		cv::Rect _goal_top_rect;
+		cv::Rect _goal_bottom_rect;
 		cv::Point3f _goal_pos;
 
 		// Save all contours found in case we want to display
@@ -77,11 +80,11 @@ class GoalDetector
 		int   _blue_scale;
 		int   _red_scale;
 
-int _camera_angle;
+int _camera_angle = 370;
 
 		float createConfidence(float expectedVal, float expectedStddev, float actualVal);
 		float distanceUsingFOV(ObjectType _goal_shape, const cv::Rect &rect) const;
-		float distanceUsingFixedHeight(const cv::Rect &rect, float expected_delta_height) const;
+		float distanceUsingFixedHeight(const cv::Rect &rect,cv::Point center, float expected_delta_height) const;
 		bool generateThresholdAddSubtract(const cv::Mat& imageIn, cv::Mat& imageOut);
 		void isValid();
 };

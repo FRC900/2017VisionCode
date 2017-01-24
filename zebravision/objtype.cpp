@@ -46,7 +46,8 @@ ObjectType::ObjectType(int contour_type_id=1) {
 			break;
 		case 4: //top piece of tape (2017)
 			depth_ = 0;
-			real_height_ = 1.8796; //74 inches
+			//real_height_ = 1.8796; //74 inches
+			real_height_ = 0.991;
 			contour_.push_back(Point2f(0,0));
 			contour_.push_back(Point2f(0, 0.1010));
 			contour_.push_back(Point2f(0,0.118954963068));
@@ -113,7 +114,8 @@ ObjectType::ObjectType(int contour_type_id=1) {
 			break;	
 		case 5: //bottom piece of tape (2017)
 			depth_ = 0;
-			real_height_ = 1.7018; //5ft 7inches
+			//real_height_ = 1.7018; //5ft 7inches
+			real_height_ = 0.813;
 			contour_.push_back(Point2f(0,0));
 			contour_.push_back(Point2f(0,0.0489549630683));
 			contour_.push_back(Point2f(0.01272380885,0.0530581347998));
