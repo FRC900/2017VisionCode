@@ -17,8 +17,7 @@ class SmartRect
         SmartRect(const cv::Rect &myRect);
         cv::Rect myRect;
         bool operator== (const SmartRect &thatRect)const;
-	friend std::ostream& operator<<(std::ostream& os, const SmartRect& obj);
-	
+	friend std::ostream& operator<<(std::ostream& os, const SmartRect& obj);	
 };
 
 //this contains all the info we need to decide between goals once we are certain if it is a goal
@@ -32,6 +31,7 @@ struct GoalInfo
 	float distance;
 	float angle;
 	cv::Rect rect;
+	size_t vec_index;
 };
 
 class GoalDetector
@@ -80,7 +80,7 @@ class GoalDetector
 		int   _blue_scale;
 		int   _red_scale;
 
-int _camera_angle = 370;
+		int _camera_angle = 370;
 
 		float createConfidence(float expectedVal, float expectedStddev, float actualVal);
 		float distanceUsingFOV(ObjectType _goal_shape, const cv::Rect &rect) const;

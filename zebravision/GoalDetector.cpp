@@ -66,7 +66,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//confidences are higher than any previous one
 	for(size_t i = 0; i < top_info.size(); i++) {
 		for(size_t j = 0; j < bottom_info.size(); j++) {
-			if(top_info[i].pos.z < bottom_info[j].pos.z)
+			if(top_info[i].pos.z < bottom_info[j].pos.z || top_info[i].vec_index == bottom_info[j].vec_index || abs(top_info[i].angle - bottom_info[j].angle) > 10.0)
 				continue;
 			if(!initialized) {
 				best_result_index_top = i;
@@ -192,7 +192,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 1000.0) || (br.area() > 30000))
+		if ((br.area() <= 1000.0))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
@@ -310,7 +310,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		goal_info.distance   = _depth_maxs[i] * cosf((_camera_angle/10.0) * (M_PI/180.0));
 		goal_info.angle 	 = atan2f(goal_info.pos.x, goal_info.pos.y) * 180. / M_PI;
 		goal_info.rect   	 = br;
-
+		goal_info.vec_index = i;
 		return_info.push_back(goal_info);
 	}
 	return return_info;
