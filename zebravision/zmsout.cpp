@@ -16,13 +16,15 @@ using namespace boost::filesystem;
 // Save the raw camera stream to disk.  This uses a home-brew
 // method to serialize image and depth data to disk rather than
 // relying on Stereolab's SVO format.
-ZMSOut::ZMSOut(const char *outFile, int frameSkip) :
-	MediaOut(frameSkip, 150),
+ZMSOut::ZMSOut(const char *outFile, int frameSkip, int splitSize, bool useZlib) :
+	MediaOut(frameSkip, splitSize),
 	fileName_(outFile),
 	serializeOut_(NULL),
 	filtSBOut_(NULL),
-	archiveOut_(NULL)
+	archiveOut_(NULL),
+	useZlib_(useZlib)
 {
+	cout << "useZlib = " << useZlib_ << endl;
 }
 
 // Clean up pointers, which will also 
@@ -70,7 +72,8 @@ bool ZMSOut::openSerializeOutput(const char *fileName)
 		deleteOutputPointers();
 		return false;
 	}
-	filtSBOut_->push(boost::iostreams::zlib_compressor(boost::iostreams::zlib::best_speed));
+	if (useZlib_)
+		filtSBOut_->push(boost::iostreams::zlib_compressor(boost::iostreams::zlib::best_speed));
 	filtSBOut_->push(*serializeOut_);
 
 	// Create an output archive which writes to the previously

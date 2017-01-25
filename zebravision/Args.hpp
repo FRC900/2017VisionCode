@@ -15,6 +15,8 @@ class Args //class for processing arguments
 		int  skip;             // skip over frames (video file input only)
 		bool writeVideo;       // write captured video to output
 		int  writeVideoSkip;   // only write 1 of every N frames
+		int  writeVideoSplit;  // split videos into N frames
+		bool writeVideoCompress; // compress ZMS files?
 		bool saveVideo;        // write processed video to output
 		bool saveVideoSkip;    // only write 1 of every N processed frames
 		int  frameStart;       // frame number to start from

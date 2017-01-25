@@ -8,7 +8,7 @@
 class ZMSOut : public MediaOut
 {
 	public:
-		ZMSOut(const char *outFile, int frameSkip = 0);
+		ZMSOut(const char *outFile, int frameSkip = 0, int splitSize = 150, bool useZlib = true);
 		~ZMSOut();
 
 		// Make non-copyable
@@ -25,4 +25,5 @@ class ZMSOut : public MediaOut
 		std::ofstream *serializeOut_;
 		boost::iostreams::filtering_streambuf<boost::iostreams::output> *filtSBOut_;
 		portable_binary_oarchive *archiveOut_;
+		bool useZlib_;
 };
