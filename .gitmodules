@@ -7,6 +7,3 @@
 [submodule "zebROS_ws/src/zed-ros-wrapper-master"]
 	path = zebROS_ws/src/zed-ros-wrapper-master
 	url = https://github.com/stereolabs/zed-ros-wrapper.git
-[submodule "zebROS_ws/src/image_common"]
-	path = zebROS_ws/src/image_common
-	url = https://github.com/ros-perception/image_common
