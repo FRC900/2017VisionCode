@@ -312,7 +312,7 @@ int main( int argc, const char** argv )
 		if (depth.empty())
 			rawOut = new AVIOut(getVideoOutName(true, ".avi").c_str(), frame.size(), args.writeVideoSkip);
 		else
-			rawOut = new ZMSOut(getVideoOutName(true, ".zms").c_str(), args.writeVideoSkip);
+			rawOut = new ZMSOut(getVideoOutName(true, ".zms").c_str(), args.writeVideoSkip, args.writeVideoSplit, args.writeVideoCompress);
 	}
 
 	// No point in saving ZMS files of processed output, since

@@ -21,6 +21,8 @@ static void Usage(void)
    cout << "\t--calibrate          bring up crosshair to calibrate camera position" << endl;
    cout << "\t--capture            write raw camera video to output file" << endl;
    cout << "\t--captureSkip=       only write one of every N frames" << endl;
+   cout << "\t--captureSplit=      split output file every N frames" << endl;
+   cout << "\t--captureCompress    compress output ZMS files" << endl;
    cout << "\t--save               write processed video to output file" << endl;
    cout << "\t--saveSkip=          only write one of every N processed frames" << endl;
    cout << "\t--no-rects           start with detection rectangles disabled" << endl;
@@ -62,6 +64,8 @@ Args::Args(void)
 	calibrate          = false;
 	writeVideo         = false;
 	writeVideoSkip     = 1;
+	writeVideoSplit    = 150;
+	writeVideoCompress = false;
 	saveVideo          = false;
 	saveVideoSkip      = 1;
 	detection          = true;
@@ -96,6 +100,8 @@ bool Args::processArgs(int argc, const char **argv)
 	const string calibrateOpt       = "--calibrate";       // bring up crosshair to calibrate camera position
 	const string writeVideoOpt      = "--capture";         // save camera video to output file
 	const string writeVideoSkipOpt  = "--captureSkip=";    // skip frames in output video file
+	const string writeVideoSplitOpt = "--captureSplit=";    // split & write neew video file every N frames
+	const string writeVideoCompressOpt = "--captureCompress";    // compress ZMS files
 	const string saveVideoOpt       = "--save";            // write processed video to output file
 	const string saveVideoSkipOpt   = "--saveSkip=";       // only write every N frames of processed video
 	const string rectsOpt           = "--no-rects";        // start with detection rectangles disabled
@@ -139,6 +145,10 @@ bool Args::processArgs(int argc, const char **argv)
 			calibrate = true;
 		else if (writeVideoSkipOpt.compare(0, writeVideoSkipOpt.length(), argv[fileArgc], writeVideoSkipOpt.length()) == 0)
 			writeVideoSkip = atoi(argv[fileArgc] + writeVideoSkipOpt.length());
+		else if (writeVideoSplitOpt.compare(0, writeVideoSplitOpt.length(), argv[fileArgc], writeVideoSplitOpt.length()) == 0)
+			writeVideoSplit = atoi(argv[fileArgc] + writeVideoSplitOpt.length());
+		else if (writeVideoCompressOpt.compare(0, writeVideoCompressOpt.length(), argv[fileArgc], writeVideoCompressOpt.length()) == 0)
+			writeVideoCompress = true;
 		else if (writeVideoOpt.compare(0, writeVideoOpt.length(), argv[fileArgc], writeVideoOpt.length()) == 0)
 			writeVideo = true;
 		else if (saveVideoSkipOpt.compare(0, saveVideoSkipOpt.length(), argv[fileArgc], saveVideoSkipOpt.length()) == 0)
