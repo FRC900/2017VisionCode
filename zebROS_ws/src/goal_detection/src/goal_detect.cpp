@@ -13,84 +13,72 @@
 
 #include <sstream>
 
+#include "goal_detection/GoalDetection.h"
 
 using namespace cv;
 using namespace std;
 
+class SubscribeAndPublish
+{
+public:
+  SubscribeAndPublish()
+  {
+    //Topic you want to publish
+    pub_ = n.advertise<goal_detection::GoalDetection>("pub_msg", 1);
+
+    //wait for messages from ZED wrapper
+    //in order to recieve messages from camera_info we have to get a message from image_rect_color first
+    ros::topic::waitForMessage("/zed/left/image_rect_color");
+
+    //Topic you want to subscribe
+    sub_ = n.subscribe("/zed/left/image_rect_color", 1, &SubscribeAndPublish::callback, this);
+    sub_ = n.subscribe("/zed/left/camera_info", 1, &SubscribeAndPublish::initInfo, this);
+
+    //Initialize GoalDetector object
+    gd = new GoalDetector(camParams.fov, , !args.batchMode);
+  }
+
+void callback(const std_msgs::sensor_msgs/Image msg) 
+{
+	cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+	gd.findBoilers(frame,depth);
+
+	goal_detection::GoalDetection pub_msg;
+	pub_msg.location.x = gd.goal_pos.x;
+	pub_msg.location.y = gd.goal_pos.y;
+	pub_msg.location.z = gd.goal_pos.z;
+	pub_msg.distance = gd.dist_to_goal;
+	pub_msg.angle = gd.angle_to_goal;
+
+	goal_pub.publish(pub_msg);
+}
+
+void initInfo(const sensor_msgs::CameraInfo msg) {
+	float fx = msg.P[0];
+	float fy = msg.P[5];
+	float fov_x = 2.0 * atanf(
+}
+
+private:
+  ros::NodeHandle n; 
+  ros::Publisher pub_;
+  ros::Subscriber sub_;
+  
+  GoalDetector gd;
+  cv::Point2f fov_size;
+  Mat frame_;
+};
+
+
 int main(int argc, char **argv)
 {
-	MediaIn *cap = NULL;
-	if (argc == 2)
-		cap = new ZMSIn(argv[1]);
-	else
-		cap = new ZedCameraIn(false);
+  //Initiate ROS
+  ros::init(argc, argv, "goal_detection");
 
-	if (cap == NULL)
-	{
-		cerr << "Error creating input" << endl;
-		return -1;
-	}
+  //Create an object of class SubscribeAndPublish that will take care of everything
+  SubscribeAndPublish SAPObject;
 
-	GoalDetector gd(Point2f(cap->getCameraParams().fov.x, 
-				            cap->getCameraParams().fov.y), 
-			        Size(cap->width(),cap->height()), true);
+  ros::spin();
 
-	// zmq::context_t context(1);
-	// zmq::socket_t publisher(context, ZMQ_PUB);
-	
-	ros::init(argc, argv, "goal_tracker");
-	ros::NodeHandle n;
-
-	ros::Publisher goal_pub = n.advertise<std_msgs::String>("goal_data", 1000);
-	ros::Rate loop_rate(10);
-
-	// std::cout<< "Starting network publisher 5800" << std::endl;
-	// publisher.bind("tcp://*:5800");
-
-	Mat image;
-	Mat depth;
-	//Mat depthNorm;
-	Rect bound;
-	FrameTicker frameTicker;
-	while (cap->getFrame(image, depth) && ros::ok())
-	{
-		frameTicker.mark();
-		//imshow ("Normalized Depth", depthNorm);
-
-		gd.processFrame(image, depth);
-		gd.drawOnFrame(image);
-
-		stringstream ss;
-		ss << fixed << setprecision(2) << frameTicker.getFPS() << "FPS";
-		putText(image, ss.str(), Point(image.cols - 15 * ss.str().length(), 50), FONT_HERSHEY_PLAIN, 1.5, Scalar(0,0,255));
-		rectangle(image, gd.goal_rect(), Scalar(255,0,0), 2);
-		imshow ("Image", image);
-
-		std_msgs::String msg;
-
-		stringstream gString;
-		gString << "G ";
-		gString << fixed << setprecision(4) << gd.dist_to_goal() << " ";
-		gString << fixed << setprecision(2) << gd.angle_to_goal();
-
-		cout << "G : " << gString.str().length() << " : " << gString.str() << endl;
-		
-		msg.data = gString.str();
-				
-		
-		// zmq::message_t grequest(gString.str().length() - 1);
-		// memcpy((void *)grequest.data(), gString.str().c_str(), gString.str().length() - 1);
-		// publisher.send(grequest);
-		goal_pub.publish(msg);
-		ros::spinOnce();
-
-		loop_rate.sleep();
-		
-
-		if ((uchar)waitKey(5) == 27)
-		{
-			break;
-		}
-	}
-	return 0;
+  return 0;
 }
