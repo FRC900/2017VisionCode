@@ -98,8 +98,8 @@ class FuelDetector {
 	 * R_d = 2*f*sin(theta/2) //projection by common fisheye lens cameras (that is, distorted)
 	 * R_u = f*tan(2*asin(R_d/(2*f))) //already know R_d and theta and if you knew the camera's focal length (represented by f) then correcting the image would amount to computing R_u in terms of R_d and theta.
 	 * http://stackoverflow.com/questions/2477774/correcting-fisheye-distortion-programmatically
-	 * http://wiki.panotools.org/Fisheye_Projection	
-	Point correct_fisheye(const Point& p,const Size& img) 
+	 * http://wiki.panotools.org/Fisheye_Projection
+	Point correct_fisheye(const Point& p,const Size& img)
 	{
 		// to polar
 		const Point centre = {img.width/2,img.height/2};
@@ -121,7 +121,7 @@ class FuelDetector {
 
 int main(int, char**)
 {
-	v4l2::C920Camera camera(0);
+	v4l2::C920Camera camera(1);
 	camera.SetBrightness(60);
 	camera.SetWhiteBalanceTemperature(30);
 	camera.SetGain(45);
@@ -129,11 +129,11 @@ int main(int, char**)
 	camera.SetContrast(130);
 	camera.ChangeCaptureSize(v4l2::CAPTURE_SIZE_1280x720);
 	//VideoCapture cap(1); // open the default camera
-    if(!camera.IsOpen())  // check if we succeeded
-        return -1;
+	if(!camera.IsOpen())  // check if we succeeded
+		return -1;
 
 
-    namedWindow("frame",1);
+	namedWindow("frame",1);
 
 	// create trackbars for color change
 	// lower
@@ -141,26 +141,49 @@ int main(int, char**)
 	int sLo = 60;
 	int vLo = 80;
 	int hUp = 38;
+	int k1 = 172781;
+	int k2 = 550817;
+	int p1 = 73542;
+	int p2 = 89178;
+	int k3 = 654275;
 
-	Mat distCoeffs = Mat_<double> (5,1) << ( 1.7278156840527176e-01, -5.5081789263980618e-01, 7.3542979608589376e-03, 8.9178305138385983e-03, 6.5427562481680634e-01 );
-	Mat cameraMatrix = Mat_<double>(3,3) << ( 9.5963091759762221e+02, 0., 6.7262624894813689e+02, 0., 9.7394188192143622e+02, 4.0219821536082321e+02, 0., 0., 1. );
+	//Mat cameraMatrix = Mat_<double>(3,3) << ( 9.5963091759762221e+02, 0., 6.7262624894813689e+02, 0., 9.7394188192143622e+02, 4.0219821536082321e+02, 0., 0., 1. );
 
-	createTrackbar("HLo","frame",&hLo,179);
-	createTrackbar("SLo","frame",&sLo,255);
-	createTrackbar("VLo","frame",&vLo,255);
-	createTrackbar("HUp","frame",&hUp,179);
+	//createTrackbar("HLo","frame",&hLo,179);
+	//createTrackbar("SLo","frame",&sLo,255);
+	//createTrackbar("VLo","frame",&vLo,255);
+	//createTrackbar("HUp","frame",&hUp,179);
+	createTrackbar("k1","frame",&k1, 1000000);
+	createTrackbar("k2","frame",&k2, 1000000);
+	createTrackbar("p1","frame",&p1, 100000);
+	createTrackbar("p2","frame",&p2, 100000);
+	createTrackbar("k3","frame",&k3, 1000000);
 	//double total;
 	vector<vector<Point> > fuel;
 	Mat oframe;
+	Mat sframe;
 	Mat frame;
+	//camera matrix and distortion coefficent data is found in file c90_720p.yml file in current directory
+	double cameraMatrixData[3][3] = {{9.5963091759762221e+02, 0., 6.7262624894813689e+02}, {0.,
+       9.7394188192143622e+02, 4.0219821536082321e+02}, {0., 0., 1.}};
+	double distCoeffsData[5];
+	//double distCoeffsData[] = {1.7278156840527176e-01, 5.5081789263980618e-01, 7.3542979608589376e-03 , 8.9178305138385983e-03, 6.5427562481680634e-01};
+	Mat cameraMatrix = Mat(3, 3, CV_64F, cameraMatrixData).inv();
+	Mat distCoeffs = Mat(1, 5, CV_64F, distCoeffsData);
 	FuelDetector b = FuelDetector(.70);
 	b.changeMin(hLo,hUp,sLo,vLo);
-	while (true) {
+	while (true)
+	{
 		camera.GrabFrame();
 		camera.RetrieveMat(oframe);
-		imshow("test1", oframe);
-		undistort(oframe,frame, cameraMatrix, distCoeffs);
-		imshow("test2", frame);
+		distCoeffsData[0] = -double(getTrackbarPos("k1","frame"))/1000000;
+		distCoeffsData[1] = -double(getTrackbarPos("k2","frame"))/1000000;
+		distCoeffsData[2] = double(getTrackbarPos("p1","frame"))/10000000;
+		distCoeffsData[3] = double(getTrackbarPos("p2","frame"))/10000000;
+		distCoeffsData[4] = double(getTrackbarPos("k3","frame"))/1000000;
+
+		undistort(oframe,frame, cameraMatrix, distCoeffs); //undistort camera
+		imshow("test3", frame);
 		/*
 		fuel = b.getFuel(frame);
 		drawContours(frame,fuel,-1,Scalar(255,0,0),2);
@@ -171,9 +194,9 @@ int main(int, char**)
 		}
 		imshow("frame", frame);
 		*/
-        if(waitKey(30) >= 0) break;
-    }
-    // the camera will be deinitialized automatically in VideoCapture destructor
-    return 0;
+		if(waitKey(30) >= 0) break;
+	}
+	// the camera will be deinitialized automatically in VideoCapture destructor
+	return 0;
 }
 
