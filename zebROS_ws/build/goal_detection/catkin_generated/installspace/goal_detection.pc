@@ -1,8 +1,0 @@
-prefix=/home/ubuntu/2016VisionCode/zebROS_ws/install
-
-Name: goal_detection
-Description: Description of goal_detection
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/ubuntu/2016VisionCode/zebROS_ws/install/lib 
-Requires: 
