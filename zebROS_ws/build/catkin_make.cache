@@ -1,2 +1,0 @@
-c920_ros_wrapper:fuel_detection:ros_tutorials/ros_tutorials:ros_tutorials/roscpp_tutorials:ros_tutorials/rospy_tutorials:ros_tutorials/turtlesim:zed-ros-wrapper
--DCATKIN_DEVEL_PREFIX=/home/ubuntu/2017VisionCode/zebROS_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ubuntu/2017VisionCode/zebROS_ws/install -G Unix Makefiles
