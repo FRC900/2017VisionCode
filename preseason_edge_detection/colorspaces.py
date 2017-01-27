@@ -6,7 +6,7 @@ import numpy as np
 def nothing(x):
     pass
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cv2.namedWindow('frame1')
 kernel = np.ones((5,5),np.uint8)
 
@@ -18,7 +18,7 @@ cv2.createTrackbar('VLo','frame1',123,255,nothing)
 # upper
 cv2.createTrackbar('HUp','frame1',52,179,nothing)
 cv2.createTrackbar('SUp','frame1',197,255,nothing)
-cv2.createTrackbar('VUp','frame1',223,255,nothing)
+cv2.createTrackbar('VUp','frame1',255,255,nothing)
 
 cv2.createTrackbar('areaTrackbar','frame1',10000,50000,nothing)
 
@@ -26,6 +26,7 @@ while(1):
 
 	# Take each frame
 	_, frame = cap.read()
+	frame = frame[0:340, 60:610]
 
 	# get current positions of four trackbars
 	hLo = cv2.getTrackbarPos('HLo','frame1')
@@ -97,6 +98,9 @@ while(1):
 			if approx_contours:
 				cv2.drawContours(frame, approx_contours, -1, (255, 0, 0),3)
 				cv2.rectangle(frame,(minX, minY),(maxX, maxY),(255,255,0),3)
+
+			percentFull = ((340 - minY) / 340.0) * 100
+			print(percentFull)
 
 
 	cv2.imshow('frame',frame)

@@ -1,12 +1,14 @@
 # edge detection and colorspaces, includes laplacian and sobel filters that are tuned to the pink whiffle ball
-
+#640 x 480
 import cv2
 import numpy as np
+from matplotlib.path import Path
 
 def nothing(x):
     pass
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+
 cv2.namedWindow('frame1')
 kernel = np.ones((5,5),np.uint8)
 
@@ -20,10 +22,25 @@ cv2.createTrackbar('HUp','frame1',179,179,nothing)
 cv2.createTrackbar('SUp','frame1',255,255,nothing)
 cv2.createTrackbar('VUp','frame1',255,255,nothing)
 
+#cv2.createTrackbar('xmin','frame1',0,640,nothing)
+#cv2.createTrackbar('xmax','frame1',50,640,nothing)
+#cv2.createTrackbar('ymin','frame1',0,480,nothing)
+#cv2.createTrackbar('ymax','frame1',50,480,nothing)
+
+
 while(1):
 
 	# Take each frame
 	_, frame = cap.read()
+
+	#xmin = int(cv2.getTrackbarPos('xmin','frame1'))
+	#xmax = int(cv2.getTrackbarPos('xmax','frame1'))
+	#ymin = int(cv2.getTrackbarPos('ymin','frame1'))
+	#ymax = int(cv2.getTrackbarPos('ymax','frame1'))
+
+	
+	#frame = frame[xmin:xmax, ymin:ymin]
+	frame = frame[0:480, 60:610]
 
 	# get current positions of four trackbars
 	hLo = cv2.getTrackbarPos('HLo','frame1')
@@ -52,13 +69,13 @@ while(1):
 	sobely = cv2.Sobel(closing,cv2.CV_64F,0,1,ksize=5)
 
 	cv2.imshow('frame',frame)
-	cv2.imshow('mask',mask)
-	cv2.imshow('res',res)
-	cv2.imshow('opening',opening)
-	cv2.imshow('closing',closing)
-	cv2.imshow('laplacian',laplacian)
-	cv2.imshow('sobelx',sobelx)
-	cv2.imshow('sobely',sobely)
+	#cv2.imshow('mask',mask)
+	#cv2.imshow('res',res)
+	#cv2.imshow('opening',opening)
+	#cv2.imshow('closing',closing)
+	#cv2.imshow('laplacian',laplacian)
+	#cv2.imshow('sobelx',sobelx)
+	#cv2.imshow('sobely',sobely)
 
 	k = cv2.waitKey(5) & 0xFF
 	if k == 27:
