@@ -11,7 +11,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
 #include <cv_bridge/cv_bridge.h>
 
 #include <sstream>
@@ -28,20 +28,23 @@ static GoalDetector *gd;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
 {
-	cv_bridge::CvImagePtr cvFrame_ = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
-	cv_bridge::CvImagePtr cvDepth_ = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
+	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
+	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
 
 	// Maybe pyrdown both inputs?
 
-	gd->findBoilers(cvFrame_->image, cvDepth_->image);
+	gd->findBoilers(cvFrame->image, cvDepth->image);
 
-	geometry_msgs::Point point_msg;
+	geometry_msgs::Point32 point_msg;
 	Point3f pt = gd->goal_pos();
 	point_msg.x = pt.x;
 	point_msg.y = pt.y;
 	point_msg.z = pt.z;
 
 	pub.publish(point_msg);
+	gd->drawOnFrame(cvFrame->image, gd->getContours(cvFrame->image));
+	imshow("Image", cvFrame->image);
+	waitKey(5);
 }
 
 int main(int argc, char** argv)
@@ -64,7 +67,7 @@ int main(int argc, char** argv)
 	gd = new GoalDetector(fov, size, true);
 
 	// Set up publisher
-	pub = nh.advertise<geometry_msgs::Point>("goal_detect_msg", 1);
+	pub = nh.advertise<geometry_msgs::Point32>("goal_detect_msg", 1);
 
 	ros::spin();
 
