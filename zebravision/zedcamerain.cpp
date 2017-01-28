@@ -264,7 +264,7 @@ void zedGainCallback(int value, void *data)
 void zedExposureCallback(int value, void *data)
 {
     ZedCameraIn *zedPtr = static_cast<ZedCameraIn *>(data);
-	zedPtr->gain_ = value;
+	zedPtr->exposure_ = value;
 	if (zedPtr->zed_)
 		zedPtr->zed_->setCameraSettingsValue(ZED_EXPOSURE, value - 2, value == 0);
 }
