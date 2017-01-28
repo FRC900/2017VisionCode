@@ -1,84 +1,74 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <zmq.hpp>
 
 #include "GoalDetector.hpp"
-#include "Utilities.hpp"
-#include "track3d.hpp"
-#include "frameticker.hpp"
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64MultiArray.h"
+#include <ros/ros.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <geometry_msgs/TransformStamped.h>
+
+#include <geometry_msgs/Point.h>
+#include <cv_bridge/cv_bridge.h>
 
 #include <sstream>
 
-#include "goal_detection/GoalDetection.h"
+#include "GoalDetector.hpp"
 
 using namespace cv;
 using namespace std;
+using namespace sensor_msgs;
+using namespace message_filters;;
 
-class SubscribeAndPublish
+static ros::Publisher pub;
+static GoalDetector *gd;
+
+void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
 {
-public:
-  SubscribeAndPublish()
-  {
-    //Topic you want to publish
-    pub_ = n.advertise<goal_detection::GoalDetection>("pub_msg", 1);
+	cv_bridge::CvImagePtr cvFrame_ = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
+	cv_bridge::CvImagePtr cvDepth_ = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
 
-    //wait for messages from ZED wrapper
-    //in order to recieve messages from camera_info we have to get a message from image_rect_color first
-    ros::topic::waitForMessage("/zed/left/image_rect_color");
+	// Maybe pyrdown both inputs?
 
-    //Topic you want to subscribe
-    sub_ = n.subscribe("/zed/left/image_rect_color", 1, &SubscribeAndPublish::callback, this);
-    sub_ = n.subscribe("/zed/left/camera_info", 1, &SubscribeAndPublish::initInfo, this);
+	gd->findBoilers(cvFrame_->image, cvDepth_->image);
 
-    //Initialize GoalDetector object
-    gd = new GoalDetector(camParams.fov, , !args.batchMode);
-  }
+	geometry_msgs::Point point_msg;
+	Point3f pt = gd->goal_pos();
+	point_msg.x = pt.x;
+	point_msg.y = pt.y;
+	point_msg.z = pt.z;
 
-void callback(const std_msgs::sensor_msgs/Image msg) 
-{
-	cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-	gd.findBoilers(frame,depth);
-
-	goal_detection::GoalDetection pub_msg;
-	pub_msg.location.x = gd.goal_pos.x;
-	pub_msg.location.y = gd.goal_pos.y;
-	pub_msg.location.z = gd.goal_pos.z;
-	pub_msg.distance = gd.dist_to_goal;
-	pub_msg.angle = gd.angle_to_goal;
-
-	goal_pub.publish(pub_msg);
+	pub.publish(point_msg);
 }
 
-void initInfo(const sensor_msgs::CameraInfo msg) {
-	float fx = msg.P[0];
-	float fy = msg.P[5];
-	float fov_x = 2.0 * atanf(
-}
-
-private:
-  ros::NodeHandle n; 
-  ros::Publisher pub_;
-  ros::Subscriber sub_;
-  
-  GoalDetector gd;
-  cv::Point2f fov_size;
-  Mat frame_;
-};
-
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-  //Initiate ROS
-  ros::init(argc, argv, "goal_detection");
+	ros::init(argc, argv, "goal_detect");
 
-  //Create an object of class SubscribeAndPublish that will take care of everything
-  SubscribeAndPublish SAPObject;
+	ros::NodeHandle nh;
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_rect_color", 1);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 1);
 
-  ros::spin();
+	typedef sync_policies::ApproximateTime<Image, Image> MySyncPolicy;
+	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), frame_sub, depth_sub);
+	sync.registerCallback(boost::bind(&callback, _1, _2));
 
-  return 0;
+	// Create goal detector class
+	const float hFov = 105.;
+	const Size size(1280, 720);
+	const Point2f fov(hFov / (M_PI * 180.), hFov / (M_PI * 180.) * ((float)size.width / size.height));
+	gd = new GoalDetector(fov, size, true);
+
+	// Set up publisher
+	pub = nh.advertise<geometry_msgs::Point>("goal_detect_msg", 1);
+
+	ros::spin();
+
+	delete gd;
+
+	return 0;
 }

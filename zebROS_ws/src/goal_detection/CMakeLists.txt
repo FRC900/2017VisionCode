@@ -12,6 +12,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  message_filters
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
