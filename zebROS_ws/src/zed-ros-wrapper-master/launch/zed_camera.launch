@@ -1,7 +1,13 @@
 <launch>
   <arg name="svo_file"/>
   <arg name="zed_id"/>
-
+  <arg name="brightness"/>
+  <arg name="contrast"/>
+  <arg name="hue"/>
+  <arg name="saturation"/>
+  <arg name="gain"/>
+  <arg name="exposure"/>
+  
   <include file="$(find zed_wrapper)/launch/zed_tf.launch" />
   <node name="zed_wrapper_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen">
 
@@ -19,12 +25,12 @@
     <param name="openni_depth_mode"     value="0" />
     <param name="gpu_id"                value="-1" />
 
-    <param name="brightness"            value="-1" />
-    <param name="contrast"              value="-1" />
-    <param name="hue"                   value="-1" />
-    <param name="saturation"            value="-1" />
-    <param name="gain"                  value="-1" />
-    <param name="exposure"              value="-1" />
+    <param name="brightness"            value="$(arg brightness)" />
+    <param name="contrast"              value="$(arg contrast)" />
+    <param name="hue"                   value="$(arg hue)" />
+    <param name="saturation"            value="$(arg saturation)" />
+    <param name="gain"                  value="$(arg gain)" />
+    <param name="exposure"              value="$(arg exposure)" />
 
     <!-- ROS topic names -->
     <param name="rgb_topic"             value="rgb/image_rect_color" />
