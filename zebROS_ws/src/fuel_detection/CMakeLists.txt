@@ -86,6 +86,8 @@ generate_messages(
 ##   * uncomment the "generate_dynamic_reconfigure_options" section below
 ##     and list every .cfg file to be processed
 
+find_package(OpenCV 2 REQUIRED)
+
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 # generate_dynamic_reconfigure_options(
 #   cfg/DynReconf1.cfg
@@ -117,6 +119,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -139,7 +142,8 @@ include_directories(
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(fuel_detection_node
 #   ${catkin_LIBRARIES}
-# )
+#   ${OpenCV_LIBRARIES}
+#)
 
 #############
 ## Install ##
