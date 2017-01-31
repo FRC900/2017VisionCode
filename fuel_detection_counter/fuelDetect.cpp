@@ -121,13 +121,13 @@ class FuelDetector {
 
 int main(int, char**)
 {
-	v4l2::C920Camera camera(1);
+	v4l2::C920Camera camera(0);
 	camera.SetBrightness(60);
 	camera.SetWhiteBalanceTemperature(30);
 	camera.SetGain(45);
 	camera.SetSaturation(190);
 	camera.SetContrast(130);
-	camera.ChangeCaptureSize(v4l2::CAPTURE_SIZE_1280x720);
+	camera.ChangeCaptureSize(v4l2::CAPTURE_SIZE_640x360);
 	//VideoCapture cap(1); // open the default camera
 	if(!camera.IsOpen())  // check if we succeeded
 		return -1;
@@ -181,9 +181,9 @@ int main(int, char**)
 		distCoeffsData[2] = double(getTrackbarPos("p1","frame"))/10000000;
 		distCoeffsData[3] = double(getTrackbarPos("p2","frame"))/10000000;
 		distCoeffsData[4] = double(getTrackbarPos("k3","frame"))/1000000;
-
+		imshow("Distorted", oframe);
 		undistort(oframe,frame, cameraMatrix, distCoeffs); //undistort camera
-		imshow("test3", frame);
+		imshow("Undistorted", frame);
 		/*
 		fuel = b.getFuel(frame);
 		drawContours(frame,fuel,-1,Scalar(255,0,0),2);

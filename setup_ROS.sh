@@ -33,7 +33,7 @@ source /opt/ros/kinetic/setup.bash
 
 sudo apt install python-rosinstall -y
 sudo apt install terminator
-sudo apt install ros-kinetic-rqt ros-kinetic-rqt-common-plugins
+sudo apt install ros-kinetic-rqt ros-kinetic-rqt-common-plugins ros-kinetic-tf2-ros ros-kinetic-pcl-conversions ros-kinetic-cv-bridge
 
 
 
