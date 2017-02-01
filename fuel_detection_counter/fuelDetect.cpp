@@ -43,10 +43,7 @@ class FuelDetector {
 		bitwise_and(frame,frame, res, mask=mask);
 		morphologyEx(mask, opening, MORPH_OPEN, kernel);	//expand the mask
 		morphologyEx(opening, closing, MORPH_CLOSE, kernel);	//contract the mask
-		IplImage tmp=closing;
-		cvFloodFill(&tmp,Point(0,0), Scalar(0));
-		output = &tmp;
-		imshow("output", output);
+		floodFill(closing,Point(0,0), Scalar(0));
 		//contours
 		findContours(output,contours,RETR_TREE,CHAIN_APPROX_SIMPLE);
 		if (contours.size()>0) {	//check is there are any contours
