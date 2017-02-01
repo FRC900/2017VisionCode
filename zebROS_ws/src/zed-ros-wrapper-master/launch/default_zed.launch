@@ -1,13 +1,13 @@
 <launch>
 
-  <arg name="svo_file" default=""/>
-  <arg name="zed_id" default="0"/>
-  <arg name="brightness" default="-1"/>
-  <arg name="contrast" default="6"/>
-  <arg name="hue" default="-1"/>
-  <arg name="saturation" default="4"/>
-  <arg name="gain" default="1"/>
-  <arg name="exposure" default="1"/>
+  <arg name="svo_file" default=""/>    <!-- value:   -->
+  <arg name="zed_id" default="0"/>     <!-- value: 0 -->
+  <arg name="brightness" default="-1"/> <!-- value: 2 -->
+  <arg name="contrast" default="-1"/>   <!-- value: 6 -->
+  <arg name="hue" default="-1"/>       <!-- value:-1 -->
+  <arg name="saturation" default="-1"/> <!-- value: 4 -->
+  <arg name="gain" default="-1"/>       <!-- value: 1 -->
+  <arg name="exposure" default="-1"/>   <!-- value: 1 -->
   
   <group ns="zed">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
