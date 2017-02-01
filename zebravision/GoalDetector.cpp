@@ -14,8 +14,8 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	_pastRects(2),
 	_min_valid_confidence(0.25),
 	_otsu_threshold(5),
-	_blue_scale(87),
-	_red_scale(60),
+	_blue_scale(70),
+	_red_scale(50),
 	_camera_angle(422)
 {
 	if (gui)
@@ -24,7 +24,7 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 		createTrackbar("Blue Scale","Goal Detect Adjustments", &_blue_scale, 100);
 		createTrackbar("Red Scale","Goal Detect Adjustments", &_red_scale, 100);
 		createTrackbar("Otsu Threshold","Goal Detect Adjustments", &_otsu_threshold, 255);
-		createTrackbar("Camera Angle","Goal Detect Adjustments", &_camera_angle, 600);
+		createTrackbar("Camera Angle","Goal Detect Adjustments", &_camera_angle, 900);
 	}
 }
 
