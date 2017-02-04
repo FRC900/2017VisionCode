@@ -28,6 +28,10 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	}
 }
 
+bool GoalDetector::Valid(void) const
+{
+	return _isValid;
+}
 // Compute a confidence score for an actual measurement given
 // the expected value and stddev of that measurement
 // Values around 0.5 are good. Values away from that are progressively

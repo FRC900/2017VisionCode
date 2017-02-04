@@ -53,7 +53,9 @@ class GoalDetector
 		void findBoilers(const cv::Mat& image, const cv::Mat& depth);
 		std::vector< std::vector< cv::Point > > getContours(const cv::Mat& image);
 		std::vector< float > getDepths(const cv::Mat &depth, std::vector< std::vector< cv::Point > > contours, int objtype, float expected_height);
-		std::vector< GoalInfo > getInfo(std::vector< std::vector< cv::Point > > _contours, std::vector< float > _depth_maxs, int objtype);		
+		std::vector< GoalInfo > getInfo(std::vector< std::vector< cv::Point > > _contours, std::vector< float > _depth_maxs, int objtype);
+
+		bool Valid(void) const;
 	private:
 	
 		cv::Point2f _fov_size;
