@@ -94,6 +94,7 @@ set (NAVX_SRCS
  generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   navx_publisher
  )
 
 ################################################
@@ -130,7 +131,7 @@ catkin_package(
 #  LIBRARIES goal_detection
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
-   CATKIN_DEPENDS message_generation
+   CATKIN_DEPENDS message_runtime
 )
 
 ###########
