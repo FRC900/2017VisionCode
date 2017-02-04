@@ -1,0 +1,19 @@
+<launch>
+
+  <group ns="zed">
+    <include file="$(find zed_wrapper)/launch/zed.launch">
+  </group>
+  
+  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
+  
+  <!-- Uncomment when fuel detection is done
+  <node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" />
+  -->
+  
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+
+  <node pkg="rosbag" type="rosbag" name="robot_topics"
+       args="record -o /goal_detect_msg /navx/time /zed/depth/depth_registered /zed/rgb/image_raw_color"
+  />
+  
+</launch>
