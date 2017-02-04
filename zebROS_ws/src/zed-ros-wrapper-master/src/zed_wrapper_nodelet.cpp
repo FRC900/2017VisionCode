@@ -247,7 +247,7 @@ namespace zed_wrapper {
         void publishDepth(cv::Mat depth, image_transport::Publisher &pub_depth, string depth_frame_id, ros::Time t) {
             string encoding;
             if (openniDepthMode) {
-                depth *= 1000.0f;
+                //depth *= 1000.0f;
                 depth.convertTo(depth, CV_16UC1); // in mm, rounded
                 encoding = sensor_msgs::image_encodings::TYPE_16UC1;
             } else {
@@ -673,7 +673,7 @@ namespace zed_wrapper {
             }
 
             // Try to initialize the ZED
-            param.unit = UNIT::METER;
+            param.unit = UNIT::MILLIMETER;
             param.coordinate = COORDINATE_SYSTEM::RIGHT_HANDED;
             param.mode = static_cast<sl::zed::MODE> (quality);
             param.verbose = true;
