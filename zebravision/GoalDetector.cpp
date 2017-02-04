@@ -87,7 +87,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
 	cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
 	cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
-	cout << "Found Goal: " << found_goal << endl;
+	cout << "Found Goal: " << found_goal << " " << top_info[best_result_index_top].distance << " " << top_info[best_result_index_top].angle << endl;
 	
 	//say a goal is found if the sum of the confidences is higher than 0.5
 	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > 0.3) {
