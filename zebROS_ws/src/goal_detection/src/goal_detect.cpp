@@ -10,9 +10,12 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <geometry_msgs/TransformStamped.h>
+#include "navx_publisher/stampedUInt64.h"
 
 #include <geometry_msgs/Point32.h>
 #include <cv_bridge/cv_bridge.h>
+
+#include "goal_detection/GoalDetection.h"
 
 #include <sstream>
 
@@ -27,7 +30,7 @@ static ros::Publisher pub;
 static GoalDetector *gd;
 static bool batch = false;
 
-void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
+void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
 	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
 	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
@@ -36,12 +39,23 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
 
 	gd->findBoilers(cvFrame->image, cvDepth->image);
 
-	geometry_msgs::Point32 point_msg;
-	Point3f pt = gd->goal_pos();
+#if 0
 	point_msg.x = pt.x;
 	point_msg.y = pt.y;
 	point_msg.z = pt.z;
+#endif
 
+
+	geometry_msgs::Point32 point_msg;
+	Point3f pt = gd->goal_pos();
+
+	goal_detection::GoalDetection gd_msg;
+	gd_msg.header.stamp = ros::Time::now();
+	gd_msg.location.x = pt.x;
+	gd_msg.location.y = pt.y;
+	gd_msg.location.z = pt.z;
+	gd_msg.valid = gd->dist_to_goal() != -1;
+	gd_msg.navx_timestamp =  navxMsg->data;
 	pub.publish(point_msg);
 
 	if (!batch)
@@ -62,11 +76,12 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_raw_color", 1);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 1);
+	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 1);
 
-	typedef sync_policies::ApproximateTime<Image, Image> MySyncPolicy;
+	typedef sync_policies::ApproximateTime<Image, Image, navx_publisher::stampedUInt64> MySyncPolicy;
 	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), frame_sub, depth_sub);
-	sync.registerCallback(boost::bind(&callback, _1, _2));
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(50), frame_sub, depth_sub, navx_sub);
+	sync.registerCallback(boost::bind(&callback, _1, _2, _3));
 
 	// Create goal detector class
 	const float hFov = 105.;
@@ -75,7 +90,7 @@ int main(int argc, char** argv)
 	gd = new GoalDetector(fov, size, true);
 
 	// Set up publisher
-	pub = nh.advertise<geometry_msgs::Point32>("goal_detect_msg", 1);
+	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 1);
 
 	ros::spin();
 

@@ -1,4 +1,4 @@
 Header header
-geometry_msg/Point location
-float32 distance
-float32 angle
+geometry_msgs/Point32 location
+bool valid
+uint64 navx_timestamp

@@ -16,7 +16,7 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	_otsu_threshold(5),
 	_blue_scale(70),
 	_red_scale(50),
-	_camera_angle(422)
+	_camera_angle(530)
 {
 	if (gui)
 	{
@@ -83,7 +83,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
 	cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
 	cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
-	cout << "Found Goal: " << found_goal;
+	cout << "Found Goal: " << found_goal << endl;
 	
 	//say a goal is found if the sum of the confidences is higher than 0.5
 	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > 0.3) {
@@ -140,7 +140,7 @@ vector< vector < Point > > GoalDetector::getContours(const Mat& image) {
 vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point > > contours, int objtype, float expected_height) {
 	// Use to mask the contour off from the rest of the
 	// image - used when grabbing depth data for the contour
-	Mat contour_mask(_frame_size.width, _frame_size.height, CV_8UC1, Scalar(0));
+	Mat contour_mask(_frame_size, CV_8UC1, Scalar(0));
 	vector< float > return_vec;
 	for(size_t i = 0; i < contours.size(); i++) {
 		// get the minimum and maximum depth values in the contour,
@@ -156,6 +156,7 @@ vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point 
 		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
 		float depth_z_min = minMax.first;
 		float depth_z_max = minMax.second;
+		cout << "Depth " << depth_z_min << " " << depth_z_max << endl;
 
 		// If no depth data, calculate it using FOV and height of
 		// the target. This isn't perfect but better than nothing
@@ -188,11 +189,9 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		// one for what we're looking at
 		Rect br(boundingRect(_contours[i]));
 
-			
-
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 1000.0))
+		if ((br.area() <= 500.0))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
@@ -298,6 +297,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
 		cout << "Aspect ratio exp/act : " << expectedRatio << "/" << actualRatio << endl;
 		cout << "br.br().y: " << br.br().y << endl;
+		cout << "position: " << goal_tracked_obj.getPosition() << endl;
 		cout << "-------------------------------------------" << endl;
 #endif
 
