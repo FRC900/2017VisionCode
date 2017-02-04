@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 		timestamp.data = nx.GetLastSensorTimestamp();
 		timestamp.header.stamp = ros::Time::now();
 
-		orientati+on.x = nx.GetQuaternionX();
+		orientation.x = nx.GetQuaternionX();
 		orientation.y = nx.GetQuaternionY();
 		orientation.z = nx.GetQuaternionZ();
 		orientation.w = nx.GetQuaternionW();
