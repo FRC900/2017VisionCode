@@ -28,16 +28,20 @@ using namespace message_filters;
 
 static ros::Publisher pub;
 static GoalDetector *gd;
-static bool batch = false;
+static bool batch = true;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
 	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
 	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
 
-	// Maybe pyrdown both inputs for speed?
+	// pyrDown both inputs for speed?
+	Mat frame(cvFrame->image.clone());
+	pyrDown(frame, frame);
+	Mat depth(cvDepth->image.clone());
+	pyrDown(depth, depth);
 
-	gd->findBoilers(cvFrame->image, cvDepth->image);
+	gd->findBoilers(frame, depth);
 	const Point3f pt = gd->goal_pos();
 
 	goal_detection::GoalDetection gd_msg;
@@ -51,9 +55,7 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, cons
 
 	if (!batch)
 	{
-		Mat frame(cvFrame->image.clone());
 		gd->drawOnFrame(frame, gd->getContours(cvFrame->image));
-		pyrDown(frame, frame);
 		imshow("Image", frame);
 		waitKey(5);
 	}
@@ -75,9 +77,9 @@ int main(int argc, char** argv)
 
 	// Create goal detector class
 	const float hFov = 105.;
-	const Size size(1280, 720);
+	const Size size(1280/2, 720/2); // 720P but downsampled by 2x for speed
 	const Point2f fov(hFov * (M_PI / 180.), hFov * (M_PI / 180.) * ((float)size.height / size.width));
-	gd = new GoalDetector(fov, size, true);
+	gd = new GoalDetector(fov, size, !batch);
 
 	// Set up publisher
 	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 10);
