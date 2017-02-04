@@ -73,7 +73,7 @@ set (NAVX_SRCS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   stampedUInt64.msg
+   LocalizationMessage.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -94,7 +94,6 @@ set (NAVX_SRCS
  generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
-   navx_publisher
  )
 
 ################################################
@@ -131,7 +130,7 @@ catkin_package(
 #  LIBRARIES goal_detection
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
-   CATKIN_DEPENDS message_runtime
+   CATKIN_DEPENDS message_generation
 )
 
 ###########

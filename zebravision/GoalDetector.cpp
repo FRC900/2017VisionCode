@@ -467,7 +467,6 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 //		putText(image, confStr.str(), br.tl(), FONT_HERSHEY_PLAIN, 1, Scalar(255,0,0));
 //		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
 	}
-	cout << "Pastrects last item: " << _pastRects[_pastRects.size() - 1] << endl;
 	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect()))) {
 		rectangle(image, _goal_top_rect, Scalar(0,255,0), 2);	
 		rectangle(image, _goal_bottom_rect, Scalar(0,140,255), 2);	
@@ -484,7 +483,8 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 void GoalDetector::isValid()
 {
 	SmartRect currentRect = _pastRects[0];
-	/*for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
+#if 0
+	for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
 	{
 		if(!(*it == currentRect))
 		{
@@ -492,13 +492,11 @@ void GoalDetector::isValid()
 			return;
 		}
 	}
-	_isValid = true;*/
-		
-	if(currentRect == SmartRect(Rect()))
+#endif
+	if (currentRect == SmartRect(Rect()))
 		_isValid = false;
 	else
 		_isValid = true;
-	return;
 }
 
 

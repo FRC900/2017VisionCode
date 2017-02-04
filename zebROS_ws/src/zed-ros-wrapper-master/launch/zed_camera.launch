@@ -20,7 +20,7 @@
     <param name="resolution"            value="2" />
     <param name="quality"               value="1" />
     <param name="sensing_mode"          value="1" />
-    <param name="frame_rate"            value="30" />
+    <param name="frame_rate"            value="15" />
     <param name="odometry_db"           value="" />
     <param name="openni_depth_mode"     value="0" />
     <param name="gpu_id"                value="-1" />

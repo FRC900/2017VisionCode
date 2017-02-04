@@ -87,6 +87,7 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
    DEPENDENCIES
    std_msgs
    geometry_msgs
+   navx_publisher
  )
 
 ################################################
@@ -121,7 +122,7 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES goal_detection
-  CATKIN_DEPENDS roscpp rospy message_runtime
+  CATKIN_DEPENDS roscpp rospy message_runtime navx_publisher
 #  DEPENDS system_lib
 )
 
