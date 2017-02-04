@@ -191,7 +191,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 500.0))
+		if ((br.area() <= 250.0))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
