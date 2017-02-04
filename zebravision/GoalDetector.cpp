@@ -484,7 +484,7 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 void GoalDetector::isValid()
 {
 	SmartRect currentRect = _pastRects[0];
-	for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
+	/*for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
 	{
 		if(!(*it == currentRect))
 		{
@@ -492,8 +492,15 @@ void GoalDetector::isValid()
 			return;
 		}
 	}
-	_isValid = true;
+	_isValid = true;*/
+		
+	if(currentRect == SmartRect(Rect()))
+		_isValid = false;
+	else
+		_isValid = true;
+	return;
 }
+
 
 // Simple class to encapsulate a rect plus a slightly
 // more complex than normal comparison function
