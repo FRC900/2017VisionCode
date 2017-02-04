@@ -38,31 +38,21 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, cons
 	// Maybe pyrdown both inputs for speed?
 
 	gd->findBoilers(cvFrame->image, cvDepth->image);
-
-#if 0
-	point_msg.x = pt.x;
-	point_msg.y = pt.y;
-	point_msg.z = pt.z;
-#endif
-
-
-	geometry_msgs::Point32 point_msg;
-	Point3f pt = gd->goal_pos();
+	const Point3f pt = gd->goal_pos();
 
 	goal_detection::GoalDetection gd_msg;
 	gd_msg.header.stamp = ros::Time::now();
 	gd_msg.location.x = pt.x;
 	gd_msg.location.y = pt.y;
 	gd_msg.location.z = pt.z;
-	gd_msg.valid = gd->dist_to_goal() != -1;
-	gd_msg.navx_timestamp =  navxMsg->data;
-	pub.publish(point_msg);
+	gd_msg.valid = gd->dist_to_goal() != -1.0f;
+	gd_msg.navx_timestamp = navxMsg->data;
+	pub.publish(gd_msg);
 
 	if (!batch)
 	{
 		Mat frame(cvFrame->image.clone());
 		gd->drawOnFrame(frame, gd->getContours(cvFrame->image));
-		cout << "Size : " << cvFrame->image.size() << endl;
 		pyrDown(frame, frame);
 		imshow("Image", frame);
 		waitKey(5);
@@ -74,13 +64,13 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "goal_detect");
 
 	ros::NodeHandle nh;
-	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_raw_color", 1);
-	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 1);
-	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 1);
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_raw_color", 10);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 10);
+	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
 
 	typedef sync_policies::ApproximateTime<Image, Image, navx_publisher::stampedUInt64> MySyncPolicy;
 	// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-	Synchronizer<MySyncPolicy> sync(MySyncPolicy(50), frame_sub, depth_sub, navx_sub);
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), frame_sub, depth_sub, navx_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2, _3));
 
 	// Create goal detector class
@@ -90,7 +80,7 @@ int main(int argc, char** argv)
 	gd = new GoalDetector(fov, size, true);
 
 	// Set up publisher
-	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 1);
+	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 10);
 
 	ros::spin();
 

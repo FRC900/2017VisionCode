@@ -94,6 +94,7 @@ set (NAVX_SRCS
  generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   navx_publisher
  )
 
 ################################################
