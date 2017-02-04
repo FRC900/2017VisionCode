@@ -5,9 +5,11 @@
 
 #include "geometry_msgs/Quaternion.h"
 #include "sensor_msgs/Imu.h"
+#include "nav_msgs/Odometry.h"
 #include "geometry_msgs/Vector3.h"
 #include "navXTimeSync/AHRS.h"
 #include "navx_publisher/stampedUInt64.h"
+#include <tf/transform_datatypes.h>
 
 using namespace std;
 
@@ -29,11 +31,12 @@ int main(int argc, char** argv)
 	geometry_msgs::Vector3 linear_vel;
 	geometry_msgs::Vector3 angular_vel;
 	sensor_msgs::Imu imu_msg;
+	nav_msgs::Odometry odom;
 
 
-	navx_publisher::stampedUInt64 last_time;
-	tf::Vector3 last_rot;
-	tf::Vector3 rot;
+	unsigned long long last_time;
+	tf::Quaternion last_rot;
+	tf::Quaternion rot;
 
 	AHRS nx("/dev/ttyACM0");
 	while(ros::ok()) {
@@ -59,7 +62,7 @@ int main(int argc, char** argv)
 
 		tf::Quaternion pose;
 		tf::quaternionMsgToTF(orientation, pose);
-		rot = orientation * last_rot.inverse();
+		rot = pose * last_rot.inverse();
 		double roll, pitch, yaw;
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 		float time = timestamp.data - last_time;
@@ -80,7 +83,7 @@ int main(int argc, char** argv)
 		odom.twist.twist.angular = angular_vel;
 
 		
-		imu_msg.angular_velocity_covariance = [0,0,0,0,0,0,0,0,0];
+		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 
 		imu_msg.header.stamp = ros::Time::now();
 		time_pub.publish(timestamp);
