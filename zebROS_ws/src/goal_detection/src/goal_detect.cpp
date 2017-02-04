@@ -49,7 +49,7 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, cons
 	gd_msg.location.x = pt.x;
 	gd_msg.location.y = pt.y;
 	gd_msg.location.z = pt.z;
-	gd_msg.valid = gd->dist_to_goal() != -1.0f;
+	gd_msg.valid = gd->Valid();
 	gd_msg.navx_timestamp = navxMsg->data;
 	pub.publish(gd_msg);
 
