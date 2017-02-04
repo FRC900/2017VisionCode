@@ -131,7 +131,7 @@ catkin_package(
 #  LIBRARIES goal_detection
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
-   CATKIN_DEPENDS message_generation
+   CATKIN_DEPENDS message_runtime
 )
 
 ###########
