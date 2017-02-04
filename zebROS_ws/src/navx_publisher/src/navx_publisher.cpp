@@ -15,6 +15,7 @@ using namespace std;
 
 static ros::Publisher time_pub;
 static ros::Publisher imu_pub;
+static ros::Publisher odom_pub;
 
 int main(int argc, char** argv)
 {
@@ -24,6 +25,7 @@ int main(int argc, char** argv)
 	// Set up publisher
 	time_pub = nh.advertise<navx_publisher::stampedUInt64>("/navx/time", 50);
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
+	odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 50);
 	ros::Rate loop_time(20);
 	navx_publisher::stampedUInt64 timestamp;
 	geometry_msgs::Quaternion orientation;
@@ -88,7 +90,7 @@ int main(int argc, char** argv)
 		imu_msg.header.stamp = ros::Time::now();
 		time_pub.publish(timestamp);
 		imu_pub.publish(imu_msg);
-
+		odom_pub.publish(odom);
 		ros::spinOnce();
 		loop_time.sleep();
 	}
