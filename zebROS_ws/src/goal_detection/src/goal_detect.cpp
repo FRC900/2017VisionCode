@@ -24,7 +24,7 @@
 using namespace cv;
 using namespace std;
 using namespace sensor_msgs;
-using namespace message_filters;;
+using namespace message_filters;
 
 static ros::Publisher pub;
 static GoalDetector *gd;
