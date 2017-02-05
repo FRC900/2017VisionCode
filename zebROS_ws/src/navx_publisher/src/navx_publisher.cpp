@@ -40,6 +40,8 @@ int main(int argc, char** argv)
 	tf::Quaternion last_rot;
 	tf::Quaternion rot;
 
+	bool firstrun = true;
+
 	AHRS nx("/dev/ttyACM0");
 	while(ros::ok()) {
 		timestamp.data = nx.GetLastSensorTimestamp();
@@ -62,8 +64,11 @@ int main(int argc, char** argv)
 		linear_vel.y = nx.GetVelocityY();
 		linear_vel.z = nx.GetVelocityZ();
 
+
+
 		tf::Quaternion pose;
 		tf::quaternionMsgToTF(orientation, pose);
+		if(firstrun) last_rot = pose;
 		rot = pose * last_rot.inverse();
 		double roll, pitch, yaw;
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
@@ -72,10 +77,11 @@ int main(int argc, char** argv)
 		angular_vel.y = pitch / time;
 		angular_vel.z = yaw / time;
 		imu_msg.angular_velocity = angular_vel;
-		last_rot = rot;
+		last_rot = pose;
 		last_time = timestamp.data;
 
-		
+		firstrun = false;		
+
 		odom.pose.pose.position.x = nx.GetDisplacementX();
 		odom.pose.pose.position.y = nx.GetDisplacementY();
 		odom.pose.pose.position.z = nx.GetDisplacementZ();
