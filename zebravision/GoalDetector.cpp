@@ -503,6 +503,7 @@ void GoalDetector::isValid()
 		_isValid = true;
 }
 
+
 // Simple class to encapsulate a rect plus a slightly
 // more complex than normal comparison function
 SmartRect::SmartRect(const cv::Rect &rectangle):

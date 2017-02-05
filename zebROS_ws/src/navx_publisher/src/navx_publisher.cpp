@@ -5,14 +5,17 @@
 
 #include "geometry_msgs/Quaternion.h"
 #include "sensor_msgs/Imu.h"
+#include "nav_msgs/Odometry.h"
 #include "geometry_msgs/Vector3.h"
 #include "navXTimeSync/AHRS.h"
 #include "navx_publisher/stampedUInt64.h"
+#include <tf/transform_datatypes.h>
 
 using namespace std;
 
 static ros::Publisher time_pub;
 static ros::Publisher imu_pub;
+static ros::Publisher odom_pub;
 
 int main(int argc, char** argv)
 {
@@ -22,6 +25,7 @@ int main(int argc, char** argv)
 	// Set up publisher
 	time_pub = nh.advertise<navx_publisher::stampedUInt64>("/navx/time", 50);
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
+	odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 50);
 	ros::Rate loop_time(20);
 	navx_publisher::stampedUInt64 timestamp;
 	geometry_msgs::Quaternion orientation;
@@ -29,11 +33,14 @@ int main(int argc, char** argv)
 	geometry_msgs::Vector3 linear_vel;
 	geometry_msgs::Vector3 angular_vel;
 	sensor_msgs::Imu imu_msg;
+	nav_msgs::Odometry odom;
 
 
-	navx_publisher::stampedUInt64 last_time;
-	tf::Vector3 last_rot;
-	tf::Vector3 rot;
+	unsigned long long last_time;
+	tf::Quaternion last_rot;
+	tf::Quaternion rot;
+
+	bool firstrun = true;
 
 	AHRS nx("/dev/ttyACM0");
 	while(ros::ok()) {
@@ -57,9 +64,12 @@ int main(int argc, char** argv)
 		linear_vel.y = nx.GetVelocityY();
 		linear_vel.z = nx.GetVelocityZ();
 
+
+
 		tf::Quaternion pose;
 		tf::quaternionMsgToTF(orientation, pose);
-		rot = orientation * last_rot.inverse();
+		if(firstrun) last_rot = pose;
+		rot = pose * last_rot.inverse();
 		double roll, pitch, yaw;
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 		float time = timestamp.data - last_time;
@@ -67,10 +77,11 @@ int main(int argc, char** argv)
 		angular_vel.y = pitch / time;
 		angular_vel.z = yaw / time;
 		imu_msg.angular_velocity = angular_vel;
-		last_rot = rot;
+		last_rot = pose;
 		last_time = timestamp.data;
 
-		
+		firstrun = false;		
+
 		odom.pose.pose.position.x = nx.GetDisplacementX();
 		odom.pose.pose.position.y = nx.GetDisplacementY();
 		odom.pose.pose.position.z = nx.GetDisplacementZ();
@@ -80,12 +91,12 @@ int main(int argc, char** argv)
 		odom.twist.twist.angular = angular_vel;
 
 		
-		imu_msg.angular_velocity_covariance = [0,0,0,0,0,0,0,0,0];
+		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 
 		imu_msg.header.stamp = ros::Time::now();
 		time_pub.publish(timestamp);
 		imu_pub.publish(imu_msg);
-
+		odom_pub.publish(odom);
 		ros::spinOnce();
 		loop_time.sleep();
 	}
