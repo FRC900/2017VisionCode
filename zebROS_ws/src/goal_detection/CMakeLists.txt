@@ -20,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -113,7 +112,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES goal_detection
-  CATKIN_DEPENDS roscpp rospy message_runtime navx_publisher
+  CATKIN_DEPENDS roscpp message_runtime navx_publisher
 #  DEPENDS system_lib
 )
 
