@@ -52,15 +52,8 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 find_package(OpenCV REQUIRED)
-find_package(ZED REQUIRED)
-find_package(CUDA REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
-# find_package(ZMQ REQUIRED)
-find_library (LibTinyXML2 tinyxml2)
-include_directories( ${OpenCV_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIRS} ${ZED_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIR} ../../../zebravision ../../..)
-link_directories(${ZED_LIBRARY_DIR})
-link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
+
+include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 
 ## Generate messages in the 'msg' folder
  add_message_files(
@@ -86,8 +79,6 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   std_msgs
-   geometry_msgs
    navx_publisher
  )
 
@@ -143,19 +134,12 @@ include_directories(
 #   src/${PROJECT_NAME}/goal_detection.cpp
 # )
 
-
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(goal_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 ## Declare a C++ executable
-add_executable( goal_detection_node src/goal_detect.cpp ../../../zebravision/GoalDetector.cpp ../../../zebravision/cameraparams.cpp ../../../zebravision/zedparams.cpp ../../../zebravision/Utilities.cpp ../../../zebravision/objtype.cpp ../../../zebravision/track3d.cpp ../../../zebravision/kalman.cpp ../../../zebravision/hungarian.cpp  ../../../zebravision/ZvSettings.cpp)
+add_executable( goal_detection_node src/goal_detect.cpp ../../../zebravision/GoalDetector.cpp ../../../zebravision/Utilities.cpp ../../../zebravision/objtype.cpp ../../../zebravision/track3d.cpp ../../../zebravision/kalman.cpp ../../../zebravision/hungarian.cpp  ../../../zebravision/ZvSettings.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(goal_detection_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(goal_detection_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(goal_detection_node
