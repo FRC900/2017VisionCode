@@ -38,6 +38,7 @@ GenInitNegFromVideo
 GenInitNegFromFile
 *.stackdump
 goal_detect
+FuelDetect
 
 # Metadata
 *.aliases

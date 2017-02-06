@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(goal_detection)
 set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -DZED_SUPPORT -Wall")
+add_definitions(-std=c++11 -Wall)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 
@@ -11,12 +11,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
+  message_filters
+  cv_bridge
+  navx_publisher
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -48,22 +50,15 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 find_package(OpenCV REQUIRED)
-find_package(ZED REQUIRED)
-find_package(CUDA REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
-# find_package(ZMQ REQUIRED)
-find_library (LibTinyXML2 tinyxml2)
-include_directories( ${OpenCV_INCLUDE_DIRS} ${ZMQ_INCLUDE_DIRS} ${ZED_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR} ${Boost_INCLUDE_DIR} ../../../zebravision ../../..)
-link_directories(${ZED_LIBRARY_DIR})
-link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
+
+include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
+ add_message_files(
+   FILES
+   GoalDetection.msg
 #   Message2.msg
-# )
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -80,10 +75,10 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   navx_publisher
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -117,7 +112,7 @@ link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES goal_detection
-#  CATKIN_DEPENDS roscpp rospy
+  CATKIN_DEPENDS roscpp message_runtime navx_publisher
 #  DEPENDS system_lib
 )
 
@@ -132,30 +127,31 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(goal_detection
-#   src/${PROJECT_NAME}/goal_detection.cpp
-# )
-
-
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(goal_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 ## Declare a C++ executable
-add_executable( goal_detection_node src/goal_detect.cpp ../../../zebravision/GoalDetector.cpp ../../../zebravision/cameraparams.cpp ../../../zebravision/zedparams.cpp ../../../zebravision/Utilities.cpp ../../../zebravision/objtype.cpp ../../../zebravision/track3d.cpp ../../../zebravision/kalman.cpp ../../../zebravision/hungarian.cpp  ../../../zebravision/ZvSettings.cpp)
+add_executable(goal_detection_node
+  src/goal_detect.cpp
+  ../../../zebravision/GoalDetector.cpp
+  ../../../zebravision/Utilities.cpp
+  ../../../zebravision/objtype.cpp
+  ../../../zebravision/track3d.cpp
+  ../../../zebravision/kalman.cpp
+  ../../../zebravision/hungarian.cpp
+  ../../../zebravision/ZvSettings.cpp
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(goal_detection_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(goal_detection_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(goal_detection_node
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS} 
+  ${LibTinyXML2}
 )
-target_link_libraries( goal_detection_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_nppi_LIBRARY} ${CUDA_npps_LIBRARY} ${Boost_LIBRARIES} ${ZMQ_LIBRARIES} ${LibTinyXML2})
 
 #############
 ## Install ##

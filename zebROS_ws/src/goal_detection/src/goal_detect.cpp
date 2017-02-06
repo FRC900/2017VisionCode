@@ -1,84 +1,122 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <zmq.hpp>
 
 #include "GoalDetector.hpp"
-#include "Utilities.hpp"
-#include "track3d.hpp"
-#include "frameticker.hpp"
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "std_msgs/Float64MultiArray.h"
+#include <ros/ros.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <geometry_msgs/TransformStamped.h>
+#include "navx_publisher/stampedUInt64.h"
 
-#include <sstream>
+#include <geometry_msgs/Point32.h>
+#include <cv_bridge/cv_bridge.h>
 
 #include "goal_detection/GoalDetection.h"
 
+#include <sstream>
+
+#include "GoalDetector.hpp"
+
 using namespace cv;
 using namespace std;
+using namespace sensor_msgs;
+using namespace message_filters;
 
-class SubscribeAndPublish
+static ros::Publisher pub;
+static GoalDetector *gd;
+static bool batch = true;
+
+
+void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
-public:
-  SubscribeAndPublish()
-  {
-    //Topic you want to publish
-    pub_ = n.advertise<goal_detection::GoalDetection>("pub_msg", 1);
+	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
+	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
 
-    //wait for messages from ZED wrapper
-    //in order to recieve messages from camera_info we have to get a message from image_rect_color first
-    ros::topic::waitForMessage("/zed/left/image_rect_color");
+	// pyrDown both inputs for speed?
+	Mat frame(cvFrame->image.clone());
+	pyrDown(frame, frame);
+	Mat depth(cvDepth->image.clone());
+	pyrDown(depth, depth);
 
-    //Topic you want to subscribe
-    sub_ = n.subscribe("/zed/left/image_rect_color", 1, &SubscribeAndPublish::callback, this);
-    sub_ = n.subscribe("/zed/left/camera_info", 1, &SubscribeAndPublish::initInfo, this);
+	gd->findBoilers(frame, depth);
+	const Point3f pt = gd->goal_pos();
 
-    //Initialize GoalDetector object
-    gd = new GoalDetector(camParams.fov, , !args.batchMode);
-  }
+	goal_detection::GoalDetection gd_msg;
+	//gd_msg.header.stamp = ros::Time::now();
+	gd_msg.location.x = pt.x;
+	gd_msg.location.y = pt.y;
+	gd_msg.location.z = pt.z;
+	gd_msg.valid = gd->Valid();
+	gd_msg.navx_timestamp = navxMsg->data;
+	pub.publish(gd_msg);
 
-void callback(const std_msgs::sensor_msgs/Image msg) 
-{
-	cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-	gd.findBoilers(frame,depth);
-
-	goal_detection::GoalDetection pub_msg;
-	pub_msg.location.x = gd.goal_pos.x;
-	pub_msg.location.y = gd.goal_pos.y;
-	pub_msg.location.z = gd.goal_pos.z;
-	pub_msg.distance = gd.dist_to_goal;
-	pub_msg.angle = gd.angle_to_goal;
-
-	goal_pub.publish(pub_msg);
+	if (!batch)
+	{
+		gd->drawOnFrame(frame, gd->getContours(cvFrame->image));
+		imshow("Image", frame);
+		waitKey(5);
+	}
 }
 
-void initInfo(const sensor_msgs::CameraInfo msg) {
-	float fx = msg.P[0];
-	float fy = msg.P[5];
-	float fov_x = 2.0 * atanf(
+void callbackNavx(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg) {
+	cout << "callback navx" << endl;
+	callback(frameMsg, depthMsg, navxMsg);
 }
 
-private:
-  ros::NodeHandle n; 
-  ros::Publisher pub_;
-  ros::Subscriber sub_;
-  
-  GoalDetector gd;
-  cv::Point2f fov_size;
-  Mat frame_;
-};
+void callbackNoNavx(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg) {
+	navx_publisher::stampedUInt64 fakeMsg;
+	fakeMsg.header.stamp = ros::Time::now();
+	fakeMsg.data = 0;
+	const boost::shared_ptr<navx_publisher::stampedUInt64> ptr = boost::make_shared<navx_publisher::stampedUInt64>(fakeMsg);
+	cout << "Callback no navx" << endl;
+	callback(frameMsg,depthMsg, ptr);
+}
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-  //Initiate ROS
-  ros::init(argc, argv, "goal_detection");
+	ros::init(argc, argv, "goal_detect");
 
-  //Create an object of class SubscribeAndPublish that will take care of everything
-  SubscribeAndPublish SAPObject;
+	ros::NodeHandle nh;
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_raw_color", 10);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 10);
+	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
 
-  ros::spin();
+	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher
+	ros::Time stop_t = ros::Time::now() + wait_t;
+	while(ros::Time::now() < stop_t && navx_sub.getSubscriber().getNumPublishers() == 0) {
+		ros::Duration(0.5).sleep();
+		ros::spinOnce();
+		cout << "Waiting for a navx publisher" << endl;
+	}
+	
+	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy2;
+	typedef sync_policies::ApproximateTime<Image, Image, navx_publisher::stampedUInt64> MySyncPolicy3;
+	Synchronizer<MySyncPolicy2> sync2(MySyncPolicy2(50), frame_sub, depth_sub);
+	Synchronizer<MySyncPolicy3> sync3(MySyncPolicy3(50), frame_sub, depth_sub, navx_sub);
+	if(navx_sub.getSubscriber().getNumPublishers() == 0) {
+		cout << "Navx not found, running in debug mode" << endl;
+		// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+		sync2.registerCallback(boost::bind(&callbackNoNavx, _1, _2));
+	} else {
+		// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+		sync3.registerCallback(boost::bind(&callbackNavx, _1, _2, _3));
+	}
+	// Create goal detector class
+	const float hFov = 105.;
+	const Size size(1280/2, 720/2); // 720P but downsampled by 2x for speed
+	const Point2f fov(hFov * (M_PI / 180.), hFov * (M_PI / 180.) * ((float)size.height / size.width));
+	gd = new GoalDetector(fov, size, !batch);
 
-  return 0;
+	// Set up publisher
+	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 10);
+
+	ros::spin();
+
+	delete gd;
+
+	return 0;
 }

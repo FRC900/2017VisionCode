@@ -1,0 +1,10 @@
+<launch>
+  
+  <group ns="zed">
+    <include file="$(find zed_wrapper)/launch/zed.launch">
+  </group>
+  
+  <include file="$(find zed_wrapper)/launch/zed.launch">
+  <include file="$(find zed_wrapper)/launch/zed.launch">
+  
+</launch>
