@@ -60,7 +60,7 @@ class BlobDetector:
     def processImage(self, image_msg, depth_msg):
         im = self.bridge.imgmsg_to_cv2(image_msg) # Convert image to cv mat using CVBridge
         # im = im[:.4*len(im)]
-	
+    
         hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV) # convert color space of image to HSV
         self.msg = PointCloud() # Initialize message to store ball types
 
@@ -72,11 +72,11 @@ class BlobDetector:
     
     def screenToWorld(self, obj_rect, depth, fov_size, frame_size, camera_elavation):
         _depth_obj = 0.127
-        rect_center = tuple((obj_rect[0] + obj_rect[2]/2), (obj_rect[1] + obj_rect[3]/2))
-        dist_to_center = tuple((rect_center[0] - (frame_size[0]/2)), (-1*rect_center[1] + frame_size[1]/2))
+        rect_center = tuple([obj_rect[0] + obj_rect[2]/2., obj_rect[1] + obj_rect[3]/2.])
+        dist_to_center = tuple([rect_center[0] - (frame_size[0]/2.), -1*rect_center[1] + frame_size[1]/2.])
         
-        azimuth = math.atan2(dist_to_center[0] / (0.5 * frame_size[0] / math.tan(fov_size[0] / 2)))
-        inclination = math.atan2(dist_to_center[1] / (0.5 * frame_size[1] / math.tan(fov_size[1] / 2)))
+        azimuth = math.atan(dist_to_center[0] / (0.5 * frame_size[0] / math.tan(fov_size[0] / 2.)))
+        inclination = math.atan(dist_to_center[1] / (0.5 * frame_size[1] / math.tan(fov_size[1] / 2.)))
         
         depth += _depth_obj / 2.
         
@@ -91,7 +91,7 @@ class BlobDetector:
         im = passed_im.copy() # Make a copy of image to modify
         if self.isTesting:
             self.image = im
-	    # mask = cv2.convertScaleAbs(mask)
+        # mask = cv2.convertScaleAbs(mask)
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[1] # Find contours on masked iamge
         points = []
         approx_contours = []
@@ -108,15 +108,24 @@ class BlobDetector:
             
             hFov = 105.0
             camera_elavation = .508
-            screen_size = (1280, 720)
-            fov_size = tuple(
-                            (hFov * (math.pi / 180.) * (screen_size[0] / screen_size[1]), 
-                            (hFov * (math.pi / 180.) * (screen_size[0] / screen_size[1])
-                            )
-            objRect = cv2.BoundingRect(c)
-            point3d = screenToWorld(objRect, depth_msg.data[c_center[0]][c_center[1]], fov_size, screen_size, camera_elavation)
+            screen_size = tuple([1280, 720])
+            fov_size = tuple([hFov*(math.pi/180.)*(screen_size[0]/screen_size[1]),
+                              hFov*(math.pi/180.)*(screen_size[0]/screen_size[1])])
+            objRect = cv2.boundingRect(c)
+            # point3d = self.screenToWorld(objRect, depth_msg.data[c_center[1]][c_center[0]], fov_size, screen_size, camera_elavation)
+            print "objRect: {}\n \
+                   depth_msg.data[c_center[1]][c_center[0]]: {}\n \
+                   fov_size: {}\n \
+                   screen_size: {}\n \
+                   camera_elavation: {}\n \
+                   ".format(objRect, 
+                            depth_msg.data[c_center[1]][c_center[0]],
+                            fov_size,
+                            screen_size,
+                            camera_elavation)
+            point3d = self.screenToWorld([0, 1, 2, 3], 10, [10, 10], [50 ,30], 10)
             
-            points.append(point3d)
+            #points.append(point3d)
             approx_contours.append(c)
         # self.msg.points.resize(len(points))
         for i, point in enumerate(points):
@@ -126,7 +135,6 @@ class BlobDetector:
             point.z = point[2]
             self.msg.points.append(point)
 
-       
             # self.msg.locations.append(msg_loc)
             # self.msg.heights.append(float((max(approx, key=lambda x: x[0][1])[0][1] - min(approx, key=lambda x: x[0][1])[0][1])) / len(im))
             # cv2.putText(im, label_color, center, cv2.FONT_HERSHEY_PLAIN, 2, (100, 255, 100))
@@ -137,7 +145,7 @@ class BlobDetector:
                 cv2.drawContours(self.image, approx_contours, -1, (100, 255, 100), 2)
     def window_runner(self):
         while(True):
-            cv2.imshow('HSV', self.image)
+            cv2.imshow('HSV', cv2.resize(self.image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
             k = cv2.waitKey(10)
             if k == 27:
                 self.window_thread.stop()
