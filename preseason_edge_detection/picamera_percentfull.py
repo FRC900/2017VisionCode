@@ -4,34 +4,40 @@ from picamera import PiCamera
 import time
 import cv2
 import numpy as np
+import serial
 
 
 def nothing(x):
     pass
 
 camera = PiCamera()
-camera.resolution = (640, 480)
+camera.resolution = (320, 240)
 camera.framerate = 30
 
-rawCapture = PiRGBArray(camera, size=(640, 480))
+rawCapture = PiRGBArray(camera, size=(320, 240))
 
 time.sleep(0.1)
+
+print('Opening serial port...')
+ser = serial.Serial('/dev/ttyUSB0', 9600)
+print('Opened serial port')
 
 cv2.namedWindow('frame1')
 kernel = np.ones((5,5),np.uint8)
 
 # create trackbars for color change
 # lower
-cv2.createTrackbar('HLo','frame1',19,179,nothing)
+cv2.createTrackbar('HLo','frame1',0,179,nothing)
 cv2.createTrackbar('SLo','frame1',57,255,nothing)
-cv2.createTrackbar('VLo','frame1',123,255,nothing)
+cv2.createTrackbar('VLo','frame1',141,255,nothing)
 # upper
-cv2.createTrackbar('HUp','frame1',52,179,nothing)
-cv2.createTrackbar('SUp','frame1',197,255,nothing)
+cv2.createTrackbar('HUp','frame1',85,179,nothing)
+cv2.createTrackbar('SUp','frame1',255,255,nothing)
 cv2.createTrackbar('VUp','frame1',255,255,nothing)
 
 cv2.createTrackbar('areaTrackbar','frame1',10000,50000,nothing)
 
+percentFull = 0
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
 	# Take each frame
@@ -110,8 +116,11 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 				cv2.rectangle(image,(minX, minY),(maxX, maxY),(255,255,0),3)
 
 			percentFull = ((340 - minY) / 340.0) * 100
-			print(percentFull)
 
+	print('Setting percent full to ' + str(int(percentFull)))
+	ser.write(chr(int(percentFull)))
+	time.sleep(0.1)
+	percentFull = 0
 
 	rawCapture.truncate(0)
 
