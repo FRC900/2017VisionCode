@@ -12,11 +12,11 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	_frame_size(frame_size),
 	_isValid(false),
 	_pastRects(2),
-	_min_valid_confidence(0.25),
+	_min_valid_confidence(0.3),
 	_otsu_threshold(5),
 	_blue_scale(70),
 	_red_scale(50),
-	_camera_angle(530)
+	_camera_angle(530) // in tenths of a degree
 {
 	if (gui)
 	{
@@ -32,6 +32,8 @@ bool GoalDetector::Valid(void) const
 {
 	return _isValid;
 }
+
+
 // Compute a confidence score for an actual measurement given
 // the expected value and stddev of that measurement
 // Values around 0.5 are good. Values away from that are progressively
@@ -70,7 +72,9 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//confidences are higher than any previous one
 	for(size_t i = 0; i < top_info.size(); i++) {
 		for(size_t j = 0; j < bottom_info.size(); j++) {
-			if(top_info[i].pos.z < bottom_info[j].pos.z || top_info[i].vec_index == bottom_info[j].vec_index || abs(top_info[i].angle - bottom_info[j].angle) > 10.0)
+			if(top_info[i].pos.z < bottom_info[j].pos.z || 
+				top_info[i].vec_index == bottom_info[j].vec_index || 
+				fabsf(top_info[i].angle - bottom_info[j].angle) > 10.0)
 				continue;
 			if(!initialized) {
 				best_result_index_top = i;
@@ -84,13 +88,13 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 			}
 		}
 	}
-	cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
-	cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
-	cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
-	cout << "Found Goal: " << found_goal << " " << top_info[best_result_index_top].distance << " " << top_info[best_result_index_top].angle << endl;
 	
 	//say a goal is found if the sum of the confidences is higher than 0.5
-	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > 0.3) {
+	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > _min_valid_confidence) {
+		cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
+		cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
+		cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
+		cout << "Found Goal: " << found_goal << " " << top_info[best_result_index_top].distance << " " << top_info[best_result_index_top].angle << endl;
 		cout << "Found goal with confidence: " << top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence << endl;
 		_pastRects.push_back(SmartRect(top_info[best_result_index_top].rect));
 		_goal_pos      = top_info[best_result_index_top].pos;
@@ -200,7 +204,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
 #endif
-			_confidence.push_back(0);
 			continue;
 		}
 
@@ -210,7 +213,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 #ifdef VERBOSE
 			cout << "Contour " << i << " br().y out of range "<< br.br().y << endl;
 #endif
-			_confidence.push_back(0);
 			continue;
 		}*/
 
@@ -223,7 +225,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 #ifdef VERBOSE
 			cout << "Contour " << i << " depth out of range " << _depth_maxs[i] << endl;
 #endif
-			_confidence.push_back(0);
 			continue;
 		}
 
@@ -246,7 +247,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range for depth (depth/act/exp/ratio):" << _depth_maxs[i] << "/" << br.area() << "/" << exp_area << "/" << actualScreenArea << endl;
 #endif
-			_confidence.push_back(0);
 			continue;
 		}*/
 		//percentage of the object filled in
@@ -285,7 +285,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// higher is better
 		float confidence = (confidence_height + confidence_com_x + confidence_filled_area + confidence_ratio/2. + confidence_screen_area/2.) / 5.0;
-		_confidence.push_back(confidence);
 
 #ifdef VERBOSE
 		cout << "-------------------------------------------" << endl;
@@ -368,7 +367,7 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
     return countNonZero(imageOut) != 0;
 }
 
-// Use the camera FOV, image size and rect size to
+// Use the camera FOV, a known target size and the apparent size to
 // estimate distance to a target
 float GoalDetector::distanceUsingFOV(ObjectType _goal_shape, const Rect &rect) const
 {
@@ -377,7 +376,7 @@ float GoalDetector::distanceUsingFOV(ObjectType _goal_shape, const Rect &rect) c
 	return _goal_shape.height() / (2.0 * tanf(size_fov / 2.0));
 }
 
-float GoalDetector::distanceUsingFixedHeight(const Rect &rect, Point center , float expected_delta_height) const {
+float GoalDetector::distanceUsingFixedHeight(const Rect &rect, const Point &center, float expected_delta_height) const {
 	/*
 	cout << "Center: " << center << endl;
 	float percent_image = ((float)center.y - (float)_frame_size.height/2.0)  / (float)_frame_size.height;
@@ -396,10 +395,10 @@ float GoalDetector::distanceUsingFixedHeight(const Rect &rect, Point center , fl
 	cout << "Distance to ground: " << distance_ground << endl;
 	return distance_ground; */
 
-	//float focal_length_px = 0.5 * _frame_size.height / tanf(0.777 / 2.0);
-	float focal_length_px = 750.0;
-	float to_center = (402.2 - (float)center.y);
-	float distance_diagonal = (focal_length_px * expected_delta_height) / (focal_length_px * sin((_camera_angle/10.0) * (M_PI/180.0)) + to_center);
+	//float focal_length_px = 750.0;
+	const float focal_length_px = (_frame_size.height / 2.0) / tanf(_fov_size.y / 2.0);
+	const float to_center = _frame_size.height / 2.0 - (float)center.y;
+	const float distance_diagonal = (focal_length_px * expected_delta_height) / (focal_length_px * sin((_camera_angle/10.0) * (M_PI/180.0)) + to_center);
 	return distance_diagonal;
 }
 
@@ -466,10 +465,7 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 		drawContours(image, _contours, i, Scalar(0,0,255), 3);
 		Rect br(boundingRect(_contours[i]));
 		rectangle(image, br, Scalar(255,0,0), 2);
-//		stringstream confStr;
-//		confStr << fixed << setprecision(2) << _confidence[i];
-//		putText(image, confStr.str(), br.tl(), FONT_HERSHEY_PLAIN, 1, Scalar(255,0,0));
-//		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
+		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
 	}
 	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect()))) {
 		rectangle(image, _goal_top_rect, Scalar(0,255,0), 2);	
