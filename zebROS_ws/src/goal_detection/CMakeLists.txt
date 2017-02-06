@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(goal_detection)
 set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -DZED_SUPPORT -Wall")
+add_definitions(-std=c++11 -Wall)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 
@@ -11,7 +11,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
   message_filters
   cv_bridge
   navx_publisher
@@ -129,23 +128,31 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(goal_detection
-#   src/${PROJECT_NAME}/goal_detection.cpp
-# )
-
 ## Declare a C++ executable
-add_executable( goal_detection_node src/goal_detect.cpp ../../../zebravision/GoalDetector.cpp ../../../zebravision/Utilities.cpp ../../../zebravision/objtype.cpp ../../../zebravision/track3d.cpp ../../../zebravision/kalman.cpp ../../../zebravision/hungarian.cpp  ../../../zebravision/ZvSettings.cpp)
+add_executable(goal_detection_node
+  src/goal_detect.cpp
+  ../../../zebravision/GoalDetector.cpp
+  ../../../zebravision/Utilities.cpp
+  ../../../zebravision/objtype.cpp
+  ../../../zebravision/track3d.cpp
+  ../../../zebravision/kalman.cpp
+  ../../../zebravision/hungarian.cpp
+  ../../../zebravision/ZvSettings.cpp
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(goal_detection_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(goal_detection_node 
+  ${${PROJECT_NAME}_EXPORTED_TARGETS} 
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(goal_detection_node
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS} 
+  ${LibTinyXML2}
 )
-target_link_libraries( goal_detection_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_nppi_LIBRARY} ${CUDA_npps_LIBRARY} ${Boost_LIBRARIES} ${ZMQ_LIBRARIES} ${LibTinyXML2})
 
 #############
 ## Install ##
