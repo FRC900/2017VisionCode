@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
 		odom.twist.twist.linear = linear_vel;
 		odom.twist.twist.angular = angular_vel;
-
+		odom.header.stamp = ros::Time::now();
 		
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 
