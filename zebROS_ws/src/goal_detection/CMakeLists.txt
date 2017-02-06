@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   cv_bridge
   navx_publisher
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
