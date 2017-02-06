@@ -9,7 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
-  message_generation
+  sensor_msgs
+  cv_bridge
+  
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,10 +48,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  FuelDetection.msg
-)
+#add_message_files(
+#  FILES
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,11 +67,11 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-  geometry_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+#   geometry_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -106,7 +107,7 @@ find_package(OpenCV 2 REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fuel_detection
- CATKIN_DEPENDS std_msgs message_runtime
+#  CATKIN_DEPENDS std_msgs
 #  DEPENDS system_lib
 )
 

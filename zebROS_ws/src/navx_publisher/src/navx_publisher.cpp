@@ -36,8 +36,8 @@ int main(int argc, char** argv)
 	nav_msgs::Odometry odom;
 
 
-	unsigned long long last_time;
-	tf::Quaternion last_rot;
+	unsigned long long last_time = 0ULL;
+	tf::Quaternion last_rot (tf::Vector3(0.,0.,0.),0.);
 	tf::Quaternion rot;
 
 	bool firstrun = true;
