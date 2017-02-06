@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(navx_publisher)
+project(localization)
 set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall")
@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   cv_bridge
   message_generation
+  goal_detection
 )
 
 ## System dependencies are found with CMake's conventions
@@ -62,13 +63,6 @@ link_directories(${ZED_LIBRARY_DIR})
 link_directories(${CUDA_LIBRARY_DIRS} /usr/local/cuda/lib64/stubs)
 
 
-set (NAVX_SRCS
-	../../../navXTimeSync/AHRS.cpp
-	../../../navXTimeSync/ContinuousAngleTracker.cpp
-	../../../navXTimeSync/InertialDataIntegrator.cpp
-	../../../navXTimeSync/OffsetTracker.cpp
-	../../../navXTimeSync/SerialIO.cpp
-	../../../navXTimeSync/SerialPort.cpp )
 
 ## Generate messages in the 'msg' folder
  add_message_files(
@@ -94,6 +88,8 @@ set (NAVX_SRCS
  generate_messages(
    DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   geometry_msgs
+   goal_detection
  )
 
 ################################################
@@ -154,20 +150,22 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(goal_detection ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 ## Declare a C++ executable
-add_executable( navx_publisher_node src/navx_publisher.cpp ${NAVX_SRCS})
+add_executable( localization_node src/localization.cpp)
 
+
+add_dependencies(localization_node goal_detection_generate_messages_cpp)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(navx_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(localization ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(navx_publisher_node
+target_link_libraries(localization_node
   ${catkin_LIBRARIES}
 )
-target_link_libraries( navx_publisher_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_nppi_LIBRARY} ${CUDA_npps_LIBRARY} ${Boost_LIBRARIES} ${ZMQ_LIBRARIES} ${LibTinyXML2})
+target_link_libraries( localization_node ${OpenCV_LIBS} ${ZED_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_nppi_LIBRARY} ${CUDA_npps_LIBRARY} ${Boost_LIBRARIES} ${ZMQ_LIBRARIES} ${LibTinyXML2})
 
 
 #############
