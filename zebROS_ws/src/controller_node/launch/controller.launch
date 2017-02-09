@@ -1,8 +1,13 @@
 <launch>
 
   <group ns="zed">
-    <include file="$(find zed_wrapper)/launch/zed.launch">
+    <include file="$(find zed_wrapper)/launch/zed.launch"/>
   </group>
+  
+  <!--
+  	Figure out how to launch ZEDs together or separately
+  	Will use <machine> tag
+  -->
   
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
   
