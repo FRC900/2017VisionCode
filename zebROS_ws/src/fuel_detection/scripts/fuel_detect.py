@@ -25,27 +25,50 @@ import math
 import time
 import sys
 
+
 class BlobDetector:
     def __init__(self):
         self.isTesting = False
+	self.hl         = 20
+        self.sl         = 137
+        self.vl         = 80
+       	self.hu         = 149
+        self.su         = 255
+        self.vu         = 255
+        self.area_limit = 391
+
+        self.dp         = 2
+        self.min_dist   = 9
+        self.param1     = 246
+        self.param2     = 48
+        self.min_radius = 5
+        self.max_radius = 27
         if len(sys.argv) == 2:
             def nothing(x):
                 pass
             self.isTesting = True
-            self.image = np.zeros((720, 1280, 3), np.uint8)
+        self.contour_image = np.zeros((720, 1280, 3), np.uint8)
+        self.hough_image   = np.zeros((720, 1280, 3), np.uint8)
+            
+            # Create HSV tracker Window
             cv2.namedWindow('HSV')
-            cv2.createTrackbar('HL', 'HSV', 0, 180, nothing)
-            cv2.createTrackbar('SL', 'HSV', 0, 255, nothing)
-            cv2.createTrackbar('VL', 'HSV', 0, 255, nothing)
-            cv2.createTrackbar('HU', 'HSV', 0, 180, nothing)
-            cv2.createTrackbar('SU', 'HSV', 0, 255, nothing)
-            cv2.createTrackbar('VU', 'HSV', 0, 255, nothing)
-            self.hl = 0
-            self.sl = 0
-            self.vl = 0
-            self.hu = 0
-            self.su = 0
-            self.vu = 0
+            cv2.createTrackbar('HL', 'HSV', self.hl, 180, nothing)
+            cv2.createTrackbar('SL', 'HSV', self.sl, 255, nothing)
+            cv2.createTrackbar('VL', 'HSV', self.vl, 255, nothing)
+            cv2.createTrackbar('HU', 'HSV', self.hu, 180, nothing)
+            cv2.createTrackbar('SU', 'HSV', self.su, 255, nothing)
+            cv2.createTrackbar('VU', 'HSV', self.vu, 255, nothing)
+            cv2.createTrackbar('AREA_LIMIT', 'HSV', self.area_limit, 1000, nothing)
+
+            # Create Hough tracker Window
+            cv2.namedWindow('HOUGH')
+            cv2.createTrackbar('DP', 'HOUGH', self.dp, 20, nothing)
+            cv2.createTrackbar('MIN_DIST', 'HOUGH', self.min_dist, 100, nothing)
+            cv2.createTrackbar('PARAM1', 'HOUGH', self.param1, 700, nothing)
+            cv2.createTrackbar('PARAM2', 'HOUGH', self.param2, 200, nothing)
+            cv2.createTrackbar('MIN_RADIUS', 'HOUGH', self.min_radius, 100, nothing)
+            cv2.createTrackbar('MAX_RADIUS', 'HOUGH', self.max_radius, 100, nothing)
+
             self.test = self.window_runner() 
         
         self.bridge = CvBridge()
@@ -55,7 +78,7 @@ class BlobDetector:
         self.ts = message_filters.TimeSynchronizer([self.sub_image, self.sub_depth], 10)
         self.ts.registerCallback(self.processImage)
         
-        rospy.loginfo("BlobDetector initialized.")
+        rospy.loginfo("FuelDetector initialized.")
 
     def processImage(self, image_msg, depth_msg):
         im = self.bridge.imgmsg_to_cv2(image_msg) # Convert image to cv mat using CVBridge
@@ -88,20 +111,28 @@ class BlobDetector:
     
     
     def find_color(self, passed_im, depth_msg, mask):
-        im = passed_im.copy() # Make a copy of image to modify
+        contour_image = passed_im.copy() # Make a copy of image to modify
         if self.isTesting:
-            self.image = im
-        # mask = cv2.convertScaleAbs(mask)
+            self.contour_image = contour_image
+        
+        # Perform morphology "open" which performs dilate and expand with a kernal size of 3
+        k_size = 3
+        kernel = np.ones((k_size,k_size),np.uint8)
+        mask   = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        
+        # Find Contours on mask and process contours
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[1] # Find contours on masked iamge
         points = []
         approx_contours = []
         for c in contours:
             area = cv2.contourArea(c)
-            if area < 100: continue
-            # perim = cv2.arcLength(c, True)
-            # approx = cv2.approxPolyDP(c, .005*perim, True)
-            # if len(approx) == 20:
-            # approx_contours.append(approx)
+	    if area < self.area_limit: continue
+            
+            # Circles and blobs of circles should beat this condition
+            epsilon = 0.005*cv2.arcLength(c,True)
+            approx = cv2.approxPolyDP(c,epsilon,True)
+            if len(approx) < 20: continue
+
             moments = cv2.moments(c)
             center = (int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00']))
             c_center = (float(center[0]) / len(im[0]), float(center[1]) / len(im))
@@ -125,9 +156,35 @@ class BlobDetector:
                             camera_elavation)
             point3d = self.screenToWorld([0, 1, 2, 3], 10, [10, 10], [50 ,30], 10)
             
-            #points.append(point3d)
-            approx_contours.append(c)
-        # self.msg.points.resize(len(points))
+            # points.append(point3d)
+            # append the convex hull of the contours to fix ignoring the dimples
+            approx_contours.append(cv2.convexHull(c))
+
+        # Generate contour based mask
+        mask2 = np.zeros(mask.shape, np.uint8)
+        cv2.drawContours(mask2, approx_contours, -1, (255, 255, 255), -1)
+        # cv2.imshow('CONTOUR_MASK', mask2)
+
+        # Mask original image and create a grayscale image for hough circles
+        self.hough_image = cv2.bitwise_and(self.contour_image, self.contour_image, mask=mask2) # flip to mask if necessary ()
+        gray = cv2.cvtColor(cv2.cvtColor(self.hough_image, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY)
+
+        # Find hough circles 
+        # dp=3, minDist=20, param1=500, param2=50, minRadius=5, maxRadius=20
+        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp=self.dp, 
+                                      minDist=self.min_dist, param1=self.param1, param2=self.param2, 
+                                      minRadius=self.min_radius, maxRadius=self.max_radius)
+        
+        if circles is not None:
+            # convert the (x, y) coordinates and radius of the circles to integers
+            circles = np.round(circles[0, :]).astype("int")
+            # loop over the (x, y) coordinates and radius of the circles
+            for (x, y, r) in circles:
+                # draw the circle in the output image, then draw a rectangle
+                # corresponding to the center of the circle
+                cv2.circle(self.hough_image, (x, y), r, (0, 255, 0), 4)
+                cv2.rectangle(self.hough_image, (x - 2, y - 2), (x + 2, y + 2), (0, 128, 255), -1)         
+
         for i, point in enumerate(points):
             point = Point32()
             point.x = point[0]
@@ -145,19 +202,27 @@ class BlobDetector:
                 cv2.drawContours(self.image, approx_contours, -1, (100, 255, 100), 2)
     def window_runner(self):
         while(True):
-            cv2.imshow('HSV', cv2.resize(self.image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
+            cv2.imshow('HSV', cv2.resize(self.contour_image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA))
+            cv2.imshow('HOUGH', self.hough_image)
             k = cv2.waitKey(10)
-            if k == 27:
-                self.window_thread.stop()
-            self.hl = cv2.getTrackbarPos('HL', 'HSV')
-            self.sl = cv2.getTrackbarPos('SL', 'HSV')
-            self.vl = cv2.getTrackbarPos('VL', 'HSV')
-            self.hu = cv2.getTrackbarPos('HU', 'HSV')
-            self.su = cv2.getTrackbarPos('SU', 'HSV')
-            self.vu = cv2.getTrackbarPos('VU', 'HSV')
+                
+            self.hl         = cv2.getTrackbarPos('HL', 'HSV')
+            self.sl         = cv2.getTrackbarPos('SL', 'HSV')
+            self.vl         = cv2.getTrackbarPos('VL', 'HSV')
+            self.hu         = cv2.getTrackbarPos('HU', 'HSV')
+            self.su         = cv2.getTrackbarPos('SU', 'HSV')
+            self.vu         = cv2.getTrackbarPos('VU', 'HSV')
+            self.area_limit = cv2.getTrackbarPos('AREA_LIMIT', 'HSV')
+            self.dp         = cv2.getTrackbarPos('DP', 'HOUGH')
+            self.min_dist   = cv2.getTrackbarPos('MIN_DIST', 'HOUGH')
+            self.param1     = cv2.getTrackbarPos('PARAM1', 'HOUGH')
+            self.param2     = cv2.getTrackbarPos('PARAM2', 'HOUGH')
+            self.min_radius = cv2.getTrackbarPos('MIN_RADIUS', 'HOUGH')
+            self.max_radius = cv2.getTrackbarPos('MAX_RADIUS', 'HOUGH')
 
 if __name__ == "__main__":
     rospy.init_node("BlobDetector")
     bd = BlobDetector()
     rospy.spin()
     cv2.destroyAllWindows()
+            
