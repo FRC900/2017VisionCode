@@ -1,7 +1,7 @@
 <launch>
 
   <group ns="zed">
-    <include file="$(find zed_wrapper)/launch/zed.launch">
+    <include file="$(find zed_wrapper)/launch/zed.launch"/>
   </group>
   
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
