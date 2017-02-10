@@ -1,6 +1,9 @@
 <launch>
 
-  <group ns="zed">
+  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
+
+  <group>
+    <machine name="jetson2" address="ubuntu@10.9.0.12" env-loader="/opt/ros/kinetic/env.sh" user="ubuntu" password="ubuntu"/>
     <include file="$(find zed_wrapper)/launch/zed.launch"/>
   </group>
   
@@ -9,7 +12,7 @@
   	Will use <machine> tag
   -->
   
-  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
+  
   
   <!-- Uncomment when fuel detection is done
   <node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" />
