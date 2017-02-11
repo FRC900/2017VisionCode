@@ -22,7 +22,7 @@
   
   <!-- Master jetson Setup -->
   <group ns="zed_goal">
-    <machine name="jetson1" address="10.9.0.11" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonMaster.sh" user="ubuntu" password="ubuntu" default="true"/>
+    <machine name="jetson1" address="10.9.0.8" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonMaster.sh" user="ubuntu" password="ubuntu" default="true"/>
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value=""/>
       <arg name="zed_id" value="0"/>
