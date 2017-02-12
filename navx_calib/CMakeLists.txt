@@ -3,6 +3,7 @@ project (nvxcalib)
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch)
 
 FIND_PACKAGE (Threads REQUIRED)
+FIND_PACKAGE (OpenCV REQUIRED)
 
 
 set (NAVX_SRCS
@@ -21,10 +22,11 @@ file(GLOB SOURCES
 include_directories(
 	"."
 	"../navXTimeSync"
+	${OpenCV_INCLUDE_DIRS}
 )
 
 add_executable(nvxcalib ${SOURCES} ${NAVX_SRCS})
 
-target_link_libraries(nvxcalib ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(nvxcalib ${CMAKE_THREAD_LIBS_INIT} ${OpenCV_LIBS})
 #target_compile_features(NavXTimeStamp PRIVATE cxx_range_for)
 

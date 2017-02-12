@@ -7,22 +7,15 @@
 #include <vector>
 
 #include "AHRS.h"
+#include<opencv2/opencv.hpp>
 
 using namespace std;
 
-
-void outer_product(vector<double> row, vector<double> col, vector<vector<double>>& dst);
-void subtract(vector<double> row, double val, vector<double>& dst);
-void add(vector<vector<double>> m, vector<vector<double>> m2, vector<vector<double>>& dst);
-double mean(std::vector<double> &data);
-void cov_matrix(vector<vector<double>> & d, vector<vector<double>> & dst);
-void scale(vector<vector<double>> & d, double alpha);
 
 
 
 int main(int argc, char** argv)
 {
-
 	AHRS com = AHRS("/dev/ttyACM0");
 	cout << "Initializing" << endl << endl;
 	cout << "Please ensure navX is perfectly stationary, calibration will begin shortly" << endl << endl;
@@ -37,7 +30,6 @@ int main(int argc, char** argv)
 	vector<double> nrot = {com.GetYaw(), com.GetPitch(), com.GetRoll()};
 	vector<double> nlin = {com.GetWorldLinearAccelX(), com.GetWorldLinearAccelY(), com.GetWorldLinearAccelZ()};
 	long long int ntime = com.GetLastSensorTimestamp();
-
 
 	//Init Data Sets
 
@@ -80,30 +72,67 @@ int main(int argc, char** argv)
 
 	//Calculate Covariances
 
-	
-	vector<vector<double>> rot_cov;
-	cov_matrix(rot, rot_cov);
-
-	vector<vector<double>> lin_cov;
-	cov_matrix(lin, lin_cov);
-
-	vector<vector<double>> ang_cov;
-	cov_matrix(ang, ang_cov);
-
-	//Export to File
 
 	ofstream out;
 	out.open("navx_calib.dat");
 
-	for(unsigned int i = 0; i < rot_cov.size(); i++){ for(unsigned int j = 0; j < rot_cov[i].size(); j++){ out << rot_cov[i][j] << " "; }}
+	cv::Mat rot_cov;
+	cv::Mat rotin(rot[0].size(), rot.size(), CV_64FC1);
+	for (size_t i = 0; i < rot[0].size(); i++) 
+	{
+		for (size_t j = 0; j < rot.size(); j++) {
+		    rotin.at<double>(j, i) = rot[j][i];
+		}
+	}
+    	cv::Mat rotout;
+    	vector<double> mean;
+    	cv::calcCovarMatrix(rotin, rotout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	for(int i = 0; i < rotout.rows; i++)
+    	{
+        	const double* oi = rotout.ptr<double>(i);
+        	for(int j = 0; j < rotout.cols; j++)
+            		out << oi[j] << endl;
+    	}
 	out << endl;
-	
 
-	for(unsigned int i = 0; i < lin_cov.size(); i++){ for(unsigned int j = 0; j < lin_cov[i].size(); j++){ out << lin_cov[i][j] << " "; }}
+
+	cv::Mat lin_cov;
+	cv::Mat linin(lin[0].size(), lin.size(), CV_64FC1);
+	for (size_t i = 0; i < lin[0].size(); i++) 
+	{
+		for (size_t j = 0; j < lin.size(); j++) {
+		    linin.at<double>(j, i) = lin[j][i];
+		}
+	}
+    	cv::Mat linout;
+    	cv::calcCovarMatrix(linin, linout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	for(int i = 0; i < linout.rows; i++)
+    	{
+        	const double* oi = linout.ptr<double>(i);
+        	for(int j = 0; j < linout.cols; j++)
+            		out << oi[j] << endl;
+    	}
 	out << endl;
 
 
-	for(unsigned int i = 0; i < ang_cov.size(); i++){ for(unsigned int j = 0; j < ang_cov[i].size(); j++){ out << ang_cov[i][j] << " "; }}
+	cv::Mat ang_cov;
+	cv::Mat angin(ang[0].size(), ang.size(), CV_64FC1);
+	for (size_t i = 0; i < ang[0].size(); i++) 
+	{
+		for (size_t j = 0; j < ang.size(); j++) {
+		    angin.at<double>(j, i) = ang[j][i];
+		}
+	}
+    	cv::Mat angout;
+    	cv::calcCovarMatrix(angin, angout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	for(int i = 0; i < angout.rows; i++)
+    	{
+        	const double* oi = angout.ptr<double>(i);
+        	for(int j = 0; j < angout.cols; j++)
+            		out << oi[j] << endl;
+    	}
+	out << endl;
+
 
 	out.close();
 
@@ -112,64 +141,4 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-//Matrix Code Stolen From StackOverflow
-
-void outer_product(vector<double> row, vector<double> col, vector<vector<double>>& dst) 
-{
-    for(unsigned i = 0; i < row.size(); i++) {
-        for(unsigned j = 0; j < col.size(); i++) {
-            dst[i][j] = row[i] * col[j];
-        }
-    }
-}
-
-void subtract(vector<double> row, double val, vector<double>& dst) 
-{
-    for(unsigned i = 0; i < row.size(); i++) {
-        dst[i] = row[i] - val;
-    }
-}
-
-void add(vector<vector<double>> m, vector<vector<double>> m2, vector<vector<double>>& dst) 
-{
-    for(unsigned i = 0; i < m.size(); i++) {
-        for(unsigned j = 0; j < m[i].size(); j++) { 
-            dst[i][j] = m[i][j] + m2[i][j];
-        }
-    }
-}
-
-double mean(std::vector<double> &data) 
-{
-    double mean = 0.0;
-
-    for(unsigned i=0; (i < data.size());i++) {
-        mean += data[i];
-    }
-
-    mean /= data.size();
-    return mean;
-}
-
-void scale(vector<vector<double>> & d, double alpha) 
-{
-    for(unsigned i = 0; i < d.size(); i++) {
-        for(unsigned j = 0; j < d[i].size(); j++) {
-            d[i][j] *= alpha;
-        }
-    }
-}
-
-void cov_matrix(vector<vector<double>> & d, vector<vector<double>> & dst)
-{
-    for(unsigned i = 0; i < d.size(); i++) {
-        double y_bar = mean(d[i]);
-        vector<double> d_d_bar(d[i].size());
-        subtract(d[i], y_bar, d_d_bar);
-        vector<vector<double>> t(d.size());
-        outer_product(d_d_bar, d_d_bar, t);
-        add(dst, t, dst);
-    } 
-    scale(dst, 1/(d.size() - 1));
-}
 
