@@ -33,9 +33,9 @@ int main(int argc, char** argv)
 
 	//Init Data Sets
 
-	vector<vector<double>> rot = {nrot};
-	vector<vector<double>> lin = {nlin};
-	vector<vector<double>> ang;
+	vector<vector<double>> rot = {{nrot[0]},{nrot[1]},{nrot[2]}};
+	vector<vector<double>> lin = {{nlin[0]},{nlin[1]},{nlin[2]}};
+	vector<vector<double>> ang = {{0},{0},{0}};
 	vector<long long int> time = {ntime};
 
 
@@ -47,10 +47,14 @@ int main(int argc, char** argv)
 
 	
 		vector<double> crot = {com.GetYaw(), com.GetPitch(), com.GetRoll()};
-		rot.push_back(crot);
+		rot[0].push_back(crot[0]);
+		rot[1].push_back(crot[1]);
+		rot[2].push_back(crot[2]);
 
 		vector<double> clin = {com.GetWorldLinearAccelX(), com.GetWorldLinearAccelY(), com.GetWorldLinearAccelZ()};
-		lin.push_back(clin);
+		lin[0].push_back(clin[0]);
+		lin[1].push_back(clin[1]);
+		lin[2].push_back(clin[2]);
 
 		long long int ctime = com.GetLastSensorTimestamp();
 		time.push_back(ctime);
@@ -58,7 +62,9 @@ int main(int argc, char** argv)
 		vector<double> cang = {(rot[i][0] - rot[i - 1][0])/(time[i] - time[i - 1]),
 				     (rot[i][1] - rot[i - 1][1])/(time[i] - time[i - 1]),
 				     (rot[i][2] - rot[i - 1][2])/(time[i] - time[i - 1])};
-		ang.push_back(cang);
+		ang[0].push_back(cang[0]);
+		ang[1].push_back(cang[1]);
+		ang[2].push_back(cang[2]);
 
 
 		cout << (i / 5) << "% Complete" << '\r' << flush;
@@ -69,9 +75,12 @@ int main(int argc, char** argv)
 
 	cout << endl << endl;
 	cout << "Data Collection Complete... Calculating Covariance..." << endl;
-
 	//Calculate Covariances
 
+
+	//vector<vector<double>> rot = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	//vector<vector<double>> lin = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	//vector<vector<double>> ang = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
 
 	ofstream out;
 	out.open("navx_calib.dat");
@@ -129,6 +138,30 @@ int main(int argc, char** argv)
     	{
         	const double* oi = angout.ptr<double>(i);
         	for(int j = 0; j < angout.cols; j++)
+            		out << oi[j] << endl;
+    	}
+	out << endl;
+
+
+	cv::Mat posein(lin[0].size(), lin.size() * 2, CV_64FC1);
+	for (size_t i = 0; i < lin[0].size(); i++) 
+	{
+		for (size_t j = 0; j < lin.size(); j++) {
+		    posein.at<double>(j, i) = lin[j][i];
+		}
+	}
+	for (size_t i = 0; i < rot[0].size(); i++)
+	{
+		for(size_t j = 0; j < rot.size(); j++) {
+		    posein.at<double>(j, i + lin.size()) = rot[j][i];
+		}
+	}
+    	cv::Mat poseout;
+    	cv::calcCovarMatrix(posein, poseout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	for(int i = 0; i < poseout.rows; i++)
+    	{
+        	const double* oi = poseout.ptr<double>(i);
+        	for(int j = 0; j < poseout.cols; j++)
             		out << oi[j] << endl;
     	}
 	out << endl;
