@@ -74,7 +74,6 @@ class BlobDetector:
             
         self.bridge = CvBridge()
         self.pub_blobs = rospy.Publisher("/fuels", PointCloud, queue_size=1)
-        self.sub_test = rospy.Subscriber("/zed/rgb/image_raw_color", Image, self.tester, queue_size=1)
         self.sub_image = message_filters.Subscriber("/zed/rgb/image_raw_color", Image, queue_size=1)
         self.sub_depth = message_filters.Subscriber("/zed/depth/depth_registered", Image, queue_size=1)
         self.ts = message_filters.TimeSynchronizer([self.sub_image, self.sub_depth], 10)
@@ -85,12 +84,9 @@ class BlobDetector:
         if self.isTesting:
             self.window_runner()
             
-    def tester(self, image_msg):
-        rospy.loginfo("Can Subscribe")
 
 
     def processImage(self, image_msg, depth_msg):
-        rospy.loginfo("Callback")
         im = self.bridge.imgmsg_to_cv2(image_msg) # Convert image to cv mat using CVBridge
 
         hsv = cv2.cvtColor(im, cv2.COLOR_BGR2HSV) # convert color space of image to HSV
@@ -100,7 +96,8 @@ class BlobDetector:
             self.find_color(im, depth_msg, cv2.inRange(hsv, np.array([20, 0, 201]), np.array([40, 255, 255]))) # Call object discriminator function
             self.pub_blobs.publish(self.msg)
         else:
-            self.find_color(im, depth_msg, cv2.inRange(hsv, np.array([self.hl, self.sl, self.vl]), np.array([self.hu, self.su, self.vu]))) 
+            self.find_color(im, depth_msg, cv2.inRange(hsv, np.array([self.hl, self.sl, self.vl]), np.array([self.hu, self.su, self.vu])))
+            self.pub_blobs.publish(self.msg)
 
     def screenToWorld(self, obj_rect, depth, fov_size, frame_size, camera_elavation):
         _depth_obj = 0.127
@@ -133,6 +130,8 @@ class BlobDetector:
         contours = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[1] # Find contours on masked iamge
         points = []
         approx_contours = []
+        
+        depth_image = self.bridge.imgmsg_to_cv2(depth_msg)
         for c in contours:
             area = cv2.contourArea(c)
             if area < self.area_limit: continue
@@ -142,9 +141,9 @@ class BlobDetector:
             approx = cv2.approxPolyDP(c,epsilon,True)
             if len(approx) < 20: continue
 
-            moments = cv2.moments(c)
-            center = (int(moments['m10']/moments['m00']), int(moments['m01']/moments['m00']))
-            c_center = (float(center[0]) / len(c_im[0]), float(center[1]) / len(c_im))
+            M = cv2.moments(c)
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
             
             hFov = 105.0
             camera_elavation = .508
@@ -152,20 +151,13 @@ class BlobDetector:
             fov_size = tuple([hFov*(math.pi/180.)*(screen_size[0]/screen_size[1]),
                               hFov*(math.pi/180.)*(screen_size[0]/screen_size[1])])
             objRect = cv2.boundingRect(c)
-            # point3d = self.screenToWorld(objRect, depth_msg.data[c_center[1]][c_center[0]], fov_size, screen_size, camera_elavation)
-            print "objRect: {}\n \
-                   depth_msg.data[c_center[1]][c_center[0]]: {}\n \
-                   fov_size: {}\n \
-                   screen_size: {}\n \
-                   camera_elavation: {}\n \
-                   ".format(objRect, 
-                            depth_msg.data[int(c_center[1])][int(c_center[0])],
-                            fov_size,
-                            screen_size,
-                            camera_elavation)
+            # print "x: {} y: {}".format(cX, cY)
+            # print depth_image[cY][cX]
+            point3d = self.screenToWorld(objRect, depth_image[cY][cX], fov_size, screen_size, camera_elavation)
+            
             point3d = self.screenToWorld([0, 1, 2, 3], 10, [10, 10], [50 ,30], 10)
             
-            # points.append(point3d)
+            points.append(point3d)
             # append the convex hull of the contours to fix ignoring the dimples
             approx_contours.append(cv2.convexHull(c))
 
@@ -195,16 +187,11 @@ class BlobDetector:
                     cv2.rectangle(h_im, (x - 2, y - 2), (x + 2, y + 2), (0, 128, 255), -1)         
 
         for i, point in enumerate(points):
-            point = Point32()
-            point.x = point[0]
-            point.y = point[1]
-            point.z = point[2]
-            self.msg.points.append(point)
-
-            # self.msg.locations.append(msg_loc)
-            # self.msg.heights.append(float((max(approx, key=lambda x: x[0][1])[0][1] - min(approx, key=lambda x: x[0][1])[0][1])) / len(im))
-            # cv2.putText(im, label_color, center, cv2.FONT_HERSHEY_PLAIN, 2, (100, 255, 100))
-            # print "Label color:  {}".format(label_color)
+            point32 = Point32()
+            point32.x = point[0]
+            point32.y = point[1]
+            point32.z = point[2]
+            self.msg.points.append(point32)
 
         if self.isTesting and points:
             cv2.drawContours(c_im, approx_contours, -1, (100, 255, 100), 2)

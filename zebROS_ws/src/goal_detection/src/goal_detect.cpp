@@ -81,8 +81,8 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "goal_detect");
 
 	ros::NodeHandle nh;
-	message_filters::Subscriber<Image> frame_sub(nh, "/zed/left/image_raw_color", 10);
-	message_filters::Subscriber<Image> depth_sub(nh, "/zed/depth/depth_registered", 10);
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_raw_color", 10);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 10);
 	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
 
 	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher

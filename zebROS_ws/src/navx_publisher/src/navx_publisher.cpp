@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 #include <sstream>
+#include <fstream>
+#include <string>
 
 #include "geometry_msgs/Quaternion.h"
 #include "sensor_msgs/Imu.h"
@@ -92,8 +94,50 @@ int main(int argc, char** argv)
 		odom.header.stamp = ros::Time::now();
 		odom.header.frame_id = "odom";
 		odom.child_frame_id = "camera_link";
-		
+
+		imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
+		imu_msg.orientation_covariance = {0,0,0,0,0,0,0,0,0};
+
+		odom.twist.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+		odom.pose.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+		ifstream infile("navx_calib.dat");
+
+		std::string line;
+		int ln = 0;
+		while(std::getline(infile, line))
+		{
+			
+			if(line == "\n") break;
+			imu_msg.linear_acceleration_covariance[ln] = std::stod(line);
+			ln++;
+		}
+		ln = 0;
+		while(std::getline(infile, line))
+		{
+			
+			if(line == "\n") break;
+			imu_msg.angular_velocity_covariance[ln] = std::stod(line);
+			ln++;
+		}
+		ln = 0;
+		while(std::getline(infile, line))
+		{
+			
+			if(line == "\n") break;
+			imu_msg.orientation_covariance[ln] = std::stod(line);
+			ln++;
+		}
+		ln = 0;
+		while(std::getline(infile, line))
+		{
+			
+			if(line == "\n") break;
+			odom.twist.covariance[ln] = std::stod(line);
+			odom.pose.covariance[ln] = std::stod(line);
+			ln++;
+		}
 
 		imu_msg.header.stamp = ros::Time::now();
 		time_pub.publish(timestamp);
