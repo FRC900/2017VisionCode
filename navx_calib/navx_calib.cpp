@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	cout << "Initializing" << endl << endl;
 	cout << "Please ensure navX is perfectly stationary, calibration will begin shortly" << endl << endl;
 
-	this_thread::sleep_for(chrono::milliseconds(1000));
+	this_thread::sleep_for(chrono::milliseconds(3000));
 
 	cout << "Starting calibration... Collecting Data" << endl;
 
@@ -40,8 +40,8 @@ int main(int argc, char** argv)
 
 
 	//Collect Data
-
-	for(int i = 1; i < 500; i++)
+	int d_points = 500;
+	for(int i = 1; i < d_points; i++)
 	{
 
 
@@ -60,14 +60,14 @@ int main(int argc, char** argv)
 		time.push_back(ctime);
 	
 		vector<double> cang = {(rot[i][0] - rot[i - 1][0])/(time[i] - time[i - 1]),
-				     (rot[i][1] - rot[i - 1][1])/(time[i] - time[i - 1]),
-				     (rot[i][2] - rot[i - 1][2])/(time[i] - time[i - 1])};
+  				     (rot[i][1] - rot[i - 1][1])/(time[i] - time[i - 1]),
+  				     (rot[i][2] - rot[i - 1][2])/(time[i] - time[i - 1])};		
 		ang[0].push_back(cang[0]);
 		ang[1].push_back(cang[1]);
 		ang[2].push_back(cang[2]);
 
 
-		cout << (i / 5) << "% Complete" << '\r' << flush;
+		cout << (int)(((float)i / (float)d_points) * 100) << "% Complete" << '\r' << flush;
 		this_thread::sleep_for(chrono::milliseconds(125));
 
 	
@@ -132,6 +132,7 @@ int main(int argc, char** argv)
 		    angin.at<double>(j, i) = ang[j][i];
 		}
 	}
+		cout << "Angin: " << angin << endl;
     	cv::Mat angout;
     	cv::calcCovarMatrix(angin, angout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
     	for(int i = 0; i < angout.rows; i++)
