@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	time_pub = nh.advertise<navx_publisher::stampedUInt64>("/navx/time", 50);
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
 	odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 50);
-	ros::Rate loop_time(20);
+	ros::Rate loop_time(10);
 	navx_publisher::stampedUInt64 timestamp;
 	geometry_msgs::Quaternion orientation;
 	geometry_msgs::Vector3 linear_accel;
@@ -90,6 +90,8 @@ int main(int argc, char** argv)
 		odom.twist.twist.linear = linear_vel;
 		odom.twist.twist.angular = angular_vel;
 		odom.header.stamp = ros::Time::now();
+		odom.header.frame_id = "odom";
+		odom.child_frame_id = "camera_link";
 		
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 
