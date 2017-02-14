@@ -71,6 +71,28 @@
 using namespace sl::zed;
 using namespace std;
 
+static const boost::array<double, 36> STANDARD_POSE_COVARIANCE =
+{ { 0.1, 0, 0, 0, 0, 0,
+    0, 0.1, 0, 0, 0, 0,
+    0, 0, 0.1, 0, 0, 0,
+    0, 0, 0, 0.17, 0, 0,
+    0, 0, 0, 0, 0.17, 0,
+    0, 0, 0, 0, 0, 0.17 } };
+static const boost::array<double, 36> STANDARD_TWIST_COVARIANCE =
+{ { 0.05, 0, 0, 0, 0, 0,
+    0, 0.05, 0, 0, 0, 0,
+    0, 0, 0.05, 0, 0, 0,
+    0, 0, 0, 0.09, 0, 0,
+    0, 0, 0, 0, 0.09, 0,
+    0, 0, 0, 0, 0, 0.09 } };
+static const boost::array<double, 36> BAD_COVARIANCE =
+{ { 9999, 0, 0, 0, 0, 0,
+    0, 9999, 0, 0, 0, 0,
+    0, 0, 9999, 0, 0, 0,
+    0, 0, 0, 9999, 0, 0,
+    0, 0, 0, 0, 9999, 0,
+    0, 0, 0, 0, 0, 9999 } };
+
 namespace zed_wrapper {
 
     class ZEDWrapperNodelet : public nodelet::Nodelet {
@@ -199,6 +221,10 @@ namespace zed_wrapper {
             odom.pose.pose.orientation.y = -quat.x();
             odom.pose.pose.orientation.z = quat.y();
             odom.pose.pose.orientation.w = quat.w();
+
+			odom.pose.covariance = STANDARD_POSE_COVARIANCE;
+			odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
+
             pub_odom.publish(odom);
         }
 

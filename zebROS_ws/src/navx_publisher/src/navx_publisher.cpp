@@ -102,14 +102,14 @@ int main(int argc, char** argv)
 		odom.twist.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 		odom.pose.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-		ifstream infile("navx_calib.dat");
-
+		ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/navx_publisher/navx_calib.dat");
+		if(!infile.good())
+			cerr << "File not opened!" << endl;
 		std::string line;
 		int ln = 0;
 		while(std::getline(infile, line))
 		{
-			
-			if(line == "\n") break;
+			if(line == "") break;
 			imu_msg.linear_acceleration_covariance[ln] = std::stod(line);
 			ln++;
 		}
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 		while(std::getline(infile, line))
 		{
 			
-			if(line == "\n") break;
+			if(line == "") break;
 			imu_msg.angular_velocity_covariance[ln] = std::stod(line);
 			ln++;
 		}
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 		while(std::getline(infile, line))
 		{
 			
-			if(line == "\n") break;
+			if(line == "") break;
 			imu_msg.orientation_covariance[ln] = std::stod(line);
 			ln++;
 		}
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 		while(std::getline(infile, line))
 		{
 			
-			if(line == "\n") break;
+			if(line == "") break;
 			odom.twist.covariance[ln] = std::stod(line);
 			odom.pose.covariance[ln] = std::stod(line);
 			ln++;
