@@ -61,6 +61,14 @@ int main(int argc, char** argv)
 		orientation.w = nx.GetQuaternionW();
 		imu_msg.orientation = orientation;
 
+		orientation.x = nx.GetQuaternionY();
+		orientation.y = nx.GetQuaternionX();
+		orientation.z = -nx.GetQuaternionZ();
+		orientation.w = nx.GetQuaternionW();
+
+		imu_msg_raw.orientation = orientation;
+
+
 		float grav = 9.81;
 
 		linear_accel.x = nx.GetWorldLinearAccelX() * grav;
@@ -95,8 +103,8 @@ int main(int argc, char** argv)
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 		float time = timestamp.data - last_time;
 		angular_vel.x = roll / time;
-		angular_vel.y = pitch / time;
-		angular_vel.z = yaw / time;
+		angular_vel.y = -pitch / time;
+		angular_vel.z = -yaw / time;
 		imu_msg.angular_velocity = angular_vel;
 		imu_msg_raw.angular_velocity = angular_vel;
 		last_rot = pose;
