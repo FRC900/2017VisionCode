@@ -40,8 +40,8 @@ int main(int argc, char** argv)
 
 
 	//Collect Data
-
-	for(int i = 1; i < 500; i++)
+	int d_points = 500;
+	for(int i = 1; i < d_points; i++)
 	{
 
 
@@ -52,6 +52,9 @@ int main(int argc, char** argv)
 		rot[2].push_back(crot[2]);
 
 		vector<double> clin = {com.GetWorldLinearAccelX(), com.GetWorldLinearAccelY(), com.GetWorldLinearAccelZ()};
+		//cout << "Gyro: " << com.GetPitch() << " " << com.GetRoll() << " " << com.GetYaw() << endl;
+		//cout << "World accelerations: " << clin[0] << " " << clin[1] << " " << clin[2] << endl;
+		//cout << "Raw Accelerations: " << com.GetRawAccelX() << " " << com.GetRawAccelY() << " " << com.GetRawAccelZ() << endl;
 		lin[0].push_back(clin[0]);
 		lin[1].push_back(clin[1]);
 		lin[2].push_back(clin[2]);
@@ -59,15 +62,15 @@ int main(int argc, char** argv)
 		long long int ctime = com.GetLastSensorTimestamp();
 		time.push_back(ctime);
 	
-		vector<double> cang = {(rot[i][0] - rot[i - 1][0])/(time[i] - time[i - 1]),
-				     (rot[i][1] - rot[i - 1][1])/(time[i] - time[i - 1]),
-				     (rot[i][2] - rot[i - 1][2])/(time[i] - time[i - 1])};
+		vector<double> cang = {(rot[0][i] - rot[0][i - 1])/(time[i] - time[i - 1]),
+				     (rot[1][i] - rot[1][i - 1])/(time[i] - time[i - 1]),
+				     (rot[2][i] - rot[2][i - 1])/(time[i] - time[i - 1])};
 		ang[0].push_back(cang[0]);
 		ang[1].push_back(cang[1]);
 		ang[2].push_back(cang[2]);
 
 
-		cout << (i / 5) << "% Complete" << '\r' << flush;
+		cout << (int)(((float)i / (float)d_points) * 100) << "% Complete" << '\r' << flush;
 		this_thread::sleep_for(chrono::milliseconds(125));
 
 	
@@ -99,8 +102,12 @@ int main(int argc, char** argv)
     	for(int i = 0; i < rotout.rows; i++)
     	{
         	const double* oi = rotout.ptr<double>(i);
-        	for(int j = 0; j < rotout.cols; j++)
-            		out << oi[j] << endl;
+        	for(int j = 0; j < rotout.cols; j++) {
+            		if(isnan(oi[j]))
+						out << 0 << endl;
+					else
+						out << oi[j] << endl;
+			}
     	}
 	out << endl;
 
@@ -118,8 +125,12 @@ int main(int argc, char** argv)
     	for(int i = 0; i < linout.rows; i++)
     	{
         	const double* oi = linout.ptr<double>(i);
-        	for(int j = 0; j < linout.cols; j++)
-            		out << oi[j] << endl;
+        	for(int j = 0; j < linout.cols; j++) {
+            		if(isnan(oi[j]))
+						out << 0 << endl;
+					else
+						out << oi[j] << endl;
+			}
     	}
 	out << endl;
 
@@ -137,8 +148,12 @@ int main(int argc, char** argv)
     	for(int i = 0; i < angout.rows; i++)
     	{
         	const double* oi = angout.ptr<double>(i);
-        	for(int j = 0; j < angout.cols; j++)
-            		out << oi[j] << endl;
+        	for(int j = 0; j < angout.cols; j++) {
+            		if(isnan(oi[j]))
+						out << 0 << endl;
+					else
+						out << oi[j] << endl;
+			}
     	}
 	out << endl;
 

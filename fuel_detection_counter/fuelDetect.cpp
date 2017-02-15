@@ -91,9 +91,12 @@ class FuelDetector {
 		return contourArea(c)/eSize;
 	}
 	/* Found this online to possibly correct the fisheye distortion
-	 * R_u = f*tan(theta) //projection by a pin whole camera, theta is the angle in rad between a point in the real world and the optical axis which goes from the center of the image through the center of the lens
+	 * Theta, is the angle in rad between a point in the real world and the optical axis, which goes from the cen		ter of the image through the center of the lens
+	 * f is the focal length of the lens 
+	 * R is radial position of a point on the image on the film or sensor.
+	 * R_u = f*tan(theta) //projection by a pin whole camera, theta is the angle in rad between a point in the re		al world and the optical axis which goes from the center of the image through the center of the lens
 	 * R_d = 2*f*sin(theta/2) //projection by common fisheye lens cameras (that is, distorted)
-	 * R_u = f*tan(2*asin(R_d/(2*f))) //already know R_d and theta and if you knew the camera's focal length (represented by f) then correcting the image would amount to computing R_u in terms of R_d and theta.
+	 * R_u = f*tan(2*asin(R_d/(2*f))) //already know R_d and theta and if you knew the camera's focal length (rep		resented by f) then correcting the image would amount to computing R_u in terms of R_d and theta.
 	 * http://stackoverflow.com/questions/2477774/correcting-fisheye-distortion-programmatically
 	 * http://wiki.panotools.org/Fisheye_Projection
 	Point correct_fisheye(const Point& p,const Size& img)
@@ -134,7 +137,7 @@ int main(int, char**)
 
 	// create trackbars for color change
 	// lower
-	int hLo = 29;
+	/*int hLo = 29;
 	int sLo = 60;
 	int vLo = 80;
 	int hUp = 38;
@@ -142,11 +145,11 @@ int main(int, char**)
 	int k2 = 550817;
 	int p1 = 73542;
 	int p2 = 89178;
-	int k3 = 654275;
+	int k3 = 654275;*/
 
 	//Mat cameraMatrix = Mat_<double>(3,3) << ( 9.5963091759762221e+02, 0., 6.7262624894813689e+02, 0., 9.7394188192143622e+02, 4.0219821536082321e+02, 0., 0., 1. );
 
-	//createTrackbar("HLo","frame",&hLo,179);
+	/*//createTrackbar("HLo","frame",&hLo,179);
 	//createTrackbar("SLo","frame",&sLo,255);
 	//createTrackbar("VLo","frame",&vLo,255);
 	//createTrackbar("HUp","frame",&hUp,179);
@@ -154,30 +157,30 @@ int main(int, char**)
 	createTrackbar("k2","frame",&k2, 1000000);
 	createTrackbar("p1","frame",&p1, 100000);
 	createTrackbar("p2","frame",&p2, 100000);
-	createTrackbar("k3","frame",&k3, 1000000);
+	createTrackbar("k3","frame",&k3, 1000000);*/
 	//double total;
 	vector<vector<Point> > fuel;
 	Mat oframe;
 	Mat sframe;
 	Mat frame;
 	//camera matrix and distortion coefficent data is found in file c90_720p.yml file in current directory
-	double cameraMatrixData[3][3] = {{9.5963091759762221e+02, 0., 6.7262624894813689e+02}, {0.,
+	/*double cameraMatrixData[3][3] = {{9.5963091759762221e+02, 0., 6.7262624894813689e+02}, {0.,
        9.7394188192143622e+02, 4.0219821536082321e+02}, {0., 0., 1.}};
 	double distCoeffsData[5];
 	//double distCoeffsData[] = {1.7278156840527176e-01, 5.5081789263980618e-01, 7.3542979608589376e-03 , 8.9178305138385983e-03, 6.5427562481680634e-01};
 	Mat cameraMatrix = Mat(3, 3, CV_64F, cameraMatrixData).inv();
-	Mat distCoeffs = Mat(1, 5, CV_64F, distCoeffsData);
+	Mat distCoeffs = Mat(1, 5, CV_64F, distCoeffsData);*/
 	FuelDetector b = FuelDetector(.70);
 	b.changeMin(hLo,hUp,sLo,vLo);
 	while (true)
 	{
 		camera.GrabFrame();
 		camera.RetrieveMat(oframe);
-		distCoeffsData[0] = -double(getTrackbarPos("k1","frame"))/1000000;
+		/*distCoeffsData[0] = -double(getTrackbarPos("k1","frame"))/1000000;
 		distCoeffsData[1] = -double(getTrackbarPos("k2","frame"))/1000000;
 		distCoeffsData[2] = double(getTrackbarPos("p1","frame"))/10000000;
 		distCoeffsData[3] = double(getTrackbarPos("p2","frame"))/10000000;
-		distCoeffsData[4] = double(getTrackbarPos("k3","frame"))/1000000;
+		distCoeffsData[4] = double(getTrackbarPos("k3","frame"))/1000000;*/
 		imshow("Distorted", oframe);
 		undistort(oframe,frame, cameraMatrix, distCoeffs); //undistort camera
 		imshow("Undistorted", frame);

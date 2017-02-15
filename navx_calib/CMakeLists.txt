@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8)
 project (nvxcalib)
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch)
-
+set(CMAKE_BUILD_TYPE Debug)
 FIND_PACKAGE (Threads REQUIRED)
 FIND_PACKAGE (OpenCV REQUIRED)
 
