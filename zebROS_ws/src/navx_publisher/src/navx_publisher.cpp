@@ -28,7 +28,9 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "navx_publisher");
 
 	ros::NodeHandle nh;
-	// Set up publisher
+	// Set up publishers
+	// Raw_pub publishes in the ENU (east north up) orientation
+	// instead of NED (north east down)
 	time_pub = nh.advertise<navx_publisher::stampedUInt64>("/navx/time", 50);
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
 	raw_pub = nh.advertise<sensor_msgs::Imu>("/navx/raw", 50);
@@ -55,6 +57,7 @@ int main(int argc, char** argv)
 		timestamp.data = nx.GetLastSensorTimestamp();
 		timestamp.header.stamp = ros::Time::now();
 
+		//pull orientation data from NavX
 		orientation.x = nx.GetQuaternionX();
 		orientation.y = nx.GetQuaternionY();
 		orientation.z = nx.GetQuaternionZ();
@@ -70,7 +73,7 @@ int main(int argc, char** argv)
 
 
 		float grav = 9.81;
-
+		// Pull acceleration data from navx
 		linear_accel.x = nx.GetWorldLinearAccelX() * grav;
 		linear_accel.y = nx.GetWorldLinearAccelY() * grav;
 		linear_accel.z = nx.GetWorldLinearAccelZ() * grav;
@@ -81,9 +84,10 @@ int main(int argc, char** argv)
 		double pitch = nx.GetPitch() * PI / 180;
 		double roll = nx.GetRoll() * PI / 180;
 
-		linear_accel.x = linear_accel.x + sin(roll)*cos(pitch)*grav;
-		linear_accel.y = linear_accel.y + cos(roll)*sin(pitch)*grav;
-		linear_accel.z = linear_accel.z + cos(pitch)*cos(roll)*grav;
+		//uncomment this to add gravity back into /navx/raw
+		//linear_accel.x = linear_accel.x + sin(roll)*cos(pitch)*grav;
+		//linear_accel.y = linear_accel.y + cos(roll)*sin(pitch)*grav;
+		//linear_accel.z = linear_accel.z + cos(pitch)*cos(roll)*grav;
 
 		imu_msg_raw.linear_acceleration = linear_accel;
 
@@ -112,6 +116,7 @@ int main(int argc, char** argv)
 
 		firstrun = false;		
 
+		//pull position data (all this is is the integral of velocity so it's not very good)
 		odom.pose.pose.position.x = nx.GetDisplacementX();
 		odom.pose.pose.position.y = nx.GetDisplacementY();
 		odom.pose.pose.position.z = nx.GetDisplacementZ();
@@ -119,6 +124,8 @@ int main(int argc, char** argv)
 
 		odom.twist.twist.linear = linear_vel;
 		odom.twist.twist.angular = angular_vel;
+
+		//set the header of the odometry structure
 		odom.header.stamp = ros::Time::now();
 		odom.header.frame_id = "odom";
 		odom.child_frame_id = "camera_link";
@@ -135,6 +142,7 @@ int main(int argc, char** argv)
 		odom.twist.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 		odom.pose.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+		//read the file with covariances and apply it to the odometry and IMU
 		ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/navx_publisher/navx_calib.dat");
 		if(!infile.good())
 			cerr << "File not opened!" << endl;
@@ -178,6 +186,8 @@ int main(int argc, char** argv)
 
 		imu_msg_raw.header.stamp = ros::Time::now();
 		imu_msg.header.stamp = ros::Time::now();
+		
+		//publish to ROS topics
 		time_pub.publish(timestamp);
 		imu_pub.publish(imu_msg);
 		odom_pub.publish(odom);
