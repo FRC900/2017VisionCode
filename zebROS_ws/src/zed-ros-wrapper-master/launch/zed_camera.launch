@@ -9,7 +9,7 @@
   <arg name="exposure"/>
   
   <include file="$(find zed_wrapper)/launch/zed_tf.launch" />
-  <node name="zed_wrapper_node" pkg="zed_wrapper" type="zed_wrapper_node" output="screen">
+  <node name="zed_wrapper_node" pkg="zed_wrapper" type="zed_wrapper_node" output="log">
 
     <!-- SVO file path -->
     <param name="svo_filepath" value="$(arg svo_file)" />

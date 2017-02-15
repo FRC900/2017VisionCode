@@ -1,41 +1,38 @@
 <launch>
-  
   <!-- Slave jetson Setup -->
   <group>
-    <machine name="jetson2" address="10.9.0.12" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonSlave.sh" user="ubuntu" password="ubuntu" default="true"/>
+    <machine name="jetson2" address="10.9.0.12" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonSlave.sh" user="ubuntu" password="ubuntu" default="true" />	
     <group ns="zed_fuel">
-      <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-        <arg name="svo_file" value=""/>
-        <arg name="zed_id" value="1"/>
-        <arg name="brightness" value="-1"/>
-        <arg name="contrast" value="-1"/>
-        <arg name="hue" value="-1"/>
-        <arg name="saturation" value="-1"/>
-        <arg name="gain" value="-1"/>
-        <arg name="exposure" value="-1"/>
-      </include>
-    </group>
-    <!-- Uncomment when fuel detection is done
-    <node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" />
-    -->
+	  <include file="$(find zed_wrapper)/launch/zed.launch">
+        <arg name="svo_file" value="" />
+        <arg name="zed_id" value="1" />
+		<arg name="brightness" value="-1" />
+        <arg name="contrast" value="-1" />
+        <arg name="hue" value="-1" />
+        <arg name="saturation" value="-1" />
+        <arg name="gain" value="-1" />
+        <arg name="exposure" value="-1 "/>
+	   </include>
+    </group> 
   </group>
   
   <!-- Master jetson Setup -->
-  <group ns="zed_goal">
-    <machine name="jetson1" address="10.9.0.8" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonMaster.sh" user="ubuntu" password="ubuntu" default="true"/>
-    <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-      <arg name="svo_file" value=""/>
-      <arg name="zed_id" value="0"/>
-      <arg name="brightness" value="-1"/>
-      <arg name="contrast" value="6"/>
-      <arg name="hue" value="6"/>
-      <arg name="saturation" value="3"/>
-      <arg name="gain" value="1"/>
-      <arg name="exposure" value="5"/>
-    </include>
+  <group>
+    <machine name="jetson1" address="10.9.0.8" env-loader="/home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonMaster.sh" user="ubuntu" password="ubuntu" default="true" />
+	<group ns="zed_goal">
+      <include file="$(find zed_wrapper)/launch/zed.launch">
+        <arg name="svo_file" value="" />
+        <arg name="zed_id" value="0" />
+        <arg name="brightness" value="-1" />
+        <arg name="contrast" value="6" />
+        <arg name="hue" value="6" />
+        <arg name="saturation" value="3" />
+        <arg name="gain" value="1" />
+        <arg name="exposure" value="5" />
+      </include>
+    </group>
+	<node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
+    <!--node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" /-->
+    <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
   </group>
-
-  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
-  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
-
 </launch>
