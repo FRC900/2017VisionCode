@@ -213,9 +213,9 @@ namespace zed_wrapper {
             odom.header.frame_id = odom_frame_id;
             //odom.child_frame_id = "zed_optical_frame";
 
-            odom.pose.pose.position.y = -Path(0, 3);
-            odom.pose.pose.position.z = Path(1, 3);
-            odom.pose.pose.position.x = -Path(2, 3);
+            odom.pose.pose.position.y = -Path(0, 3) / 1000.0;
+            odom.pose.pose.position.z = Path(1, 3) / 1000.0;
+            odom.pose.pose.position.x = -Path(2, 3) / 1000.0;
             Eigen::Quaternionf quat(Path.block<3, 3>(0, 0));
             odom.pose.pose.orientation.x = -quat.z();
             odom.pose.pose.orientation.y = -quat.x();
@@ -224,7 +224,16 @@ namespace zed_wrapper {
 
 			odom.pose.covariance = STANDARD_POSE_COVARIANCE;
 			odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
-
+			
+			ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/zed-ros-wrapper-master/zed_calib.dat");
+			if(infile.good()) {
+				int ln = 0;
+				std::string line;
+				while(std::getline(infile,line)) {
+					odom.pose.covariance[ln] = std::stod(line);
+					ln++;
+				}
+			}
             pub_odom.publish(odom);
         }
 
