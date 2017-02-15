@@ -52,6 +52,9 @@ int main(int argc, char** argv)
 		rot[2].push_back(crot[2]);
 
 		vector<double> clin = {com.GetWorldLinearAccelX(), com.GetWorldLinearAccelY(), com.GetWorldLinearAccelZ()};
+		//cout << "Gyro: " << com.GetPitch() << " " << com.GetRoll() << " " << com.GetYaw() << endl;
+		//cout << "World accelerations: " << clin[0] << " " << clin[1] << " " << clin[2] << endl;
+		//cout << "Raw Accelerations: " << com.GetRawAccelX() << " " << com.GetRawAccelY() << " " << com.GetRawAccelZ() << endl;
 		lin[0].push_back(clin[0]);
 		lin[1].push_back(clin[1]);
 		lin[2].push_back(clin[2]);
