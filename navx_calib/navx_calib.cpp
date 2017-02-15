@@ -168,7 +168,7 @@ int main(int argc, char** argv)
 	for (size_t i = 0; i < rot[0].size(); i++)
 	{
 		for(size_t j = 0; j < rot.size(); j++) {
-		    posein.at<double>(j, i + lin.size()) = rot[j][i];
+		    posein.at<double>(j + lin.size(), i) = rot[j][i];
 		}
 	}
     	cv::Mat poseout;

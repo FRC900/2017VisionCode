@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <math.h>
 
 #include "geometry_msgs/Quaternion.h"
 #include "sensor_msgs/Imu.h"
@@ -18,6 +19,9 @@ using namespace std;
 static ros::Publisher time_pub;
 static ros::Publisher imu_pub;
 static ros::Publisher odom_pub;
+static ros::Publisher raw_pub;
+
+#define PI 3.14159265
 
 int main(int argc, char** argv)
 {
@@ -27,6 +31,7 @@ int main(int argc, char** argv)
 	// Set up publisher
 	time_pub = nh.advertise<navx_publisher::stampedUInt64>("/navx/time", 50);
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
+	raw_pub = nh.advertise<sensor_msgs::Imu>("/navx/raw", 50);
 	odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 50);
 	ros::Rate loop_time(10);
 	navx_publisher::stampedUInt64 timestamp;
@@ -35,6 +40,7 @@ int main(int argc, char** argv)
 	geometry_msgs::Vector3 linear_vel;
 	geometry_msgs::Vector3 angular_vel;
 	sensor_msgs::Imu imu_msg;
+	sensor_msgs::Imu imu_msg_raw;
 	nav_msgs::Odometry odom;
 
 
@@ -55,12 +61,34 @@ int main(int argc, char** argv)
 		orientation.w = nx.GetQuaternionW();
 		imu_msg.orientation = orientation;
 
+		orientation.x = nx.GetQuaternionY();
+		orientation.y = nx.GetQuaternionX();
+		orientation.z = -nx.GetQuaternionZ();
+		orientation.w = nx.GetQuaternionW();
+
+		imu_msg_raw.orientation = orientation;
+
+
 		float grav = 9.81;
 
 		linear_accel.x = nx.GetWorldLinearAccelX() * grav;
 		linear_accel.y = nx.GetWorldLinearAccelY() * grav;
 		linear_accel.z = nx.GetWorldLinearAccelZ() * grav;
+
 		imu_msg.linear_acceleration = linear_accel;
+
+		double yaw = nx.GetYaw() * PI / 180;
+		double pitch = nx.GetPitch() * PI / 180;
+		double roll = nx.GetRoll() * PI / 180;
+
+		linear_accel.x = linear_accel.x + sin(roll)*cos(pitch)*grav;
+		linear_accel.y = linear_accel.y + cos(roll)*sin(pitch)*grav;
+		linear_accel.z = linear_accel.z + cos(pitch)*cos(roll)*grav;
+
+		imu_msg_raw.linear_acceleration = linear_accel;
+
+
+
 
 		linear_vel.x = nx.GetVelocityX();
 		linear_vel.y = nx.GetVelocityY();
@@ -72,13 +100,13 @@ int main(int argc, char** argv)
 		tf::quaternionMsgToTF(orientation, pose);
 		if(firstrun) last_rot = pose;
 		rot = pose * last_rot.inverse();
-		double roll, pitch, yaw;
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 		float time = timestamp.data - last_time;
 		angular_vel.x = roll / time;
-		angular_vel.y = pitch / time;
-		angular_vel.z = yaw / time;
+		angular_vel.y = -pitch / time;
+		angular_vel.z = -yaw / time;
 		imu_msg.angular_velocity = angular_vel;
+		imu_msg_raw.angular_velocity = angular_vel;
 		last_rot = pose;
 		last_time = timestamp.data;
 
@@ -98,6 +126,11 @@ int main(int argc, char** argv)
 		imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 		imu_msg.orientation_covariance = {0,0,0,0,0,0,0,0,0};
+
+
+		imu_msg_raw.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
+		imu_msg_raw.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
+		imu_msg_raw.orientation_covariance = {0,0,0,0,0,0,0,0,0};
 
 		odom.twist.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 		odom.pose.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -139,10 +172,16 @@ int main(int argc, char** argv)
 			ln++;
 		}
 
+		imu_msg_raw.linear_acceleration_covariance = imu_msg.linear_acceleration_covariance;
+		imu_msg_raw.angular_velocity_covariance = imu_msg.angular_velocity_covariance;
+		imu_msg_raw.orientation_covariance = imu_msg.orientation_covariance;
+
+		imu_msg_raw.header.stamp = ros::Time::now();
 		imu_msg.header.stamp = ros::Time::now();
 		time_pub.publish(timestamp);
 		imu_pub.publish(imu_msg);
 		odom_pub.publish(odom);
+		raw_pub.publish(imu_msg_raw);
 		ros::spinOnce();
 		loop_time.sleep();
 	}
