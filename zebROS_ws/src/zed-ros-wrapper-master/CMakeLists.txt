@@ -96,11 +96,11 @@ set(LINK_LIBRARIES
   ${PCL_LIBRARIES})
 
 add_library(ZEDWrapper src/zed_wrapper_nodelet.cpp)
-target_link_libraries(ZEDWrapper ${LINK_LIBRARIES})
+target_link_libraries(ZEDWrapper X11 ${LINK_LIBRARIES})
 add_dependencies(ZEDWrapper ${PROJECT_NAME}_gencfg)
 
 add_executable(zed_wrapper_node src/zed_wrapper_node.cpp)
-target_link_libraries(zed_wrapper_node ZEDWrapper ${LINK_LIBRARIES})
+target_link_libraries(zed_wrapper_node ZEDWrapper X11 ${LINK_LIBRARIES})
 add_dependencies(zed_wrapper_node ${PROJECT_NAME}_gencfg)
 
 ###############################################################################

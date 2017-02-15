@@ -20,8 +20,10 @@
 
 #include <ros/ros.h>
 #include <nodelet/loader.h>
+#include <X11/Xlib.h>
 
 int main(int argc, char** argv) {
+	XInitThreads();
     ros::init(argc, argv, "zed_wrapper_node");
 
     nodelet::Loader nodelet;
