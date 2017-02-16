@@ -180,6 +180,9 @@ int main(int argc, char** argv)
 			ln++;
 		}
 
+		imu_msg_raw.header.frame_id = "navx_initial_frame";
+		imu_msg.header.frame_id = "navx_initial_frame";
+
 		imu_msg_raw.linear_acceleration_covariance = imu_msg.linear_acceleration_covariance;
 		imu_msg_raw.angular_velocity_covariance = imu_msg.angular_velocity_covariance;
 		imu_msg_raw.orientation_covariance = imu_msg.orientation_covariance;
