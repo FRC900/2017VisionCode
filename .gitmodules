@@ -1,12 +1,3 @@
 [submodule "navXTimeSync"]
 	path = navXTimeSync
 	url = https://github.com/FRC900/navXTimeSync.git
-[submodule "zebROS_ws/src/ros_tutorials"]
-	path = zebROS_ws/src/ros_tutorials
-	url = https://github.com/ros/ros_tutorials.git
-[submodule "zebROS_ws/src/zed-ros-wrapper-master"]
-	path = zebROS_ws/src/zed-ros-wrapper-master
-	url = https://github.com/stereolabs/zed-ros-wrapper.git
-[submodule "zebROS_ws/src/robot_localization"]
-	path = zebROS_ws/src/robot_localization
-	url = https://github.com/cra-ros-pkg/robot_localization.git
