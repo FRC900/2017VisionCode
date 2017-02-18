@@ -15,7 +15,7 @@ using namespace std;
 
 
 int main(int argc, char** argv)
-{/*
+{
 	AHRS com = AHRS("/dev/ttyACM0");
 	cout << "Initializing" << endl << endl;
 	cout << "Please ensure navX is perfectly stationary, calibration will begin shortly" << endl << endl;
@@ -79,11 +79,10 @@ int main(int argc, char** argv)
 	cout << endl << endl;
 	cout << "Data Collection Complete... Calculating Covariance..." << endl;
 	//Calculate Covariances
-*/
 
-	vector<vector<double>> rot = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
-	vector<vector<double>> lin = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
-	vector<vector<double>> ang = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	//vector<vector<double>> rot = {{1,2,3,4,5,6,6,7,8,6,3},{1,5,8,4,3,3,6,7,8,6,3},{1,2,3,4,5,6,7,8,6,3,4}};
+	//vector<vector<double>> lin = {{1,2,3,4,5,6,6,7,8,6,3},{1,5,8,4,3,3,6,7,8,6,3},{1,2,3,4,5,6,7,8,6,3,4}};
+	//vector<vector<double>> ang = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
 
 	ofstream out;
 	out.open("navx_calib.dat");
@@ -97,8 +96,8 @@ int main(int argc, char** argv)
 		}
 	}
     	cv::Mat rotout;
-    	vector<double> mean;
-    	cv::calcCovarMatrix(rotin, rotout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	cv::Mat mean;
+    	cv::calcCovarMatrix(rotin, rotout, mean, CV_COVAR_NORMAL | CV_COVAR_COLS);
     	for(int i = 0; i < rotout.rows; i++)
     	{
         	const double* oi = rotout.ptr<double>(i);
@@ -121,7 +120,7 @@ int main(int argc, char** argv)
 		}
 	}
     	cv::Mat linout;
-    	cv::calcCovarMatrix(linin, linout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	cv::calcCovarMatrix(linin, linout, mean, CV_COVAR_NORMAL | CV_COVAR_COLS);
     	for(int i = 0; i < linout.rows; i++)
     	{
         	const double* oi = linout.ptr<double>(i);
@@ -144,7 +143,7 @@ int main(int argc, char** argv)
 		}
 	}
     	cv::Mat angout;
-    	cv::calcCovarMatrix(angin, angout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	cv::calcCovarMatrix(angin, angout, mean, CV_COVAR_NORMAL | CV_COVAR_COLS);
     	for(int i = 0; i < angout.rows; i++)
     	{
         	const double* oi = angout.ptr<double>(i);
@@ -158,7 +157,7 @@ int main(int argc, char** argv)
 	out << endl;
 
 
-	cv::Mat posein(lin[0].size(), lin.size() * 2, CV_64FC1);
+	cv::Mat posein(lin.size() * 2, lin[0].size(), CV_64FC1);
 	for (size_t i = 0; i < lin.size(); i++) 
 	{
 		for (size_t j = 0; j < lin[0].size(); j++) {
@@ -172,7 +171,7 @@ int main(int argc, char** argv)
 		}
 	}
     	cv::Mat poseout;
-    	cv::calcCovarMatrix(posein, poseout, mean, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+    	cv::calcCovarMatrix(posein, poseout, mean, CV_COVAR_NORMAL | CV_COVAR_COLS);
     	for(int i = 0; i < poseout.rows; i++)
     	{
         	const double* oi = poseout.ptr<double>(i);
