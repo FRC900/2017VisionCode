@@ -1,0 +1,13 @@
+<launch>
+	<node name="rtabmap" pkg="rtabmap_ros" type="rtabmap" args="--Grid/CellSize 0.25 --Grid/FootprintHeight 1 --FAST/Gpu true --ORB/Gpu true --SURF/GpuVersion true">
+	<remap from="odom" to="odometry/filtered"/>
+	<remap from="rgb/image" to="/zed/rgb/image_rect_color"/>
+	<remap from="rgb/camera_info" to="/zed/rgb/camera_info"/>
+	<remap from="depth/image" to="/zed/depth/depth_registered"/>
+
+	<param name="subscribe_depth" value="true"/>
+	<param name="visual_odometry" value="false"/>
+	<param name="frame_id" value="base_link"/>
+	<param name="approx_sync" value="true"/>
+</node>
+</launch>

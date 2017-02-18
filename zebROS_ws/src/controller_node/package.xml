@@ -36,6 +36,9 @@
   <build_depend>robot_localization</build_depend>
   <run_depend>robot_localization</run_depend>
 
+  <build_depend>rtabmap_ros</build_depend>
+  <run_depend>rtabmap_ros</run_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
