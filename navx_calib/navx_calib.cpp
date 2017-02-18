@@ -15,7 +15,7 @@ using namespace std;
 
 
 int main(int argc, char** argv)
-{
+{/*
 	AHRS com = AHRS("/dev/ttyACM0");
 	cout << "Initializing" << endl << endl;
 	cout << "Please ensure navX is perfectly stationary, calibration will begin shortly" << endl << endl;
@@ -79,21 +79,21 @@ int main(int argc, char** argv)
 	cout << endl << endl;
 	cout << "Data Collection Complete... Calculating Covariance..." << endl;
 	//Calculate Covariances
+*/
 
-
-	//vector<vector<double>> rot = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
-	//vector<vector<double>> lin = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
-	//vector<vector<double>> ang = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	vector<vector<double>> rot = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	vector<vector<double>> lin = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
+	vector<vector<double>> ang = {{1,2,3,4,5,6},{1,5,8,4,3,3},{1,2,3,4,5,6}};
 
 	ofstream out;
 	out.open("navx_calib.dat");
 
 	cv::Mat rot_cov;
-	cv::Mat rotin(rot[0].size(), rot.size(), CV_64FC1);
-	for (size_t i = 0; i < rot[0].size(); i++) 
+	cv::Mat rotin(rot.size(), rot[0].size(), CV_64FC1);
+	for (size_t i = 0; i < rot.size(); i++) 
 	{
-		for (size_t j = 0; j < rot.size(); j++) {
-		    rotin.at<double>(j, i) = rot[j][i];
+		for (size_t j = 0; j < rot[0].size(); j++) {
+		    rotin.at<double>(i, j) = rot[i][j];
 		}
 	}
     	cv::Mat rotout;
@@ -113,11 +113,11 @@ int main(int argc, char** argv)
 
 
 	cv::Mat lin_cov;
-	cv::Mat linin(lin[0].size(), lin.size(), CV_64FC1);
-	for (size_t i = 0; i < lin[0].size(); i++) 
+	cv::Mat linin(lin.size(), lin[0].size(), CV_64FC1);
+	for (size_t i = 0; i < lin.size(); i++) 
 	{
-		for (size_t j = 0; j < lin.size(); j++) {
-		    linin.at<double>(j, i) = lin[j][i];
+		for (size_t j = 0; j < lin[0].size(); j++) {
+		    linin.at<double>(i, j) = lin[i][j];
 		}
 	}
     	cv::Mat linout;
@@ -136,11 +136,11 @@ int main(int argc, char** argv)
 
 
 	cv::Mat ang_cov;
-	cv::Mat angin(ang[0].size(), ang.size(), CV_64FC1);
-	for (size_t i = 0; i < ang[0].size(); i++) 
+	cv::Mat angin(ang.size(), ang[0].size(), CV_64FC1);
+	for (size_t i = 0; i < ang.size(); i++) 
 	{
-		for (size_t j = 0; j < ang.size(); j++) {
-		    angin.at<double>(j, i) = ang[j][i];
+		for (size_t j = 0; j < ang[0].size(); j++) {
+		    angin.at<double>(i, j) = ang[i][j];
 		}
 	}
     	cv::Mat angout;
@@ -159,16 +159,16 @@ int main(int argc, char** argv)
 
 
 	cv::Mat posein(lin[0].size(), lin.size() * 2, CV_64FC1);
-	for (size_t i = 0; i < lin[0].size(); i++) 
+	for (size_t i = 0; i < lin.size(); i++) 
 	{
-		for (size_t j = 0; j < lin.size(); j++) {
-		    posein.at<double>(j, i) = lin[j][i];
+		for (size_t j = 0; j < lin[0].size(); j++) {
+		    posein.at<double>(i, j) = lin[i][j];
 		}
 	}
-	for (size_t i = 0; i < rot[0].size(); i++)
+	for (size_t i = 0; i < rot.size(); i++)
 	{
-		for(size_t j = 0; j < rot.size(); j++) {
-		    posein.at<double>(j + lin.size(), i) = rot[j][i];
+		for(size_t j = 0; j < rot[0].size(); j++) {
+		    posein.at<double>(i + lin.size(), j) = rot[i][j];
 		}
 	}
     	cv::Mat poseout;
