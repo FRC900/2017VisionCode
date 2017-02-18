@@ -1,0 +1,27 @@
+<launch>
+  <arg name="svo_file" default="" />
+  <arg name="zed_id" default="0" />
+  <arg name="brightness" default="-1" />
+  <arg name="contrast" default="6" />
+  <arg name="hue" default="6" />
+  <arg name="saturation" default="3" />
+  <arg name="gain" default="1" />
+  <arg name="exposure" default="5" />
+  <arg name="zed_name_space" default="zed_goal" />
+  
+  <group ns="$(arg zed_name_space)">
+    <include file="$(find zed_wrapper)/launch/zed_camera.launch">
+      <arg name="svo_file" value="$(arg svo_file)" />
+      <arg name="zed_id" value="$(arg zed_id)" />
+      <arg name="brightness" value="$(arg brightness)" />
+      <arg name="contrast" value="$(arg contrast)" />
+      <arg name="hue" value="$(arg hue)" />
+      <arg name="saturation" value="$(arg saturation)" />
+      <arg name="gain" value="$(arg gain)" />
+      <arg name="exposure" value="$(arg exposure)" />
+    </include>
+</group>
+
+  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+</launch>
