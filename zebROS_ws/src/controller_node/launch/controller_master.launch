@@ -1,0 +1,16 @@
+<launch>
+  <!-- Slave jetson Setup -->
+  <group ns="zed_fuel">
+    <include file="$(find zed_wrapper)/launch/zed.launch">
+      <arg name="svo_file" value="" />
+      <arg name="zed_id" value="1" />
+      <arg name="brightness" value="-1" />
+      <arg name="contrast" value="-1" />
+      <arg name="hue" value="-1" />
+      <arg name="saturation" value="-1" />
+      <arg name="gain" value="-1" />
+      <arg name="exposure" value="-1 "/>
+    </include>
+  </group> 
+    <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
+</launch>
