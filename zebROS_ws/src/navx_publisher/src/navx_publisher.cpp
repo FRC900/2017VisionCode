@@ -127,8 +127,7 @@ int main(int argc, char** argv)
 
 		//set the header of the odometry structure
 		odom.header.stamp = ros::Time::now();
-		odom.header.frame_id = "odom";
-		odom.child_frame_id = "camera_link";
+		odom.header.frame_id = "navx_initial_frame";
 
 		imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
