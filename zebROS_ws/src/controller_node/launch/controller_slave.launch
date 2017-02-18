@@ -1,18 +1,25 @@
 <launch>
-  <!-- Master jetson Setup -->
-    <group ns="zed_goal">
-      <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-        <arg name="svo_file" value="" />
-        <arg name="zed_id" value="0" />
-        <arg name="brightness" value="-1" />
-        <arg name="contrast" value="6" />
-        <arg name="hue" value="6" />
-        <arg name="saturation" value="3" />
-        <arg name="gain" value="1" />
-        <arg name="exposure" value="5" />
-      </include>
-    </group>
-	<node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
-    <!--node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" /-->
+  <arg name="svo_file" default="" />
+  <arg name="zed_id" default="0" />
+  <arg name="brightness" default="-1" />
+  <arg name="contrast" default="-1" />
+  <arg name="hue" default="-1" />
+  <arg name="saturation" default="-1" />
+  <arg name="gain" default="-1" />
+  <arg name="exposure" default="-1" />
+  <arg name="zed_name_space" default="zed_fuel" />
+  
+  <group ns="$(arg zed_name_space)">
+    <include file="$(find zed_wrapper)/launch/zed_camera.launch">
+      <arg name="svo_file" value="$(arg svo_file)" />
+      <arg name="zed_id" value="$(arg zed_id)" />
+      <arg name="brightness" value="$(arg brightness)" />
+      <arg name="contrast" value="$(arg contrast)" />
+      <arg name="hue" value="$(arg hue)" />
+      <arg name="saturation" value="$(arg saturation)" />
+      <arg name="gain" value="$(arg gain)" />
+      <arg name="exposure" value="$(arg exposure)" />
+    </include>
   </group>
+  <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
 </launch>
