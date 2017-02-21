@@ -1,6 +1,7 @@
 <launch>
   <arg name="svo_file"/>
   <arg name="zed_id"/>
+  <arg name="zed_name"/>
   <arg name="brightness"/>
   <arg name="contrast"/>
   <arg name="hue"/>
@@ -8,7 +9,9 @@
   <arg name="gain"/>
   <arg name="exposure"/>
   
-  <include file="$(find zed_wrapper)/launch/zed_tf.launch" />
+  <include file="$(find zed_wrapper)/launch/zed_tf.launch" >
+	<arg name="camera" value="$(arg zed_name)" />
+  </include>
   <node name="zed_wrapper_node" pkg="zed_wrapper" type="zed_wrapper_node" output="log">
 
     <!-- SVO file path -->
@@ -16,6 +19,7 @@
 
     <!-- ZED parameters -->
     <param name="zed_id"                value="$(arg zed_id)" />
+	<param name="zed_name"				value="$(arg zed_name)" />
 
     <param name="resolution"            value="2" />
     <param name="quality"               value="1" />
