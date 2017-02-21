@@ -1,0 +1,20 @@
+# Zebravision 2017 
+
+[Unit]
+Description=2017 ROS Master Startup Script
+
+[Service]
+Type=forking
+WorkingDirectory=/mnt/900_2
+
+ExecStartPre=/bin/sh -ec 'sleep 7' ; \
+	     /home/ubuntu/2017VisionCode/set_freq_tx.sh ; \ 
+	     /home/ubuntu/2017VisionCode/set_freq_tx.sh ; \
+	     /bin/sh -ec 'ifup eth0 || true' ; \
+	     /bin/sh -e '. ./home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonSlave.sh'
+
+ExecStart=roslaunch controller_node controller_slave.launch
+
+[Install]
+WantedBy=multi-user.target
+Restart=on-failure

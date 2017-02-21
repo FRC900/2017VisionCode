@@ -1,0 +1,28 @@
+<launch>
+  <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
+    <arg name="stereo" value="false" />
+
+    <arg name="rtabmapviz" value="true" />
+    
+    <arg name="localization" value="false" />
+    
+    <arg name="cfg" value="" />
+    <arg name="gui_cfg" value="~/.ros/rtabmap_gui.ini" />
+    
+    <arg name="frame_id" value="base_link" />
+    <arg name="namespace" value="rtabmap" />
+    <arg name="database_path" value="~/.ros/rtabmap.db" />
+    <arg name="queue_size" value="10" />
+    <arg name="wait_for_transform" value="0.2" />
+    <arg name="rtabmap_args" value="--delete_db_on_start --Grid/CellSize 0.25 --Grid/FootprintHeight 1 --FAST/Gpu true --ORB/Gpu true --SURF/GpuVersion true" />
+    <arg name="launch_prefix" value="" />
+    
+    <arg name="rgb_topic" value="/zed_fuel/rgb/image_rect_color" />
+    <arg name="depth_topic" value="/zed_fuel/depth/depth_registered" />
+    <arg name="camera_info_topic" value="/zed_fuel/rgb/camera_info" />
+
+    <arg name="visual_odometry" value="false" />
+    <arg name="odom_topic" value="/odometry/filtered" />
+    <arg name="odom_frame_id" value="odom" />
+  </include>
+</launch>
