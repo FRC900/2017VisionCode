@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -136,7 +137,6 @@ add_executable(goal_detection_node
   ../../../zebravision/track3d.cpp
   ../../../zebravision/kalman.cpp
   ../../../zebravision/hungarian.cpp
-  ../../../zebravision/ZvSettings.cpp
 )
 
 ## Add cmake target dependencies of the executable
@@ -150,7 +150,6 @@ add_dependencies(goal_detection_node
 target_link_libraries(goal_detection_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS} 
-  ${LibTinyXML2}
 )
 
 #############
