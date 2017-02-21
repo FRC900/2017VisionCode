@@ -1,13 +1,21 @@
 <launch>
+  <!-- 
+  Slave Node Launcher
+  * ZED Wrapper Instance
+  * Fuel Detection Node
+  * Robot Localization Node
+  * RTABMAP Node
+	-->
   <arg name="svo_file" default="" />
   <arg name="zed_id" default="0" />
   <arg name="brightness" default="-1" />
-  <arg name="contrast" default="6" />
-  <arg name="hue" default="6" />
-  <arg name="saturation" default="3" />
-  <arg name="gain" default="1" />
-  <arg name="exposure" default="5" />
-  <arg name="zed_name_space" default="zed_goal" />
+  <arg name="contrast" default="-1" />
+  <arg name="hue" default="-1" />
+  <arg name="saturation" default="-1" />
+  <arg name="gain" default="-1" />
+  <arg name="exposure" default="-1" />
+  <arg name="zed_name_space" default="zed_fuel" />
+  <arg name="record" default="false" />
   
   <group ns="$(arg zed_name_space)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
@@ -20,8 +28,6 @@
       <arg name="gain" value="$(arg gain)" />
       <arg name="exposure" value="$(arg exposure)" />
     </include>
-</group>
-
-  <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
-  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+  </group>
+  <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
 </launch>
