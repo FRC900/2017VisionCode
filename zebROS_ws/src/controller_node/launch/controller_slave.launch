@@ -14,13 +14,14 @@
   <arg name="saturation" default="3" />
   <arg name="gain" default="1" />
   <arg name="exposure" default="5" />
-  <arg name="zed_name_space" default="zed_goal" />
+  <arg name="name" default="zed_goal" />
   <arg name="should_record" default="false" />
   
-  <group ns="$(arg zed_name_space)">
+  <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
       <arg name="zed_id" value="$(arg zed_id)" />
+      <arg name="zed_name" value="$(arg name)" />
       <arg name="brightness" value="$(arg brightness)" />
       <arg name="contrast" value="$(arg contrast)" />
       <arg name="hue" value="$(arg hue)" />
