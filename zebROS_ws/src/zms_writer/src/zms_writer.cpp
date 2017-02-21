@@ -51,10 +51,10 @@ int main(int argc, char** argv)
 	while (rc == 0);
 
 	sprintf(name, "/mnt/900_2/cap%d.zms", index);
-	zmsOut = new ZMSOut(name, 1, 250, false);
+	zmsOut = new ZMSOut(name, 1, 250, true);
 
 	ros::NodeHandle nh;
-	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_raw_color", 20);
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 20);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 20);
 
 	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy;

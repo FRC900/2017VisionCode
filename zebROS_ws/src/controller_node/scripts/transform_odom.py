@@ -29,9 +29,23 @@ class TransformOdometry:
         self.x_pos_shift = 0
         self.y_pos_shift = 0
         self.z_pos_shift = 0
+        
+        self.x_ori_shift = 0
+        self.y_ori_shift = 0
+        self.z_ori_shift = 0
+        self.w_ori_shift = 0
 
         self.odom_pub_topic = rospy.get_param("~odom_pub_topic")
         self.odom_sub_topic = rospy.get_param("~odom_sub_topic")
+        
+        self.x_pos_shift    = rospy.get_param("~x_pos_shift")
+        self.y_pos_shift    = rospy.get_param("~y_pos_shift")
+        self.z_pos_shift    = rospy.get_param("~z_pos_shift")
+
+        self.x_pos_shift    = rospy.get_param("~x_ori_shift")
+        self.y_pos_shift    = rospy.get_param("~y_ori_shift")
+        self.z_pos_shift    = rospy.get_param("~z_ori_shift")
+        self.z_pos_shift    = rospy.get_param("~odom")
 
         self.sub_odom_transform = rospy.Subscriber("/zed_fuel/odom", Odometry)
         self.pub_odom_transform = rospy.Publisher("/zed_fuel/odom_transformed", Odometry, queue_size=1)

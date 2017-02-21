@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 	if (argc == 2)
 		cap = new ZMSIn(argv[1]);
 	else
-		cap = new ZedCameraIn(false);
+		cap = new ZedCameraIn(true);
 
 	if (cap == NULL)
 	{
