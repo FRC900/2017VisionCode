@@ -52,16 +52,17 @@ int main(int argc, char** argv)
 	struct stat statbuf;
 	do
 	{
-		sprintf(name, "/mnt/900_2/cap%d.avi", index++);
+		sprintf(name, "/mnt/900_2/cap%d_0.zms", index++);
 		rc = stat(name, &statbuf);
 	}
 	while (rc == 0);
 
+	sprintf(name, "/mnt/900_2/cap%d.zms", index++);
 	zmsOut = new ZMSOut(name, false);
 
 	ros::spin();
 
-	zmsOut->sync();
+	delete zmsOut;
 
 	return 0;
 }
