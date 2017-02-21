@@ -136,6 +136,7 @@ namespace zed_wrapper {
 		int saturation;
 		int gain;
 		int exposure;
+		std::string zed_name;
         std::string odometry_DB;
         std::string svo_filepath;
 
@@ -247,7 +248,7 @@ namespace zed_wrapper {
 
             geometry_msgs::TransformStamped transformStamped;
             transformStamped.header.stamp = ros::Time::now();
-            transformStamped.header.frame_id = "zed_initial_frame";
+            transformStamped.header.frame_id = zed_name + "_initial_frame";
             transformStamped.child_frame_id = odometry_transform_frame_id;
             transformStamped.transform.translation.x = -Path(2, 3);
             transformStamped.transform.translation.y = -Path(0, 3);
@@ -619,6 +620,7 @@ namespace zed_wrapper {
             rate = 30;
             gpu_id = -1;
             zed_id = 0;
+			zed_name = "zed";
             odometry_DB = "";
 
             std::string img_topic = "image_rect_color";
@@ -628,17 +630,17 @@ namespace zed_wrapper {
             string rgb_topic = "rgb/" + img_topic;
             string rgb_raw_topic = "rgb/" + img_raw_topic;
             string rgb_cam_info_topic = "rgb/camera_info";
-            rgb_frame_id = "/zed_current_frame";
+            rgb_frame_id = "/" + zed_name + "_current_frame";
 
             string left_topic = "left/" + img_topic;
             string left_raw_topic = "left/" + img_raw_topic;
             string left_cam_info_topic = "left/camera_info";
-            left_frame_id = "/zed_current_frame";
+            left_frame_id = "/" + zed_name + "_current_frame";
 
             string right_topic = "right/" + img_topic;
             string right_raw_topic = "right/" + img_raw_topic;
             string right_cam_info_topic = "right/camera_info";
-            right_frame_id = "/zed_current_frame";
+            right_frame_id = "/" + zed_name + "_current_frame";
 
             string depth_topic = "depth/";
             if (openniDepthMode)
@@ -647,14 +649,14 @@ namespace zed_wrapper {
                 depth_topic += "depth_registered";
 
             string depth_cam_info_topic = "depth/camera_info";
-            depth_frame_id = "/zed_current_frame";
+            depth_frame_id = "/" + zed_name + "_current_frame";
 
             string point_cloud_topic = "point_cloud/cloud_registered";
-            cloud_frame_id = "/zed_current_frame";
+            cloud_frame_id = "/" + zed_name + "_current_frame";
 
             string odometry_topic = "odom";
-            odometry_frame_id = "/zed_initial_frame";
-            odometry_transform_frame_id = "/zed_current_frame";
+            odometry_frame_id = "/" + zed_name + "_initial_frame";
+            odometry_transform_frame_id = "/" + zed_name + "_current_frame";
 
             nh = getMTNodeHandle();
             nh_ns = getMTPrivateNodeHandle();
@@ -674,6 +676,7 @@ namespace zed_wrapper {
             nh_ns.getParam("openni_depth_mode", openniDepthMode);
             nh_ns.getParam("gpu_id", gpu_id);
             nh_ns.getParam("zed_id", zed_id);
+			nh_ns.getParam("zed_name", zed_name);
             if (openniDepthMode)
                 NODELET_INFO_STREAM("Openni depth mode activated");
 

@@ -8,9 +8,9 @@
   <arg name="saturation" default="-1"/>
   <arg name="gain" default="-1"/>
   <arg name="exposure" default="-1"/>
-  <arg name="name_space" default="zed"/>
+  <arg name="zed_name" default="zed"/>
   
-  <group ns="$(arg name_space)">
+  <group ns="$(arg zed_name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
       <arg name="zed_id" value="$(arg zed_id)" />
