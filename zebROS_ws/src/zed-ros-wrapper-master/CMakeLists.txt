@@ -36,6 +36,7 @@ find_package(OpenCV ${OCV_VERSION} COMPONENTS core highgui imgproc REQUIRED)
 find_package(CUDA ${CUDA_VERSION} REQUIRED)
 
 find_package(PCL REQUIRED)
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 
 find_package(catkin REQUIRED COMPONENTS
   image_transport
