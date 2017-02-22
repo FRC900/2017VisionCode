@@ -28,10 +28,12 @@ static ros::Publisher pub;
 static GoalDetector *gd;
 static bool batch = true;
 
-class FuelDetector {
+class FuelDetector
+{
 
 	public:
-		FuelDetector() {
+		FuelDetector()
+		{
 			bool isTesting = false;
 			int hl = 20;
 			int sl = 137;
@@ -51,25 +53,36 @@ class FuelDetector {
 			float hough_image = [[[0]]];
 		}
 
-	void createWindows () {
+	void createWindows ()
+	{
 		namedWindow("HSV", WSV);
 		createTrackbar("HL", "HSV", this.hl, 180);
-        	createTrackbar("SL", "HSV", this.sl, 255);
-          	createTrackbar("VL", "HSV", this.vl, 255);
-         	createTrackbar("HU", "HSV", this.hu, 180);
-            	createTrackbar("SU", "HSV", this.su, 255);
-            	createTrackbar("VU", "HSV", this.vu, 255);
-            	createTrackbar("AREA_LIMIT", "HSV", this.area_limit, 1000);
+        createTrackbar("SL", "HSV", this.sl, 255);
+        createTrackbar("VL", "HSV", this.vl, 255);
+        createTrackbar("HU", "HSV", this.hu, 180);
+        createTrackbar("SU", "HSV", this.su, 255);
+        createTrackbar("VU", "HSV", this.vu, 255);
+        createTrackbar("AREA_LIMIT", "HSV", this.area_limit, 1000);
+
+		namedWindow("Hough", WSV);
+		creatTrackbar("DP", "HOUGH", this.dp, 20);
+		creatTrackbar("MIN_DIST", "HOUGH", this.min_dist, 100);
+		creatTrackbar("PARAM1", "HOUGH", this.param1, 700);
+		creatTrackbar("PARAM2", "HOUGH", this.param2, 200);
+		creatTrackbar("MIN_RADIUS", "HOUGH", this.min_radius, 100);
+		creatTrackbar("MAX_RADIUS", "HOUGH", this.max_radius, 100);
 	}
 
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 
 	fd = FuelDetector()
 
-	if (argc == 2) {
-		this.isTesting = true;	
+	if (argc == 2)
+	{
+		this.isTesting = true;
 	}
 
 }
