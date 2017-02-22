@@ -10,12 +10,11 @@ WorkingDirectory=/mnt/900_2
 ExecStartPre=/bin/sh -ec 'sleep 5' ; \
 	     /bin/bash -ec "/home/ubuntu/2017VisionCode/set_freq_tx.sh || true" ; \
 	     /bin/bash -ec "/home/ubuntu/2017VisionCode/set_freq_tx.sh || true" ; \
-	     /bin/sh -ec 'ifup eth0 || true' ; \
-		 /bin/sh -ec "sudo mount $(ls /dev/disk/by-id/ | grep 'SanDisk.*part1') /mnt/900_2 || true" ;
+	     /bin/sh -ec 'ifup eth0 || true' ;
 
 ExecStart=/bin/bash -ec "/home/ubuntu/2017VisionCode/launch/slave.sh || true"
 
 Restart=on-failure
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
