@@ -620,8 +620,28 @@ namespace zed_wrapper {
             rate = 30;
             gpu_id = -1;
             zed_id = 0;
-			zed_name = "zed";
+			zed_name = "zed_fuck_this_shit";
             odometry_DB = "";
+            
+			nh = getMTNodeHandle();
+            nh_ns = getMTPrivateNodeHandle();
+
+            // Get parameters from launch file
+            nh_ns.getParam("resolution", resolution);
+            nh_ns.getParam("quality", quality);
+            nh_ns.getParam("sensing_mode", sensing_mode);
+            nh_ns.getParam("brightness", brightness);
+            nh_ns.getParam("contrast", contrast);
+            nh_ns.getParam("hue", hue);
+            nh_ns.getParam("saturation", saturation);
+            nh_ns.getParam("gain", gain);
+            nh_ns.getParam("exposure", exposure);
+            nh_ns.getParam("frame_rate", rate);
+            nh_ns.getParam("odometry_DB", odometry_DB);
+            nh_ns.getParam("openni_depth_mode", openniDepthMode);
+            nh_ns.getParam("gpu_id", gpu_id);
+            nh_ns.getParam("zed_id", zed_id);
+			nh_ns.getParam("zed_name", zed_name);
 
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
@@ -658,25 +678,7 @@ namespace zed_wrapper {
             odometry_frame_id = "/" + zed_name + "_initial_frame";
             odometry_transform_frame_id = "/" + zed_name + "_current_frame";
 
-            nh = getMTNodeHandle();
-            nh_ns = getMTPrivateNodeHandle();
 
-            // Get parameters from launch file
-            nh_ns.getParam("resolution", resolution);
-            nh_ns.getParam("quality", quality);
-            nh_ns.getParam("sensing_mode", sensing_mode);
-            nh_ns.getParam("brightness", brightness);
-            nh_ns.getParam("contrast", contrast);
-            nh_ns.getParam("hue", hue);
-            nh_ns.getParam("saturation", saturation);
-            nh_ns.getParam("gain", gain);
-            nh_ns.getParam("exposure", exposure);
-            nh_ns.getParam("frame_rate", rate);
-            nh_ns.getParam("odometry_DB", odometry_DB);
-            nh_ns.getParam("openni_depth_mode", openniDepthMode);
-            nh_ns.getParam("gpu_id", gpu_id);
-            nh_ns.getParam("zed_id", zed_id);
-			nh_ns.getParam("zed_name", zed_name);
             if (openniDepthMode)
                 NODELET_INFO_STREAM("Openni depth mode activated");
 
