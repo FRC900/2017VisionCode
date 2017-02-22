@@ -97,11 +97,11 @@ sudo apt-get install libflann-dev libpcl-dev
 
 #install zed sdk
 if [ "$version" = tk1 ] && [ "$jetson" = true ] ; then
-	ext="ZED_SDK_Linux_JTK1_v1.1.0.run"
+	ext="ZED_SDK_Linux_JTK1_v1.2.0.run"
 elif [ "$version" = tx1 ] && [ "$jetson" = true ] ; then
-	ext="ZED_SDK_Linux_JTX1_v1.1.1_64b_JetPack23.run"
+	ext="ZED_SDK_Linux_JTX1_v1.2.0_64b_JetPack23.run"
 else
-	ext="ZED_SDK_Linux_Ubuntu16_CUDA80_v1.1.1.run"
+	ext="ZED_SDK_Linux_Ubuntu16_CUDA80_v1.2.0.run"
 fi
 wget --no-check-certificate https://www.stereolabs.com/download_327af3/$ext
 chmod 755 $ext
