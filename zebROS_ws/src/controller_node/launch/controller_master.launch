@@ -15,7 +15,7 @@
   <arg name="gain" default="1" />
   <arg name="exposure" default="5" />
   <arg name="name" default="zed_goal" />
-  <arg name="should_record" default="false" />
+  <arg name="record" default="false" />
   
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
@@ -33,4 +33,5 @@
 
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
   <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+  <include file="$(find controller_node)/launch/record_master.launch" if="$(arg record)"/>
 </launch>

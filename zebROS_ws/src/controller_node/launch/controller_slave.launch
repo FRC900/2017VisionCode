@@ -30,5 +30,6 @@
       <arg name="exposure" value="$(arg exposure)" />
     </include>
   </group>
+  <include file="$(find controller_node)/launch/record_slave.launch" if="$(arg record)"/>
   <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
 </launch>
