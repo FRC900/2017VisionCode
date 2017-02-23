@@ -17,7 +17,7 @@
   <arg name="name" default="zed_fuel" />
   <arg name="record" default="false" />
   
-  <group ns="$(arg name)">
+  <group name="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
       <arg name="zed_id" value="$(arg zed_id)" />
