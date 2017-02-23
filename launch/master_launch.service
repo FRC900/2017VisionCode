@@ -18,4 +18,4 @@ ExecStart=/bin/bash -ec "/home/ubuntu/2017VisionCode/launch/master.sh || true"
 Restart=on-failure
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
