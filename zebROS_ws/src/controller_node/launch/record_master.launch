@@ -8,6 +8,6 @@
   -->
   <node name="rosbag_record_node" pkg="rosbag" type="record"
   	args="-o /mnt/900_2/ --buffsize=0 --lz4 
-	-e '/zed_(fuel|goal)/(left|right)/image_rect_color'
+	/zed_fuel/left/image_rect_color /zed_fuel/right/image_rect_color
 	/diagnostics /tf /tf_static /rosout /rosout_agg"/>
 </launch>

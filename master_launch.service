@@ -11,6 +11,7 @@ ExecStartPre=/bin/sh -ec 'sleep 5' ; \
 	     /home/ubuntu/2017VisionCode/set_freq_tx.sh ; \ 
 	     /home/ubuntu/2017VisionCode/set_freq_tx.sh ; \
 	     /bin/sh -ec 'ifup eth0 || true' ; \
+		 /bin/sh -ec "sudo mount $(ls /dev/disk/by-id/ | grep 'SanDisk.*part1') /mnt/900_2" ; \
 	     /bin/sh -e '. ./home/ubuntu/2017VisionCode/zebROS_ws/ROSJetsonMaster.sh'
 
 ExecStart=roslaunch controller_node controller_master.launch
