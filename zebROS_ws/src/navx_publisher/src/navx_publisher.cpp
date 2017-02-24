@@ -106,15 +106,15 @@ int main(int argc, char** argv)
 		rot = pose * last_rot.inverse();
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 		float time = timestamp.data - last_time;
-		angular_vel.x = roll / time;
-		angular_vel.y = -pitch / time;
+		angular_vel.x = pitch / time;
+		angular_vel.y = -roll / time;
 		angular_vel.z = -yaw / time;
 		imu_msg.angular_velocity = angular_vel;
 		imu_msg_raw.angular_velocity = angular_vel;
 		last_rot = pose;
 		last_time = timestamp.data;
 
-		firstrun = false;		
+		firstrun = false;
 
 		//pull position data (all this is is the integral of velocity so it's not very good)
 		odom.pose.pose.position.x = nx.GetDisplacementX();
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 
 		//set the header of the odometry structure
 		odom.header.stamp = ros::Time::now();
-		odom.header.frame_id = "navx_initial_frame";
+		odom.header.frame_id = "nav_current_frame";
 
 		imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 		imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
@@ -179,8 +179,8 @@ int main(int argc, char** argv)
 			ln++;
 		}
 
-		imu_msg_raw.header.frame_id = "navx_initial_frame";
-		imu_msg.header.frame_id = "navx_initial_frame";
+		imu_msg_raw.header.frame_id = "navx_base_frame";
+		imu_msg.header.frame_id = "navx_base_frame";
 
 		imu_msg_raw.linear_acceleration_covariance = imu_msg.linear_acceleration_covariance;
 		imu_msg_raw.angular_velocity_covariance = imu_msg.angular_velocity_covariance;
