@@ -1,7 +1,7 @@
 <launch>
 	<!-- Transform x y z roll pitch yaw -->
-	<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed" args="0.3429 0.00396875 0.22225 0 -0.610865 0 base_link zed_fuel_initial_frame" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.05476875 0.2444475 0.0777875 0 0 0 base_link navx_initial_frame" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed" args="0.3175 0.2413 0.60325 0 0 0 base_link zed_fuel_initial_frame" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_initial_frame" />
 	<!--node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0.5 1.5 0 0 0 0 map odom" /-->
 
 	<node name="ukf_localization_node" pkg="robot_localization" type="ukf_localization_node">
@@ -19,13 +19,13 @@
 
 		<!-- We really need wheel encoder odometry -->
 		<param name="odom0" value="/zed_fuel/odom"/>
-		<param name="imu0" value="/navx/imu"/>
-
+		<param name="imu0" value="/navx/raw"/>
+		<!--
 		<param name="imu0_differential" value="false"/>
 		<param name="odom0_differential" value="false" />
 		<param name="imu0_relative" value="true" />
 		<param name="odom0_relative" value="true" />
-
+		-->
 		<!--
 			Sensor Configuration:
 			x, y, z
