@@ -482,8 +482,8 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 // in them?
 void GoalDetector::isValid()
 {
-	SmartRect currentRect = _pastRects[0];
 #if 0
+	SmartRect currentRect = _pastRects[0];
 	for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
 	{
 		if(!(*it == currentRect))
@@ -493,7 +493,7 @@ void GoalDetector::isValid()
 		}
 	}
 #endif
-	if (currentRect == SmartRect(Rect()))
+	if (_pastRects[_pastRects.size()-1] == SmartRect(Rect()))
 		_isValid = false;
 	else
 		_isValid = true;
