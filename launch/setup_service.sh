@@ -25,6 +25,7 @@ done
 
 chmod 664 /etc/systemd/system/ros_launch.service
 
-systemctl daemon-reload
+sudo systemctl daemon-reload
+sudo systemctl enable ros_launch 
 
 echo "This Jetson will now run ROS $1 on boot. Run systemctl disable ros_launch.service to disable"

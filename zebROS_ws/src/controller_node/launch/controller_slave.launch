@@ -14,6 +14,7 @@
   <arg name="saturation" default="-1" />
   <arg name="gain" default="-1" />
   <arg name="exposure" default="-1" />
+  <arg name="flip" default="true" />
   <arg name="name" default="zed_fuel" />
   <arg name="record" default="false" />
   
@@ -28,6 +29,7 @@
       <arg name="saturation" value="$(arg saturation)" />
       <arg name="gain" value="$(arg gain)" />
       <arg name="exposure" value="$(arg exposure)" />
+      <arg name="flip" value="$(arg flip)" />
     </include>
   </group>
   <include file="$(find controller_node)/launch/record_slave.launch" if="$(arg record)"/>

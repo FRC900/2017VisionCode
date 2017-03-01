@@ -8,6 +8,7 @@
   <arg name="saturation" default="3"/>
   <arg name="gain" default="1"/>
   <arg name="exposure" default="5"/>
+  <arg name="flip" default="false"/>
   <arg name="zed_name" default="zed"/>
 
   <group ns="$(arg zed_name)">
@@ -19,7 +20,9 @@
       <arg name="hue" value="$(arg hue)" />
       <arg name="saturation" value="$(arg saturation)" />
       <arg name="gain" value="$(arg gain)" />
+      <arg name="zed_name" value="$(arg zed_name)"/>
       <arg name="exposure" value="$(arg exposure)" />
+      <arg name="flip" value="$(arg flip)" />
     </include>
   </group>
 
