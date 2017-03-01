@@ -136,6 +136,7 @@ namespace zed_wrapper {
 		int saturation;
 		int gain;
 		int exposure;
+        bool flip;
 		std::string zed_name;
         std::string odometry_DB;
         std::string svo_filepath;
@@ -616,11 +617,12 @@ namespace zed_wrapper {
 			saturation = -1;
 			gain = -1;
 			exposure = -1;
+            flip = false;
 
             rate = 30;
             gpu_id = -1;
             zed_id = 0;
-			zed_name = "zed_fuck_this_shit";
+			zed_name = "zed";
             odometry_DB = "";
             
 			nh = getMTNodeHandle();
@@ -636,6 +638,8 @@ namespace zed_wrapper {
             nh_ns.getParam("saturation", saturation);
             nh_ns.getParam("gain", gain);
             nh_ns.getParam("exposure", exposure);
+            nh_ns.getParam("flip", flip);
+
             nh_ns.getParam("frame_rate", rate);
             nh_ns.getParam("odometry_DB", odometry_DB);
             nh_ns.getParam("openni_depth_mode", openniDepthMode);
@@ -732,6 +736,8 @@ namespace zed_wrapper {
 			zed->setCameraSettingsValue(ZED_SATURATION, saturation, saturation < 0);
 			zed->setCameraSettingsValue(ZED_GAIN, gain, gain < 0);
 			zed->setCameraSettingsValue(ZED_EXPOSURE, exposure, exposure < 0);
+
+            zed->setFlip(flip); // Flips the zed based on a ros parameter
 
             zed->grab(static_cast<sl::zed::SENSING_MODE> (sensing_mode), true, true, true); //call the first grab
 
