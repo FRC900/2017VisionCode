@@ -3,6 +3,14 @@
 import rospy
 from nav_msgs.msg import Odometry
 
+
+
+def qv_mult(q, v):
+    v = tf.transformations.unit_vector(v)
+    qp = list(v)
+    qp.append(0.0)
+    return tf.transformations.quaternion_multiply(tf.transformations.quaternion_multiply(q,qp),tf.transformations.quaternion_conjugate(q))
+
 class TransformOdometry:
     # Pose Position Transform
     X_POS_SHIFT = 
@@ -14,12 +22,6 @@ class TransformOdometry:
     Z_ORI_SHIFT = 
     W_ORI_SHIFT = 
 
-    def qv_mult(q, v):
-        v = tf.transformations.unit_vector(v)
-        qp = list(v)
-        qp.append(0.0)
-        return tf.transformations.quaternion_multiply(tf.transformations.quaternion_multiply(q,qp),tf.transformations.quaternion_conjugate(q))
-
     def __init__(self):
         self.odom_pub_topic = "/odometry"
         self.odom_sub_topic = "/odometry_transformed"
@@ -28,10 +30,6 @@ class TransformOdometry:
         self.y_pos_shift = 0
         self.z_pos_shift = 0
 
-        odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x / math.cos(Z_ORI_SHIFT) / math.cos(Y_ORI_SHIFT)  
-        odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.y / math.sin(Z_ORI_SHIFT) / math.cos(Y_ORI_SHIFT)
-        odom_msg.pose.pose.position.z = 0
-
         self.odom_pub_topic = rospy.get_param("~odom_pub_topic")
         self.odom_sub_topic = rospy.get_param("~odom_sub_topic")
 
@@ -39,6 +37,15 @@ class TransformOdometry:
         self.pub_odom_transform = rospy.Publisher("/zed_fuel/odom_transformed", Odometry, queue_size=1)
     
     def _transform_callback(self, odom_msg):
+
+        odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(Z_ORI_SHIFT) - odom_msg.pose.pose.position.y * math.sin(Z_ORI_SHIFT)
+        odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(Z_ORI_SHIFT) + odom_msg.pose.pose.posiiton.y * math.cos(Z_ORI_SHIFT)
+	
+        odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(Y_ORI_SHIFT) - odom_msg.pose.pose.position.z * math.sin(Y_ORI_SHIFT)
+        odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(Y_ORI_SHIFT) + odom_msg.pose.pose.posiiton.z * math.cos(Y_ORI_SHIFT)
+
+        odom_msg.pose.pose.position.z = 0
+
         new_vec = qv_mult(odom_msg.pose.pose.orientation, [X_POS_SHIFT,Y_POS_SHIFT,Z_POS_SHIFT])
         tx = X_POS_SHIFT - new_vec[0]
         ty = Y_POS_SHIFT - new_vec[1]
