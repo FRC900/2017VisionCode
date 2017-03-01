@@ -11,6 +11,7 @@
 #include "Utilities.hpp"
 #include "track3d.hpp"
 
+#if 0
 class SmartRect
 {
     public:
@@ -19,6 +20,7 @@ class SmartRect
         bool operator== (const SmartRect &thatRect)const;
 	friend std::ostream& operator<<(std::ostream& os, const SmartRect& obj);	
 };
+#endif
 
 //this contains all the info we need to decide between goals once we are certain if it is a goal
 struct GoalInfo
@@ -63,7 +65,7 @@ class GoalDetector
 
 		// Save detection info
 		bool _isValid;
-		boost::circular_buffer<SmartRect> _pastRects;
+		//boost::circular_buffer<SmartRect> _pastRects;
 		float _dist_to_goal;
 		float _angle_to_goal;
 		cv::Rect _goal_top_rect;
