@@ -11,7 +11,7 @@ GoalDetector::GoalDetector(cv::Point2f fov_size, cv::Size frame_size, bool gui) 
 	_fov_size(fov_size),
 	_frame_size(frame_size),
 	_isValid(false),
-	_pastRects(2),
+	//_pastRects(2),
 	_min_valid_confidence(0.3),
 	_otsu_threshold(5),
 	_blue_scale(70),
@@ -96,16 +96,19 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 		cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
 		cout << "Found Goal: " << found_goal << " " << top_info[best_result_index_top].distance << " " << top_info[best_result_index_top].angle << endl;
 		cout << "Found goal with confidence: " << top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence << endl;
-		_pastRects.push_back(SmartRect(top_info[best_result_index_top].rect));
+		//_pastRects.push_back(SmartRect(top_info[best_result_index_top].rect));
 		_goal_pos      = top_info[best_result_index_top].pos;
 		_dist_to_goal  = top_info[best_result_index_top].distance; 
 		_angle_to_goal = top_info[best_result_index_top].angle;
 		_goal_top_rect     = top_info[best_result_index_top].rect;
 		_goal_bottom_rect = bottom_info[best_result_index_bottom].rect;
-	} else
-		_pastRects.push_back(SmartRect(Rect()));
+		_isValid = true;
+	} else {
+		_isValid = false;
+		//_pastRects.push_back(SmartRect(Rect()));
+	}
 	
-	isValid();
+	//isValid();
 }
 
 
@@ -130,7 +133,8 @@ vector< vector < Point > > GoalDetector::getContours(const Mat& image) {
 	vector < vector < Point > > return_contours;
 	if (!generateThresholdAddSubtract(image, threshold_image))
 	{
-		_pastRects.push_back(SmartRect(Rect()));
+		_isValid = false;
+		//_pastRects.push_back(SmartRect(Rect()));
 		return return_contours;
 	}
 
@@ -405,7 +409,7 @@ float GoalDetector::distanceUsingFixedHeight(const Rect &rect, const Point &cent
 float GoalDetector::dist_to_goal(void) const
 {
  	//floor distance to goal in m
-	return _isValid ? _dist_to_goal * 1.1 : -1.0;
+	return _isValid ? _dist_to_goal * 1.0 : -1.0;
 }
 
 float GoalDetector::angle_to_goal(void) const
@@ -415,6 +419,7 @@ float GoalDetector::angle_to_goal(void) const
 		return -1;
 
 	float delta = 0;
+#if 0
 	if (_angle_to_goal >= 40)
 		delta = -3.00; // >= 40
 	else if (_angle_to_goal >= 35)
@@ -439,6 +444,7 @@ float GoalDetector::angle_to_goal(void) const
 		delta = 4.55;  // -40 > x 
 
 	cout << "angle:" << _angle_to_goal << " delta:" << delta << endl;
+#endif
 
 	return _angle_to_goal + delta;
 }
@@ -467,7 +473,8 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 		rectangle(image, br, Scalar(255,0,0), 2);
 		putText(image, to_string(i), br.br(), FONT_HERSHEY_PLAIN, 1, Scalar(0,255,0));
 	}
-	if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect()))) {
+	//if(!(_pastRects[_pastRects.size() - 1] == SmartRect(Rect()))) {
+	if (_isValid) {
 		rectangle(image, _goal_top_rect, Scalar(0,255,0), 2);	
 		rectangle(image, _goal_bottom_rect, Scalar(0,140,255), 2);	
 	}
@@ -482,6 +489,7 @@ void GoalDetector::drawOnFrame(Mat &image, vector<vector<Point>> _contours) cons
 // in them?
 void GoalDetector::isValid()
 {
+#if 0
 	SmartRect currentRect = _pastRects[0];
 	for(auto it = _pastRects.begin() + 1; it != _pastRects.end(); ++it)
 	{
@@ -492,10 +500,11 @@ void GoalDetector::isValid()
 		}
 	}
 	_isValid = true;
-	return;
+#endif
 }
 
 
+#if 0
 // Simple class to encapsulate a rect plus a slightly
 // more complex than normal comparison function
 SmartRect::SmartRect(const cv::Rect &rectangle):
@@ -526,3 +535,4 @@ std::ostream& operator<<(std::ostream& os, const SmartRect &obj) {
 		os << obj.myRect;
 	return os;
 }
+#endif
