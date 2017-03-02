@@ -9,16 +9,14 @@ fi
 
 #Check if master / slave and copy file accordingly
 
-while [ $# -gt 0]
+while [ $# -gt 0 ]
 do
-
 	case "$1" in
-		-master) cp master_launch.service  /etc/systemd/system/ros_launch.service;;
+			-master) cp master_launch.service  /etc/systemd/system/ros_launch.service;;
 		-slave) cp slave_launch.service /etc/systemd/system/ros_launch.service;;
 		*) break ;;
 	esac
 	shift
-
 done
 
 #Set file permissions and reload systemd
