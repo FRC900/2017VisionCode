@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include <opencv2/opencv.hpp>
 
 #include "zmsin.hpp"
@@ -14,7 +15,7 @@ int main(int argc, char **argv)
 		cout << argv[1] << " output input1 input2 ... inputN" << endl;
 		return 0;
 	}
-	ZMSOut out(argv[1]);
+	ZMSOut out(argv[1], 1, numeric_limits<int>::max(), true); // compress output
 	Mat image;
 	Mat depth;
 	for (int i = 2; i < argc; i++)
@@ -25,7 +26,7 @@ int main(int argc, char **argv)
 		{
 			out.sync();
 			out.saveFrame(image, depth);
-			cout << in.FPS() << " FPS" << endl;
+			cout << out.FPS() << " FPS" << endl;
 		}
 	}
 	out.sync();
