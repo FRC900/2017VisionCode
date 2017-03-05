@@ -1,8 +1,6 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-#include "GoalDetector.hpp"
-
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
