@@ -47,8 +47,8 @@ int main(int argc, char **argv)
 		frameTicker.mark();
 		//imshow ("Normalized Depth", depthNorm);
 
-		gd.processFrame(image, depth);
-		gd.drawOnFrame(image);
+		gd.findBoilers(image, depth);
+		gd.drawOnFrame(image, gd.getContours(image));
 
 		stringstream ss;
 		ss << fixed << setprecision(2) << frameTicker.getFPS() << "FPS";

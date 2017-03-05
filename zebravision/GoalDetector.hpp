@@ -22,6 +22,12 @@ class SmartRect
 };
 #endif
 
+struct DepthInfo
+{
+	float depth;
+	bool  error;
+};
+
 //this contains all the info we need to decide between goals once we are certain if it is a goal
 struct GoalInfo
 {
@@ -34,6 +40,9 @@ struct GoalInfo
 	float angle;
 	cv::Rect rect;
 	size_t vec_index;
+	bool depth_error;
+	cv::Point com;
+	cv::Rect br;
 };
 
 class GoalDetector
@@ -54,8 +63,8 @@ class GoalDetector
 		//getContours and computeConfidences with different types
 		void findBoilers(const cv::Mat& image, const cv::Mat& depth);
 		std::vector< std::vector< cv::Point > > getContours(const cv::Mat& image);
-		std::vector< float > getDepths(const cv::Mat &depth, std::vector< std::vector< cv::Point > > contours, int objtype, float expected_height);
-		std::vector< GoalInfo > getInfo(std::vector< std::vector< cv::Point > > _contours, std::vector< float > _depth_maxs, int objtype);
+		std::vector<DepthInfo> getDepths(const cv::Mat &depth, std::vector< std::vector< cv::Point > > contours, int objtype, float expected_height);
+		std::vector< GoalInfo > getInfo(std::vector< std::vector< cv::Point > > _contours, const std::vector<DepthInfo> &_depth_maxs, int objtype);
 
 		bool Valid(void) const;
 	private:

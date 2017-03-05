@@ -52,8 +52,8 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//ObjectType(5) == bottom piece of tape
 	clear();
 	vector<vector<Point>> goal_contours = getContours(image);
-	vector<float> top_goal_depths = getDepths(depth,goal_contours,4, ObjectType(4).real_height());
-	vector<float> bottom_goal_depths = getDepths(depth,goal_contours,5, ObjectType(5).real_height());
+	vector<DepthInfo> top_goal_depths = getDepths(depth,goal_contours,4, ObjectType(4).real_height());
+	vector<DepthInfo> bottom_goal_depths = getDepths(depth,goal_contours,5, ObjectType(5).real_height());
 	//compute confidences for both the top piece of tape and the bottom piece of tape
 	vector<GoalInfo> top_info = getInfo(goal_contours,top_goal_depths,4);
 	if(top_info.size() == 0)
@@ -72,16 +72,97 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//confidences are higher than any previous one
 	for(size_t i = 0; i < top_info.size(); i++) {
 		for(size_t j = 0; j < bottom_info.size(); j++) {
-			if(top_info[i].pos.z < bottom_info[j].pos.z || 
-				top_info[i].vec_index == bottom_info[j].vec_index || 
-				fabsf(top_info[i].angle - bottom_info[j].angle) > 10.0)
+			cout << i << " " << j << " ij" << endl;
+			int top_vindex = top_info[i].vec_index;
+			int bottom_vindex = bottom_info[j].vec_index;
+			if (top_vindex == bottom_vindex)
+			{
+				cout << i << " " << j << " " << top_vindex << " " << bottom_vindex << " same contour" << endl;
 				continue;
+			}
+			cout << top_info[i].vec_index << " " << bottom_info[j].vec_index << " cidx" << endl;
+
+			if (top_info[i].com.y > bottom_info[j].com.y)
+			{
+				cout << i << " " << j << " " << top_info[i].com.y << " " << bottom_info[j].com.y << " screen y order check failed" << endl;
+				continue;
+			}
+			const float screendx = top_info[i].com.x - bottom_info[j].com.x;
+			const float screendy = top_info[i].com.y - bottom_info[j].com.y;
+			const float screenDist = sqrtf(screendx * screendx + screendy * screendy);
+
+			if (screenDist > top_info[i].br.width)
+			{
+				cout << i << " " << j << " " << screenDist << " screen dist check failed" << endl;
+				continue;
+			}
+
+			// Look for any overlap of the two bounding rects
+			Rect topBr = top_info[i].br;
+			Rect bottomBr = bottom_info[j].br;
+
+			cout << topBr << " " << bottomBr << endl;
+
+			if (topBr.br().x < bottomBr.x)
+			{
+				cout << i << " " << j << " " << topBr.br().x << " " << bottomBr.x << " stacked check 1 failed" << endl;
+				continue;
+			}
+
+			if (topBr.x > bottomBr.br().x)
+			{
+				cout << i << " " << j << " " << topBr.br().x << " " << bottomBr.x << " stacked check 1 failed" << endl;
+				continue;
+			}
+
+#if 0
+			if(top_info[i].pos.z < bottom_info[j].pos.z)
+			{
+				cout << i << " " << j << " z compare failed" << endl;
+				continue;
+			}
+#endif
+
+			// Only do distance checks if we believe the
+			// depth info is correct
+			if (!top_info[i].depth_error && !bottom_info[j].depth_error)
+			{
+				if (fabsf(top_info[i].angle - bottom_info[j].angle) > 10.0)
+				{
+					cout << i << " " << j << " angle compare failed" << endl;
+					continue;
+				}
+
+				const float dx = top_info[i].pos.x - bottom_info[j].pos.x;
+				if (fabsf(dx) > .3)
+				{
+					cout << i << " " << j << " " << dx << " dx check failed" << endl;
+					continue;
+				}
+				const float dy = top_info[i].pos.y - bottom_info[j].pos.y;
+				const float dz = top_info[i].pos.z - bottom_info[j].pos.z;
+				const float dist = sqrt(dx * dx + dy * dy + dz * dz);
+				if (dist > 1.25)
+				{
+					cout << i << " " << j << " " << dist << " distance check failed" << endl;
+					continue;
+				}
+			}
+
+			// This doesn't work near the edges of the frame?
+			if ((top_info[i].rect & bottom_info[j].rect).area() > (.5 * min(top_info[i].rect.area(), bottom_info[j].rect.area())))
+			{
+				cout << i << " " << j << " overlap check failed" << endl;
+				continue;
+			}
+
 			if(!initialized) {
 				best_result_index_top = i;
 				best_result_index_bottom = j;
 				initialized = true;
-				}
+			}
 			if(top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence <= top_info[i].confidence + bottom_info[j].confidence) {
+				cout << i << " " << j << " confidence passed check" << endl;
 				found_goal = true;
 				best_result_index_top = i;
 				best_result_index_bottom = j;
@@ -100,30 +181,22 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 		_goal_pos      = top_info[best_result_index_top].pos;
 		_dist_to_goal  = top_info[best_result_index_top].distance; 
 		_angle_to_goal = top_info[best_result_index_top].angle;
-		_goal_top_rect     = top_info[best_result_index_top].rect;
+		_goal_top_rect = top_info[best_result_index_top].rect;
 		_goal_bottom_rect = bottom_info[best_result_index_bottom].rect;
 		_isValid = true;
-	} else {
-		_isValid = false;
-		//_pastRects.push_back(SmartRect(Rect()));
 	}
-	
-	//isValid();
 }
 
 
 void GoalDetector::clear()
 {
-
 	// Reset previous detection vars
 	_isValid = false;
 	_dist_to_goal = -1.0;
 	_angle_to_goal = -1.0;
 	_goal_top_rect = Rect();
 	_goal_bottom_rect = Rect();
-	_goal_pos  = Point3f();
-
-
+	_goal_pos = Point3f();
 }
 
 vector< vector < Point > > GoalDetector::getContours(const Mat& image) {
@@ -149,11 +222,12 @@ vector< vector < Point > > GoalDetector::getContours(const Mat& image) {
 	return return_contours;
 }
 
-vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point > > contours, int objtype, float expected_height) {
+vector<DepthInfo> GoalDetector::getDepths(const Mat &depth, vector< vector< Point > > contours, int objtype, float expected_height) {
 	// Use to mask the contour off from the rest of the
 	// image - used when grabbing depth data for the contour
 	Mat contour_mask(_frame_size, CV_8UC1, Scalar(0));
-	vector< float > return_vec;
+	vector<DepthInfo> return_vec;
+	DepthInfo depthInfo;
 	for(size_t i = 0; i < contours.size(); i++) {
 		// get the minimum and maximum depth values in the contour,
 		Rect br(boundingRect(contours[i]));
@@ -173,15 +247,20 @@ vector< float > GoalDetector::getDepths(const Mat &depth, vector< vector< Point 
 		// If no depth data, calculate it using FOV and height of
 		// the target. This isn't perfect but better than nothing
 		if ((depth_z_min <= 0.) || (depth_z_max <= 0.)) {
+			depthInfo.error = true;
 			ObjectType ot(objtype);
 			depth_z_min = depth_z_max = distanceUsingFixedHeight(br,com,expected_height);
 		}
-		return_vec.push_back(depth_z_max);
+		else
+			depthInfo.error = false;
+		depthInfo.depth = depth_z_max;
+
+		return_vec.push_back(depthInfo);
 	}
 	return return_vec;
 }
 
-vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<float> _depth_maxs, int objtype) {
+vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours, const vector<DepthInfo> &depth_maxs, int objtype) {
 	ObjectType _goal_shape(objtype);
 	vector<GoalInfo> return_info;
 	// Create some target stats based on our idealized goal model
@@ -194,7 +273,6 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 	// Aspect ratio of the goal
 	const float expectedRatio = _goal_shape.width() / _goal_shape.height();
 
-	vector<GoalInfo> best_goals;
 	for (size_t i = 0; i < _contours.size(); i++)
 	{
 		// ObjectType computes a ton of useful properties so create
@@ -203,10 +281,19 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 250.0))
+		if ((br.area() <= 75.0))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
+#endif
+			continue;
+		}
+		// Remove objects which are obviously too small
+		// TODO :: Tune me, make me a percentage of screen area?
+		if (br.height > br.width)
+		{
+#ifdef VERBOSE
+			cout << "Contour " << i << " taller than wide" << br.size() << endl;
 #endif
 			continue;
 		}
@@ -222,22 +309,23 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 
 
 		
+#if 0
 		// TODO : Figure out how well this works in practice
 		// Filter out goals which are too close or too far
-		if ( 6.2 <_depth_maxs[i] || _depth_maxs[i] < .1)
+		if (!depth_maxs[i].error && (6.2 <depth_maxs[i].depth || depth_maxs[i].depth < .1))
 		{
 #ifdef VERBOSE
-			cout << "Contour " << i << " depth out of range " << _depth_maxs[i] << endl;
+			cout << "Contour " << i << " depth out of range " << depth_maxs[i].depth << endl;
 #endif
 			continue;
 		}
-
+#endif
 
 		//create a trackedobject to get various statistics
 		//including area and x,y,z position of the goal
 		ObjectType goal_actual(_contours[i], "Actual Goal", 0);
-		TrackedObject goal_tracked_obj(0, _goal_shape, br, _depth_maxs[i], _fov_size, _frame_size,-((float)_camera_angle/10.) * M_PI / 180.0);
-		//TrackedObject goal_tracked_obj(0, _goal_shape, br, _depth_maxs[i], _fov_size, _frame_size, -16 * M_PI / 180.0);
+		TrackedObject goal_tracked_obj(0, _goal_shape, br, depth_maxs[i].depth, _fov_size, _frame_size,-((float)_camera_angle/10.) * M_PI / 180.0);
+		//TrackedObject goal_tracked_obj(0, _goal_shape, br, depth_maxs[i].depth, _fov_size, _frame_size, -16 * M_PI / 180.0);
 
 		// Gets the bounding box area observed divided by the
 		// bounding box area calculated given goal size and distance
@@ -249,7 +337,7 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		if (((exp_area / br.area()) < 0.20) || ((exp_area / br.area()) > 5.00))
 		{
 #ifdef VERBOSE
-			cout << "Contour " << i << " area out of range for depth (depth/act/exp/ratio):" << _depth_maxs[i] << "/" << br.area() << "/" << exp_area << "/" << actualScreenArea << endl;
+			cout << "Contour " << i << " area out of range for depth (depth/act/exp/ratio):" << depth_maxs[i].depth << "/" << br.area() << "/" << exp_area << "/" << actualScreenArea << endl;
 #endif
 			continue;
 		}*/
@@ -300,24 +388,28 @@ vector<GoalInfo> GoalDetector::getInfo(vector<vector<Point>> _contours,vector<fl
 		cout << "confidence_screen_area: " << confidence_screen_area << endl;
 		cout << "confidence: " << confidence << endl;
 		cout << "Height exp/act: " << _goal_shape.real_height() << "/" <<  goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0 << endl;
-		cout << "Depth max: " << _depth_maxs[i] << endl;
+		cout << "Depth max: " << depth_maxs[i].depth << " " << depth_maxs[i].error << endl;
 		cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
 		cout << "Aspect ratio exp/act : " << expectedRatio << "/" << actualRatio << endl;
 		cout << "br.br().y: " << br.br().y << endl;
+		cout << "com: " << goal_actual.com() << endl;
 		cout << "position: " << goal_tracked_obj.getPosition() << endl;
 		cout << "-------------------------------------------" << endl;
 #endif
 
-		// This goal passes the threshold required for us to consider it a goal
-		// Add it to the list of best goals
 		GoalInfo goal_info;
 
+		// This goal passes the threshold required for us to consider it a goal
+		// Add it to the list of best goals
 		goal_info.pos        = goal_tracked_obj.getPosition();
 		goal_info.confidence = confidence;
-		goal_info.distance   = _depth_maxs[i] * cosf((_camera_angle/10.0) * (M_PI/180.0));
+		goal_info.distance   = depth_maxs[i].depth * cosf((_camera_angle/10.0) * (M_PI/180.0));
 		goal_info.angle 	 = atan2f(goal_info.pos.x, goal_info.pos.y) * 180. / M_PI;
 		goal_info.rect   	 = br;
-		goal_info.vec_index = i;
+		goal_info.vec_index  = i;
+		goal_info.depth_error = depth_maxs[i].error;
+		goal_info.com        = goal_actual.com();
+		goal_info.br         = br;
 		return_info.push_back(goal_info);
 	}
 	return return_info;
