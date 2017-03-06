@@ -35,8 +35,5 @@
 
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true" />
   <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
-  <node name="zms_writer_node" pkg="zms_writer" type="zms_writer_node" respawn="true" />
-  <!-- 
   <include file="$(find controller_node)/launch/record_master.launch" if="$(arg record)"/>
--->
 </launch>
