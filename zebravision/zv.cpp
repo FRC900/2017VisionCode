@@ -361,8 +361,12 @@ int main( int argc, const char** argv )
 			break;
 
 		// run Goaldetector
-		Mat frameCopy;
-		gd.findBoilers(frame,depth);
+		gd.findBoilers(frame, depth);
+
+		// Save detected contours to display later
+		vector<vector<Point>> goal_contours;
+		if (gdDraw)
+			 goal_contours = gd.getContours(frame);
 
 		if (gd.goal_pos() != Point3f())
 			cout << "Goal Position=" << gd.goal_pos() << endl;
@@ -584,9 +588,9 @@ int main( int argc, const char** argv )
 			}
 
 			//draw the goal along with debugging info if that's enabled
-			if (gdDraw) {
-				gd.drawOnFrame(frame,gd.getContours(frame));
-			}
+			if (gdDraw) 
+				gd.drawOnFrame(frame, goal_contours);
+
 			if (args.rects)
 				rectangle(frame, gd.goal_rect(), Scalar(0, 255, 0));
 

@@ -68,7 +68,7 @@ Args::Args(void)
 	writeVideoCompress = false;
 	saveVideo          = false;
 	saveVideoSkip      = 1;
-	detection          = true;
+	detection          = false;
 	d12BaseDir         = "/home/ubuntu/2017VisionCode/zebravision/d12";
 	d12DirNum          = -1;
 	d12StageNum        = -1;

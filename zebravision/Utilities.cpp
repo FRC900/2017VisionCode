@@ -10,6 +10,7 @@ namespace utils {
 		if ((img.rows != mask.rows) || (img.cols != mask.cols))
 			return make_pair(-2,-2);
 
+		//cout << bound_rect << endl;
 		float min = numeric_limits<float>::max();
 		float max = numeric_limits<float>::min();
 		int min_loc_x;
@@ -24,7 +25,8 @@ namespace utils {
 
 			for (int i = bound_rect.tl().x; i <= bound_rect.br().x; i++) //for each pixel in row
 			{
-				if ((ptr_mask[i] == 255) && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+				//cout << i << " " << j << " " << ptr_img[i] << " " << (int)ptr_mask[i] << endl;
+				if (ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
 				{
 					found = true;
 					if (ptr_img[i] > max)
@@ -55,7 +57,7 @@ namespace utils {
 			const uchar *ptr_mask = mask.ptr<uchar>(j);
 		    for (int i = min_loc_x - range; i < (min_loc_x + range); i++)
 		    {
-		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && (ptr_mask[i] == 255) && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
 		        {
 		            sum_min += ptr_img[i];
 		            num_pix_min++;
@@ -70,7 +72,7 @@ namespace utils {
 			const uchar *ptr_mask = mask.ptr<uchar>(j);
 		    for (int i = max_loc_x - range; i < (max_loc_x + range); i++)
 		    {
-		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && (ptr_mask[i] == 255) && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
 		        {
 		            sum_max += ptr_img[i];
 		            num_pix_max++;
@@ -132,7 +134,7 @@ namespace utils {
 			const uchar *ptr_mask = mask.ptr<uchar>(j);
 
 			for (int i = 0; i < depth.cols; i++) {
-				if(ptr_mask[i] == 255 && ptr_depth[i] > 0) {
+				if (ptr_mask[i] && (ptr_depth[i] > 0)) {
 					cv::Point3f pos = ot.screenToWorldCoords(cv::Rect(i,j,0,0), ptr_depth[i], fov, depth.size(), 0);
 					slope_x_values.push_back(pos.x);
 					slope_y_values.push_back(pos.y);
