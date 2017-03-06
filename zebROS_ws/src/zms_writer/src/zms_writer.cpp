@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	while (rc == 0);
 
 	sprintf(name, "/mnt/900_2/cap%d.zms", index++);
-	zmsOut = new ZMSOut(name, 1, numeric_limits<int>::max(), false);
+	zmsOut = new ZMSOut(name, 1, 250, false);
 
 	ros::spin();
 
