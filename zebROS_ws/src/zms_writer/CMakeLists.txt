@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   image_transport
   cv_bridge
-  message_generation
 )
 
 
@@ -57,10 +56,10 @@ find_package(OpenCV REQUIRED)
 include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
+# add_message_files(
+#   FILES
 #   Message2.msg
-)
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -77,9 +76,9 @@ include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
- )
+#  generate_messages(
+#   DEPENDENCIES
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
