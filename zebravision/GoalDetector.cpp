@@ -127,7 +127,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 				continue;
 			}
 
-			if (topBr.br().x < bottomBr.x)
+			if ((topBr.br().x - (topBr.width/2)) < bottomBr.x)
 			{
 #ifdef VERBOSE_BOILDER
 				cout << i << " " << j << " " << topBr.br().x << " " << bottomBr.x << " stacked check 1 failed" << endl;
@@ -135,7 +135,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 				continue;
 			}
 
-			if (topBr.x > bottomBr.br().x)
+			if ((topBr.x + (topBr.width/2)) > bottomBr.br().x)
 			{
 #ifdef VERBOSE_BOILDER
 				cout << i << " " << j << " " << topBr.br().x << " " << bottomBr.x << " stacked check 2 failed" << endl;
@@ -411,7 +411,7 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 		float confidence_height      = createConfidence(_goal_shape.real_height(), 0.4, goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0);
 		float confidence_com_x       = createConfidence(com_percent_expected.x, 0.125,  com_percent_actual.x);
 		float confidence_filled_area = createConfidence(filledPercentageExpected, 0.33,   filledPercentageActual);
-		float confidence_ratio       = createConfidence(expectedRatio, 4,  actualRatio);
+		float confidence_ratio       = createConfidence(expectedRatio, 2,  actualRatio);
 		float confidence_screen_area = createConfidence(1.0, 0.75,  actualScreenArea);
 
 		// higher is better
