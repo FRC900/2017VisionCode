@@ -1,0 +1,1 @@
+Move 10-local.rules to /etc/udev/rules.d/ and restart jetson!
