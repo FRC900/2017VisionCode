@@ -40,6 +40,7 @@ class Args //class for processing arguments
 		int  c24Threshold;      // detection threshold
 		std::string inputName; // input file name or camera number
 		bool groundTruth;      // only test frames with ground truth data
+		bool autoStop;         // automatically stop on ground truth miscompare
 		std::string xmlFilename;   // XML settings file
 
 		Args(void);

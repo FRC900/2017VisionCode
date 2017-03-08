@@ -380,6 +380,8 @@ int main( int argc, const char** argv )
 			if (gd.goal_pos() != Point3f())
 				goalDetects.push_back(gd.goal_rect());
 			goalTruthHitList = goalTruth.processFrame(cap->frameNumber(), goalDetects, 0.0001);
+			if (!args.batchMode && args.autoStop && (goalDetects.size() != goalTruthHitList.size()))
+				pause = true;
 		}
 
 		// compute optical flow
