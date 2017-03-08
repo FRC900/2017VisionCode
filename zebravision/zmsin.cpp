@@ -264,5 +264,5 @@ CameraParams ZMSIn::getCameraParams(void) const
 
 int ZMSIn::frameCount(void) const
 {
-	return numeric_limits<int>::max();
+	return 0;
 }
