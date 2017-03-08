@@ -76,8 +76,10 @@ int GroundTruth::nextFrameNumber(void)
 // Process a frame. Update number of GTs actually in
 // the frame, number detected and number of false
 // positives found
-vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectRects)
+vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectRects, double overlap)
 {
+	framesSeen_ += 1;
+
 	const vector<Rect> &groundTruthList = get(frameNum);
 	vector<bool> groundTruthsHit(groundTruthList.size());
 	vector<bool> detectRectsUsed(detectRects.size());
@@ -88,9 +90,9 @@ vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectR
 	{
 		for(auto it = detectRects.cbegin(); it != detectRects.cend(); ++it)
 		{
-			// If the intersection is > 45% of the area of
+			// If the intersection is > overlap * the area of
 			// the ground truth, that's a success
-			if ((*it & *gt).area() > (max(gt->area(), it->area()) * 0.45))
+			if ((*it & *gt).area() > (max(gt->area(), it->area()) * overlap))
 			{
 				if (!groundTruthsHit[gt - groundTruthList.begin()])
 				{
@@ -106,7 +108,6 @@ vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectR
 		if (!*it)
 			falsePositives_ += 1;
 
-	framesSeen_ += 1;
 	return retList;
 }
 

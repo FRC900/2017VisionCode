@@ -19,6 +19,9 @@ class ZMSIn : public SyncIn
 		ZMSIn(const ZMSIn& zmsin) = delete;
 		ZMSIn& operator=(const ZMSIn& zmsin) = delete;
 
+		// How many frames?
+		int frameCount(void) const;
+
 		bool isOpened(void) const;
 
 		CameraParams getCameraParams(void) const;

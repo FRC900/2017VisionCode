@@ -61,7 +61,9 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	const vector<GoalInfo> bottom_info = getInfo(goal_contours,bottom_goal_depths,5);
 	if(bottom_info.size() == 0)
 		return;
+#ifdef VERBOSE
 	cout << top_info.size() << " top goals found and " << bottom_info.size() << " bottom" << endl;	
+#endif
 
 	int best_result_index_top = 0;
 	int best_result_index_bottom = 0;
@@ -239,11 +241,13 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	
 	//say a goal is found if the sum of the confidences is higher than 0.5
 	if(found_goal && top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence > _min_valid_confidence) {
+#ifdef VERBOSE
 		cout << "Top distance: " << top_info[best_result_index_top].distance << " Bottom distance: " << bottom_info[best_result_index_bottom].distance << endl;
 		cout << "Top position: " << top_info[best_result_index_top].pos << " Bottom position: " << bottom_info[best_result_index_bottom].pos << endl;
 		cout << "Top confidence: " << top_info[best_result_index_top].confidence << " Bottom confidence: " << bottom_info[best_result_index_bottom].confidence << endl;
 		cout << "Found Goal: " << found_goal << " " << top_info[best_result_index_top].distance << " " << top_info[best_result_index_top].angle << endl;
 		cout << "Found goal with confidence: " << top_info[best_result_index_top].confidence + bottom_info[best_result_index_bottom].confidence << endl;
+#endif
 		//_pastRects.push_back(SmartRect(top_info[best_result_index_top].rect));
 		
 		// Use data from the contour which has
@@ -318,7 +322,9 @@ const vector<DepthInfo> GoalDetector::getDepths(const Mat &depth, const vector< 
 		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
 		float depth_z_min = minMax.first;
 		float depth_z_max = minMax.second;
+#ifdef VERBOSE
 		cout << "Depth " << i << ": " << depth_z_min << " " << depth_z_max << endl;
+#endif
 
 		// If no depth data, calculate it using FOV and height of
 		// the target. This isn't perfect but better than nothing

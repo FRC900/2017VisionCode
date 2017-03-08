@@ -8,6 +8,7 @@
 // at least for the time being
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include "zmsin.hpp"
 
 #include <boost/filesystem.hpp>
@@ -259,4 +260,9 @@ CameraParams ZMSIn::getCameraParams(void) const
 		params.cy = 0;
 	}
 	return params;
+}
+
+int ZMSIn::frameCount(void) const
+{
+	return numeric_limits<int>::max();
 }

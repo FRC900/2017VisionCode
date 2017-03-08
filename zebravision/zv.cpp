@@ -374,12 +374,13 @@ int main( int argc, const char** argv )
 		// if we are using a goal_truth.txt file that has the actual 
 		// locations of the goal mark that we detected correctly
         vector<Rect> goalTruthHitList;
-        if (cap->frameCount() >= 0)
-        {
+		if (cap->frameCount() >= 0)
+		{
             vector<Rect> goalDetects;
-            goalDetects.push_back(gd.goal_rect());
-            goalTruthHitList = goalTruth.processFrame(cap->frameNumber(), goalDetects);
-        }
+			if (gd.goal_pos() != Point3f())
+				goalDetects.push_back(gd.goal_rect());
+			goalTruthHitList = goalTruth.processFrame(cap->frameNumber(), goalDetects, 0.0001);
+		}
 
 		// compute optical flow
 		if (detectState)
@@ -587,7 +588,7 @@ int main( int argc, const char** argv )
 					drawRects(frame, groundTruth.get(cap->frameNumber() - 1), Scalar(128, 0, 0), false);
 					drawRects(frame, groundTruthHitList, Scalar(128, 128, 128), false);
 				}
-				drawRects(frame, goalTruth.get(cap->frameNumber() - 1), Scalar(0, 0, 128), false);
+				drawRects(frame, goalTruth.get(cap->frameNumber()), Scalar(0, 0, 128), false);
 				drawRects(frame, goalTruthHitList, Scalar(255, 0, 255), false);
 			}
 

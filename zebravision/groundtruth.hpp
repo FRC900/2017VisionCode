@@ -26,7 +26,7 @@ class GroundTruth
 
 		// Search for hits and false positives in the given frame
 		// Return list of rects which were correctly found
-		std::vector<cv::Rect> processFrame(int frameNum, const std::vector<cv::Rect> &detectRects);
+		std::vector<cv::Rect> processFrame(int frameNum, const std::vector<cv::Rect> &detectRects, double overlap = 0.45);
 		void print(void) const;
 
 	private :
