@@ -55,7 +55,6 @@ bool MediaIn::getFrame(Mat &frame, bool pause)
 
 bool MediaIn::getFrame(Mat &frame, Mat &depth, bool pause)
 {
-	(void)pause;
 	depth = Mat();
 	// Call derived class version of non-depth method
 	// to get frame data, if any
@@ -64,7 +63,6 @@ bool MediaIn::getFrame(Mat &frame, Mat &depth, bool pause)
 
 bool MediaIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
 {
-	(void)pause;
 	cloud = pcl::PointCloud<pcl::PointXYZRGB>();
 	// Call derived class version of non-point cloud method
 	// to get frame+depth data, if any
