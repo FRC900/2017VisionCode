@@ -6,13 +6,13 @@
   * Results of SLAM (point cloud)
   * A few other misc topics
   -->
-  <!--
+  <!-- Remove spaces between - - args when reenabling rosbag
   <node name="rosbag_record_node" pkg="rosbag" type="record"
-  	args="-o /mnt/900_2/ --buffsize=0 --split --duration=30 
+  	args="-o /mnt/900_2/ - -buffsize=0 - -split - -duration=30 
 	/zed_goal/left/image_rect_color /zed_goal/right/image_rect_color /zed_goal/depth/depth_registered
 	/goal_detect_msg /navx/imu /navx/time /navx/raw /navx/odom
 	/diagnostics /tf /tf_static /rosout /rosout_agg"/>
   -->
-  <node name="zms_writer_node" pkg="zms_writer" type="zms_writer_node" respawn="true" />
+  <node name="zms_writer_node" pkg="zms_writer" type="zms_writer_node" respawn="true"/>
 	
 </launch>
