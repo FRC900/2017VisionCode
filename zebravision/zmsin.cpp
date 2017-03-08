@@ -52,7 +52,7 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 
 	if (!loaded)
 	{
-		cerr << "Zed init : Could not open " << inFileName << " for reading" << endl;
+		cerr << "ZMSIn(): Could not open " << inFileName << " for reading" << endl;
 		deleteInputPointers();
 		return;
 	}
@@ -63,7 +63,7 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 	// Reopen the file so callers can get the first frame
 	if (!openSerializeInput(inFileName, archiveIn_ == NULL))
 	{
-		cerr << "Zed init : Could not reopen " << inFileName << " for reading" << endl;
+		cerr << "ZMSIn() : Could not reopen " << inFileName << " for reading" << endl;
 		return;
 	}
 
