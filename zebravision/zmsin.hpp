@@ -36,7 +36,7 @@ class ZMSIn : public SyncIn
 
 	private:
 		void deleteInputPointers(void);
-		bool openSerializeInput(const char *filename, bool portable);
+		bool openSerializeInput(const char *filename, bool portable, bool conpressed);
 		void update(void);
 
 		// frame_ is the most recent frame grabbed from 

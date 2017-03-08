@@ -34,8 +34,10 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 	// Grab the first frame to figure out image size
 	cerr << "Loading " << inFileName << " for reading" << endl;
 	bool loaded = false;
-	if (openSerializeInput(inFileName, true) ||
-		openSerializeInput(inFileName, false))
+	if (openSerializeInput(inFileName, true, true)  ||
+		openSerializeInput(inFileName, false, true) || 
+	    openSerializeInput(inFileName, true, false) ||
+		openSerializeInput(inFileName, false, false))
 	{
 		loaded = true;
 		try
@@ -62,7 +64,8 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 	height_ = frame_.rows;
 
 	// Reopen the file so callers can get the first frame
-	if (!openSerializeInput(inFileName, archiveIn_ == NULL))
+	if (!openSerializeInput(inFileName, archiveIn_ == NULL, true) &&
+	    !openSerializeInput(inFileName, archiveIn_ == NULL, false))
 	{
 		cerr << "ZMSIn() : Could not reopen " << inFileName << " for reading" << endl;
 		return;
@@ -82,7 +85,7 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 // much space. Last item is the actual boost binary archive template
 // If all three are opened, return true. If not, delete and set to
 // NULL all pointers related to serialized Input
-bool ZMSIn::openSerializeInput(const char *inFileName, bool portable)
+bool ZMSIn::openSerializeInput(const char *inFileName, bool portable, bool compressed)
 {
 	deleteInputPointers();
 	serializeIn_ = new ifstream(inFileName, ios::in | ios::binary);
@@ -100,7 +103,8 @@ bool ZMSIn::openSerializeInput(const char *inFileName, bool portable)
 		deleteInputPointers();
 		return false;
 	}
-	filtSBIn_->push(boost::iostreams::zlib_decompressor());
+	if (compressed)
+		filtSBIn_->push(boost::iostreams::zlib_decompressor());
 	filtSBIn_->push(*serializeIn_);
 	if (portable)
 	{
