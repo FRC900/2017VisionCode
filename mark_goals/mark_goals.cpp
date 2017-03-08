@@ -6,11 +6,13 @@
 // and uses space or f (forward) to save the location to a file
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <boost/filesystem.hpp>
 
 #include "zmsin.hpp"
 
 using namespace cv;
 using namespace std;
+using namespace boost::filesystem;
 
 // TODO create vars to hold selected rectangle 
 // TODO create callback to handle mouse interaction
@@ -23,6 +25,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	MediaIn *cap = new ZMSIn(argv[1]);
+	path fileName(argv[1]);
+	cout << "Opened " << fileName.filename().string() << endl;
 
 	if (!cap->isOpened())
 	{

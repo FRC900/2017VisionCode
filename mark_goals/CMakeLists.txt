@@ -5,12 +5,13 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto --std=c++11")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Ofast -flto --std=c++11")
 
-include_directories(../zebravision .. ../navXTimeSync ${PCL_INCLUDE_DIRS})
+find_package(OpenCV REQUIRED)
+find_package(PCL COMPONENTS common REQUIRED)
+find_package(Boost COMPONENTS filesystem thread system serialization iostreams REQUIRED)
 
-find_package( OpenCV REQUIRED )
-find_package(PCL COMPONENTS common)
 add_definitions(${PCL_DEFINITIONS})
 
+include_directories(../zebravision .. ../navXTimeSync ${PCL_INCLUDE_DIRS})
 set (NAVX_SRCS
 	../navXTimeSync/AHRS.cpp
 	../navXTimeSync/ContinuousAngleTracker.cpp
