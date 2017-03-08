@@ -39,6 +39,20 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "goal_detect");
 
+	char name[PATH_MAX];
+	int index = -1;
+	int rc;
+	struct stat statbuf;
+	do
+	{
+		sprintf(name, "/mnt/900_2/cap%d_0.zms", ++index);
+		rc = stat(name, &statbuf);
+	}
+	while (rc == 0);
+
+	sprintf(name, "/mnt/900_2/cap%d.zms", index);
+	zmsOut = new ZMSOut(name, 1, 250, false);
+
 	ros::NodeHandle nh;
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_raw_color", 20);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 20);
@@ -46,20 +60,6 @@ int main(int argc, char** argv)
 	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy;
 	Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), frame_sub, depth_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2));
-
-	char name[PATH_MAX];
-	int index = 0;
-	int rc;
-	struct stat statbuf;
-	do
-	{
-		sprintf(name, "/mnt/900_2/cap%d_0.zms", index++);
-		rc = stat(name, &statbuf);
-	}
-	while (rc == 0);
-
-	sprintf(name, "/mnt/900_2/cap%d.zms", index++);
-	zmsOut = new ZMSOut(name, 1, 250, false);
 
 	ros::spin();
 
