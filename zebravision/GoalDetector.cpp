@@ -127,7 +127,7 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 			// Make sure the two contours are
 			// similar in size
 			const float area_ratio = (float)topBr.area() / bottomBr.area();
-			const float max_area_ratio = 3;
+			const float max_area_ratio = 2.5;
 			if ((area_ratio > max_area_ratio) || (area_ratio < (1 / max_area_ratio)))
 			{
 #ifdef VERBOSE_BOILER
@@ -374,7 +374,7 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 
 		// Remove objects which are obviously too small
 		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 50.0))
+		if ((br.area() <= 60.0))
 		{
 #ifdef VERBOSE
 			cout << "Contour " << i << " area out of range " << br.area() << endl;
