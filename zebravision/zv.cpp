@@ -294,7 +294,7 @@ int main( int argc, const char** argv )
 	}
 
 	// Find the first frame number which has ground truth data
-	if (args.groundTruth)
+	if (detectState && args.groundTruth)
 	{
 		int frameNum = groundTruth.nextFrameNumber();
 		if (frameNum == -1)
@@ -371,7 +371,8 @@ int main( int argc, const char** argv )
 		if (gd.goal_pos() != Point3f())
 			cout << "Goal Position=" << gd.goal_pos() << endl;
 
-		//if we are using a goal_truth.txt file that has the actual locations of the goal mark that we detected correctly
+		// if we are using a goal_truth.txt file that has the actual 
+		// locations of the goal mark that we detected correctly
         vector<Rect> goalTruthHitList;
         if (cap->frameCount() >= 0)
         {
@@ -380,7 +381,7 @@ int main( int argc, const char** argv )
             goalTruthHitList = goalTruth.processFrame(cap->frameNumber(), goalDetects);
         }
 
-		//compute optical flow
+		// compute optical flow
 		if (detectState)
 			fllc.processFrame(frame);
 
@@ -469,7 +470,7 @@ int main( int argc, const char** argv )
 		// Check ground truth data on videos and images,
 		// but not on camera input
 		vector<Rect> groundTruthHitList;
-		if (cap->frameCount() >= 0)
+		if (detectState && (cap->frameCount() >= 0))
 			groundTruthHitList = groundTruth.processFrame(cap->frameNumber(), detectRects);
 
 		// For interactive mode, update the FPS as soon as we have
@@ -581,10 +582,13 @@ int main( int argc, const char** argv )
             // if none is available for this particular video frame
 			if (args.rects)
 			{
-				drawRects(frame, groundTruth.get(cap->frameNumber() - 1), Scalar(128, 0, 0), false);
-				drawRects(frame, groundTruthHitList, Scalar(128, 128, 128), false);
+				if (detectState)
+				{
+					drawRects(frame, groundTruth.get(cap->frameNumber() - 1), Scalar(128, 0, 0), false);
+					drawRects(frame, groundTruthHitList, Scalar(128, 128, 128), false);
+				}
 				drawRects(frame, goalTruth.get(cap->frameNumber() - 1), Scalar(0, 0, 128), false);
-				drawRects(frame, goalTruthHitList, Scalar(128, 128, 128), false);
+				drawRects(frame, goalTruthHitList, Scalar(255, 0, 255), false);
 			}
 
 			//draw the goal along with debugging info if that's enabled
@@ -829,7 +833,7 @@ int main( int argc, const char** argv )
 
 		// If testing only ground truth frames, move to the
 		// next one in the list
-		if (args.groundTruth)
+		if (detectState && args.groundTruth)
 		{
 			int frame = groundTruth.nextFrameNumber();
 			// Exit if no more frames left to test
