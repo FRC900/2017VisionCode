@@ -14,8 +14,21 @@ using namespace cv;
 using namespace std;
 using namespace boost::filesystem;
 
-// TODO create vars to hold selected rectangle 
-// TODO create callback to handle mouse interaction
+void mouseCallback(int event, int x, int y, int flags, void *userData)
+{
+	Rect *r = static_cast<Rect *>(userData);
+	Point p = r->tl();
+
+	// TODO create callback to handle mouse interaction
+	// event == CV_EVENT_MOUSEDOWN - 
+	//    reset rect tl() to coords x,y, set width & height to 0
+	// (event == CV_EVENT_MOUSEMOVE) && (event & CV_EVENT_FLAG_LBUTTON)
+	//    Create point = current rect coords
+	//    r->x = min(point.x, x); and same for y
+	//    r->width = abs(point.x-x); and same for y
+	//
+	//    Maybe add right click to clear rect from screen - set x and y to -1?
+}
 
 int main(int argc, char **argv)
 {
@@ -37,6 +50,11 @@ int main(int argc, char **argv)
 	// TODO Open ofstream "goal_truth.txt" for append in text mode
 
 
+	namedWindow("Image");
+	Rect r(-1, -1, 0, 0);
+	setMouseCallback("Image", mouseCallback, &r);
+
+	// TODO create var to hold selected rectangle 
 	// TODO hook up mouse callback
 
 	Mat image;
@@ -46,6 +64,10 @@ int main(int argc, char **argv)
 	{
 		imshow ("Image", image);
 
+		if (r.tl() != Point(-1,-1))
+		{
+			// Draw rectangle on screen
+		}
 
 		int ch = waitKey(5);
 		switch (ch)
@@ -54,9 +76,8 @@ int main(int argc, char **argv)
 			case 'f':
 				// TODO Write a line to goal_truth.txt if a rectangle is selected:
 				// <input name> <frame number> <bounding rect x, y, width, height>
-				// cap->frameNumber gets the current frame number
 
-				// Read next frame
+				// Read next frame, exit on end of file
 				if (!cap->getFrame(image, false))
 				{
 					quit = true;
@@ -64,7 +85,7 @@ int main(int argc, char **argv)
 				}
 				cout << "Frame " << cap->frameNumber() << endl;
 
-				//TODO clear out selection rectangle?
+				//TODO clear out selection rectangle by setting x&y to -1?
 
 				break;
 			case 27:
