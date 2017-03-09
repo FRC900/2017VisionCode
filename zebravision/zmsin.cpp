@@ -8,6 +8,7 @@
 // at least for the time being
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include "zmsin.hpp"
 
 #include <boost/filesystem.hpp>
@@ -52,7 +53,7 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 
 	if (!loaded)
 	{
-		cerr << "Zed init : Could not open " << inFileName << " for reading" << endl;
+		cerr << "ZMSIn(): Could not open " << inFileName << " for reading" << endl;
 		deleteInputPointers();
 		return;
 	}
@@ -63,7 +64,7 @@ ZMSIn::ZMSIn(const char *inFileName, ZvSettings *settings) :
 	// Reopen the file so callers can get the first frame
 	if (!openSerializeInput(inFileName, archiveIn_ == NULL))
 	{
-		cerr << "Zed init : Could not reopen " << inFileName << " for reading" << endl;
+		cerr << "ZMSIn() : Could not reopen " << inFileName << " for reading" << endl;
 		return;
 	}
 
@@ -259,4 +260,9 @@ CameraParams ZMSIn::getCameraParams(void) const
 		params.cy = 0;
 	}
 	return params;
+}
+
+int ZMSIn::frameCount(void) const
+{
+	return 0;
 }

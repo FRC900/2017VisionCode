@@ -93,7 +93,11 @@ bool AsyncIn::copyBuffers(void)
 	// Use an empty mat to signal an error
 	// happened in update
 	if (frame_.empty())
+	{
+		pausedFrame_ = Mat();
+		pausedDepth_ = Mat();
 		return false;
+	}
 
 	// Lock in the time and frame number associated
 	// with depth_ and frame_ so they're returned when
@@ -111,7 +115,7 @@ bool AsyncIn::getFrame(Mat &frame, bool pause)
 	if (!isOpened())
 		return false;
 
-	if (!pause)
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -130,7 +134,7 @@ bool AsyncIn::getFrame(Mat &frame, Mat &depth, bool pause)
 	if (!isOpened())
 		return false;
 
-	if (!pause)
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -149,7 +153,7 @@ bool AsyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB>
 	if (!isOpened())
 		return false;
 
-	if (!pause)
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -170,13 +174,13 @@ bool AsyncIn::getDepth(Mat &depth, bool pause)
 	if (!isOpened())
 		return false;
 
-	if (!pause)
+	if (!pause || pausedDepth_.empty())
 		if (!copyBuffers())
 			return false;
 
 	// Use an empty mat to signal an error
 	// happened in update
-	if (pausedFrame_.empty())
+	if (pausedDepth_.empty())
 		return false;
 
 	pausedDepth_.copyTo(depth);
@@ -197,7 +201,7 @@ bool AsyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause
 	if (!isOpened())
 		return false;
 
-	if (!pause)
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 

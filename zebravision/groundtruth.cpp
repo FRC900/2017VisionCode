@@ -76,21 +76,25 @@ int GroundTruth::nextFrameNumber(void)
 // Process a frame. Update number of GTs actually in
 // the frame, number detected and number of false
 // positives found
-vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectRects)
+void GroundTruth::processFrame(int frameNum, const vector<Rect> &detectRects, double overlap, vector<Rect> &found, vector<Rect> &missed)
 {
+	framesSeen_ += 1;
+	found.clear();
+	missed.clear();
+
 	const vector<Rect> &groundTruthList = get(frameNum);
 	vector<bool> groundTruthsHit(groundTruthList.size());
 	vector<bool> detectRectsUsed(detectRects.size());
-	vector<Rect> retList;
 
 	count_ += groundTruthList.size();
 	for(auto gt = groundTruthList.cbegin(); gt != groundTruthList.cend(); ++gt)
 	{
+		bool gtUsed = false;
 		for(auto it = detectRects.cbegin(); it != detectRects.cend(); ++it)
 		{
-			// If the intersection is > 45% of the area of
+			// If the intersection is > overlap * the area of
 			// the ground truth, that's a success
-			if ((*it & *gt).area() > (max(gt->area(), it->area()) * 0.45))
+			if ((*it & *gt).area() > (max(gt->area(), it->area()) * overlap))
 			{
 				if (!groundTruthsHit[gt - groundTruthList.begin()])
 				{
@@ -98,16 +102,17 @@ vector<Rect> GroundTruth::processFrame(int frameNum, const vector<Rect> &detectR
 					groundTruthsHit[gt - groundTruthList.begin()] = true;
 				}
 				detectRectsUsed[it - detectRects.begin()] = true;
-				retList.push_back(*it);
+				found.push_back(*it);
+				gtUsed = true;
 			}
 		}
+		if (!gtUsed)
+			missed.push_back(*gt);
 	}
+
 	for(auto it = detectRectsUsed.cbegin(); it != detectRectsUsed.cend(); ++it)
 		if (!*it)
 			falsePositives_ += 1;
-
-	framesSeen_ += 1;
-	return retList;
 }
 
 // Print a summary of the results so far

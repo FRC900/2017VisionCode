@@ -294,7 +294,7 @@ int main( int argc, const char** argv )
 	}
 
 	// Find the first frame number which has ground truth data
-	if (args.groundTruth)
+	if (detectState && args.groundTruth)
 	{
 		int frameNum = groundTruth.nextFrameNumber();
 		if (frameNum == -1)
@@ -371,16 +371,23 @@ int main( int argc, const char** argv )
 		if (gd.goal_pos() != Point3f())
 			cout << "Goal Position=" << gd.goal_pos() << endl;
 
-		//if we are using a goal_truth.txt file that has the actual locations of the goal mark that we detected correctly
-        vector<Rect> goalTruthHitList;
-        if (cap->frameCount() >= 0)
-        {
+		// if we are using a goal_truth.txt file that has the actual 
+		// locations of the goal mark that we detected correctly
+        vector<Rect> goalTruthHit;
+        vector<Rect> goalTruthMiss;
+		if (cap->frameCount() >= 0)
+		{
             vector<Rect> goalDetects;
-            goalDetects.push_back(gd.goal_rect());
-            goalTruthHitList = goalTruth.processFrame(cap->frameNumber(), goalDetects);
-        }
+			if (gd.goal_pos() != Point3f())
+				goalDetects.push_back(gd.goal_rect());
 
-		//compute optical flow
+			goalTruth.processFrame(cap->frameNumber(), goalDetects, 0.0001, goalTruthHit, goalTruthMiss);
+			if (!args.batchMode && args.autoStop &&
+				(goalTruthMiss.size() || (goalDetects.size() != goalTruthHit.size())))
+				pause = true;
+		}
+
+		// compute optical flow
 		if (detectState)
 			fllc.processFrame(frame);
 
@@ -468,9 +475,10 @@ int main( int argc, const char** argv )
 		// Ground truth is a way of storing known locations of objects in a file.
 		// Check ground truth data on videos and images,
 		// but not on camera input
-		vector<Rect> groundTruthHitList;
-		if (cap->frameCount() >= 0)
-			groundTruthHitList = groundTruth.processFrame(cap->frameNumber(), detectRects);
+		vector<Rect> groundTruthHit;
+		vector<Rect> groundTruthMiss;
+		if (detectState && (cap->frameCount() >= 0))
+			groundTruth.processFrame(cap->frameNumber(), detectRects, 0.45, groundTruthHit, groundTruthMiss);
 
 		// For interactive mode, update the FPS as soon as we have
 		// a complete array of frame time entries
@@ -581,10 +589,15 @@ int main( int argc, const char** argv )
             // if none is available for this particular video frame
 			if (args.rects)
 			{
-				drawRects(frame, groundTruth.get(cap->frameNumber() - 1), Scalar(128, 0, 0), false);
-				drawRects(frame, groundTruthHitList, Scalar(128, 128, 128), false);
-				drawRects(frame, goalTruth.get(cap->frameNumber() - 1), Scalar(0, 0, 128), false);
-				drawRects(frame, goalTruthHitList, Scalar(128, 128, 128), false);
+				if (detectState)
+				{
+					drawRects(frame, groundTruth.get(cap->frameNumber() - 1), Scalar(128, 0, 0), false);
+					drawRects(frame, groundTruthHit, Scalar(128, 128, 128), false);
+					drawRects(frame, groundTruthMiss, Scalar(0, 165, 255), false);
+				}
+				drawRects(frame, goalTruth.get(cap->frameNumber()), Scalar(0, 0, 128), false);
+				drawRects(frame, goalTruthHit, Scalar(255, 0, 255), false);
+				drawRects(frame, goalTruthMiss, Scalar(0, 165, 255), false);
 			}
 
 			//draw the goal along with debugging info if that's enabled
@@ -829,7 +842,7 @@ int main( int argc, const char** argv )
 
 		// If testing only ground truth frames, move to the
 		// next one in the list
-		if (args.groundTruth)
+		if (detectState && args.groundTruth)
 		{
 			int frame = groundTruth.nextFrameNumber();
 			// Exit if no more frames left to test

@@ -45,6 +45,7 @@ static void Usage(void)
    cout << "\t--c24Stage=          from command line" << endl;
    cout << "\t--c24Threshold=      set c24 detection threshold" << endl;
    cout << "\t--groundTruth        only test frames which have ground truth data " << endl;
+   cout << "\t--autoStop           pause replay on ground truth miscompare" << endl;
    cout << "\t--xmlFile=           XML file to read/write settings to/from" << endl;
    cout << endl;
    cout << "Examples:" << endl;
@@ -87,6 +88,7 @@ Args::Args(void)
 	c24Threshold       = 21;
 	frameStart         = 0.0;
 	groundTruth        = false;
+	autoStop           = false;
 	xmlFilename        = "/home/ubuntu/2017VisionCode/zebravision/settings.xml";
 }
 
@@ -124,6 +126,7 @@ bool Args::processArgs(int argc, const char **argv)
 	const string c24StageOpt        = "--c24Stage=";       // from command line
 	const string c24ThresholdOpt    = "--c24Threshold=";    
 	const string groundTruthOpt     = "--groundTruth";     // only test frames which have ground truth data
+	const string autoStopOpt        = "--autoStop";        // auto-stop on ground truth miscompare
 	const string xmlFileOpt         = "--xmlFile=";        // read camera settings from XML file
 	const string badOpt             = "--";
 	// Read through command line args, extract
@@ -195,6 +198,8 @@ bool Args::processArgs(int argc, const char **argv)
 			c24Threshold = atoi(argv[fileArgc] + c24ThresholdOpt.length());
 		else if (groundTruthOpt.compare(0, groundTruthOpt.length(), argv[fileArgc], groundTruthOpt.length()) == 0)
 			groundTruth = true;
+		else if (autoStopOpt.compare(0, autoStopOpt.length(), argv[fileArgc], autoStopOpt.length()) == 0)
+			autoStop = true;
 		else if (xmlFileOpt.compare(0, xmlFileOpt.length(), argv[fileArgc], xmlFileOpt.length()) == 0)
 			xmlFilename = string(argv[fileArgc] + xmlFileOpt.length());
 		else if (badOpt.compare(0, badOpt.length(), argv[fileArgc], badOpt.length()) == 0) // unknown option

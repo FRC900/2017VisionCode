@@ -81,7 +81,11 @@ bool SyncIn::copyBuffers(void)
 		condVar_.wait(guard);
 
 	if (frame_.empty())
+	{
+		pausedFrame_ = Mat();
+		pausedDepth_= Mat();
 		return false;
+	}
 
 	// Save copies of the previously
 	// returned frame's data. This lets
@@ -114,7 +118,11 @@ bool SyncIn::getFrame(Mat &frame, bool pause)
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
-	if (!pause)
+	// Read if pausedFrame_.empty() to handle
+	// case where pause == true on first call
+	// to getFrame - without it nothing will ever
+	// be read
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -134,7 +142,11 @@ bool SyncIn::getFrame(Mat &frame, Mat &depth, bool pause)
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
-	if (!pause)
+	// Read if pausedFrame_.empty() to handle
+	// case where pause == true on first call
+	// to getFrame - without it nothing will ever
+	// be read
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -154,7 +166,11 @@ bool SyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> 
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
-	if (!pause)
+	// Read if pausedFrame_.empty() to handle
+	// case where pause == true on first call
+	// to getFrame - without it nothing will ever
+	// be read
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
@@ -175,11 +191,15 @@ bool SyncIn::getDepth(Mat &depth, bool pause)
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
-	if (!pause)
+	// Read if pausedDepth_.empty() to handle
+	// case where pause == true on first call
+	// to getFrame - without it nothing will ever
+	// be read
+	if (!pause || pausedDepth_.empty())
 		if (!copyBuffers())
 			return false;
 
-	if (pausedFrame_.empty())
+	if (pausedDepth_.empty())
 		return false;
 	pausedDepth_.copyTo(depth);
 	return true;
@@ -204,7 +224,11 @@ bool SyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
 	// fills in a separate thread
-	if (!pause)
+	// Read if pausedFrame_.empty() to handle
+	// case where pause == true on first call
+	// to getFrame - without it nothing will ever
+	// be read
+	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
 
