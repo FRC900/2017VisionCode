@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(zms_writer)
 set(CMAKE_BUILD_TYPE Release)
 
-add_definitions(-std=c++11 -Wall)
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
+include ("../cmake_modules/CMakeOpt.cmake")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,12 +10,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   message_filters
-  sensor_msgs
-  std_msgs
   image_transport
   cv_bridge
 )
-
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
