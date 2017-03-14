@@ -3,7 +3,9 @@
 <launch>
   <!-- Transform x y z roll pitch yaw -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="laser" args="0 0 .19625 0 0 0 base_link laser" />
-  <include file="$(find rplidar_ros)/launch/rplidar.launch" />
+
+<node pkg="rosbag" type="play" name="player" output="screen" args="--clock /home/kjaget/RPLidar_2017-03-10-11-19-25_0.bag"/>
+
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find rplidar_ros)/rviz/rplidar.rviz" />
 
   <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
@@ -67,11 +69,6 @@
 
   <node pkg="topic_tools" type="throttle" name="map_throttle" args="messages map 0.1 throttled_map" />
   -->
-
-  <!-- Save laser scan data -->
-  <node name="rosbag_record_node" pkg="rosbag" type="record"
-	  args="-o /home/kjaget/RPLidar --buffsize=0 --split --lz4 --duration=120 
-	  /scan /diagnostics /tf /tf_static /rosout /rosout_agg"/>
 
 </launch>
 
