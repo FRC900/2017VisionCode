@@ -15,8 +15,6 @@ add_executable( GenInitNegFromVideo GenerateInitNegFromVideo.cpp utilities_commo
 target_link_libraries( GenInitNegFromVideo ${OpenCV_LIBS} ${Boost_LIBRARIES}) 
 
 project(GenInitNegFromFile)
-find_package( Boost 1.54 COMPONENTS filesystem system thread program_options REQUIRED )
-include_directories( ${Boost_INCLUDE_DIR} )
 add_executable( GenInitNegFromFile GenerateInitNegFromFile.cpp utilities_common.cpp)
 target_link_libraries( GenInitNegFromFile ${OpenCV_LIBS} ${Boost_LIBRARIES}) 
 

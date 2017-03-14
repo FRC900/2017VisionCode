@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(navx_publisher)
 set(CMAKE_BUILD_TYPE Release)
 
-add_definitions(-std=c++11 -Wall)
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
+include ("../cmake_modules/CMakeOpt.cmake")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,7 +10,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   message_filters
-  cv_bridge
+  geometry_msgs
   message_generation
 )
 
