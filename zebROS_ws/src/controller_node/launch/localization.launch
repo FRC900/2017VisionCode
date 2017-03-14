@@ -1,3 +1,5 @@
+<?xml version="1.0"?>
+
 <launch>
 	<!-- Transform x y z roll pitch yaw -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed" args="0.3175 0.2413 0.60325 0 0 0 base_link zed_fuel_current_frame" />
