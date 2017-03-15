@@ -11,6 +11,7 @@
   <arg name="gain"/>
   <arg name="exposure"/>
   <arg name="flip"/>
+  <arg name="disable_calibrate"/>
   
   <include file="$(find zed_wrapper)/launch/zed_tf.launch" >
 	<arg name="camera" value="$(arg zed_name)" />
@@ -39,6 +40,7 @@
     <param name="gain"                  value="$(arg gain)" />
     <param name="exposure"              value="$(arg exposure)" />
     <param name="flip"                  value="$(arg flip)" />
+    <param name="disable_calibrate"     value="$(arg disable_calibrate)" />
 
     <!-- ROS topic names -->
     <param name="rgb_topic"             value="rgb/image_rect_color" />

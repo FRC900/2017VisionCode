@@ -11,6 +11,7 @@
   <arg name="gain" default="1"/>
   <arg name="exposure" default="5"/>
   <arg name="flip" default="false"/>
+  <arg name="disable_calibrate" default="false"/>
   <arg name="zed_name" default="zed"/>
 
   <group ns="$(arg zed_name)">
@@ -25,6 +26,7 @@
       <arg name="zed_name" value="$(arg zed_name)"/>
       <arg name="exposure" value="$(arg exposure)" />
       <arg name="flip" value="$(arg flip)" />
+      <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
     </include>
   </group>
 
