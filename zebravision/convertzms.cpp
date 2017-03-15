@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
 	Mat image;
 	Mat depth;
-	while (in->getFrame(image, depth) )
+	while (in->getFrame(image, depth))
 	{
 		out.sync();
 		out.saveFrame(image, depth);
