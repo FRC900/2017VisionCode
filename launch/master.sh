@@ -19,3 +19,5 @@ else
 		roslaunch controller_node controller_master.launch
 fi
 
+/home/ubuntu/2017VisionCode/launch/clocks.sh &
+

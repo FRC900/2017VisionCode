@@ -14,3 +14,6 @@ if sudo mount /dev/disk/by-id/$(ls /dev/disk/by-id/ | grep 'SanDisk.*part1') /mn
 else
 	roslaunch controller_node controller_slave.launch
 fi
+
+/home/ubuntu/2017VisionCode/launch/clocks.sh &
+
