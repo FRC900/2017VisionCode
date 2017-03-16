@@ -8,6 +8,9 @@
   * Results of SLAM (point cloud)
   * A few other misc topics
   -->
+
+  <arg name="down_sample" default="false" />
+
   <!-- Remove spaces between - - args when reenabling rosbag
   <node name="rosbag_record_node" pkg="rosbag" type="record"
   	args="-o /mnt/900_2/ - -buffsize=0 - -split - -duration=30 
@@ -15,6 +18,8 @@
 	/goal_detect_msg /navx/imu /navx/time /navx/raw /navx/odom
 	/diagnostics /tf /tf_static /rosout /rosout_agg"/>
   -->
-  <node name="zms_writer_node" pkg="zms_writer" type="zms_writer_node" respawn="true"/>
+  <node name="zms_writer_node" pkg="zms_writer" type="zms_writer_node" respawn="true">
+  	<param name="down_sample" value="$(arg down_sample)" />
+  </node>
 	
 </launch>

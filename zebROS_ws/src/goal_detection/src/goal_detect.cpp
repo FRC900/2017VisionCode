@@ -27,7 +27,7 @@ using namespace message_filters;
 static ros::Publisher pub;
 static GoalDetector *gd = NULL;
 static bool batch = true;
-static bool down_sample = false;
+static bool down_sample;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
@@ -106,12 +106,11 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "goal_detect");
 
 	ros::NodeHandle nh;
+	down_sample = false;
+	nh.getParam("down_sample", down_sample);
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 10);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 10);
 	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
-	
-	bool down_sample = false;
-	nh.getParam("down_sample", down_sample);
 
 	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher
 	ros::Time stop_t = ros::Time::now() + wait_t;

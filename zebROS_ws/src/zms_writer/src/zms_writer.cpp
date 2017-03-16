@@ -22,17 +22,37 @@ using namespace std;
 using namespace sensor_msgs;
 using namespace message_filters;
 
-ZMSOut *zmsOut;
+static ZMSOut *zmsOut;
+static bool down_sample;
+
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
 {
 	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
 	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
 
-	Mat frame(cvFrame->image.clone());
-	pyrDown(frame, frame);
-	Mat depth(cvDepth->image.clone());
-	pyrDown(depth, depth);
-	zmsOut->saveFrame(frame, depth);
+	// Avoid copies by using pointers to RGB and depth info
+	// These pointers are either to the original data or to
+	// the downsampled data, depending on the down_sample flag
+	const Mat *framePtr = &cvFrame->image;
+	const Mat *depthPtr = &cvDepth->image;
+
+	// To hold downsampled images, if necessary
+	Mat frame;
+	Mat depth;
+
+	// Downsample for speed purposes
+	if(down_sample)
+	{
+		pyrDown(*framePtr, frame);
+		pyrDown(*depthPtr, depth);
+
+		// And update pointers to use the downsampled
+		// versions of the RGB and depth data
+		framePtr = &frame;
+		depthPtr = &depth;
+	}
+
+	zmsOut->saveFrame(*framePtr, *depthPtr);
 }
 
 int main(int argc, char** argv)
@@ -54,6 +74,8 @@ int main(int argc, char** argv)
 	zmsOut = new ZMSOut(name, 1, 250, true);
 
 	ros::NodeHandle nh;
+	down_sample = false;
+	nh.getParam("down_sample", down_sample);
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 20);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 20);
 
