@@ -26,7 +26,7 @@
 	<param name="zed_name"				value="$(arg zed_name)" />
 
     <param name="resolution"            value="2" />
-    <param name="quality"               value="1" />
+    <param name="quality"               value="3" />
     <param name="sensing_mode"          value="1" />
     <param name="frame_rate"            value="15" />
     <param name="odometry_db"           value="" />

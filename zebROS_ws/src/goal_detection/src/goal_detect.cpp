@@ -25,20 +25,33 @@ using namespace sensor_msgs;
 using namespace message_filters;
 
 static ros::Publisher pub;
-static GoalDetector *gd;
+static GoalDetector *gd = NULL;
 static bool batch = true;
+static bool down_sample = false;
 
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
 	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
 	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
-
-	// pyrDown both inputs for speed?
+	
 	Mat frame(cvFrame->image.clone());
-	pyrDown(frame, frame);
 	Mat depth(cvDepth->image.clone());
-	pyrDown(depth, depth);
+	
+	// pyrDown both inputs for speed?
+	if(down_sample)
+	{
+		pyrDown(frame, frame);
+		pyrDown(depth, depth);
+	}
+
+	if(gd == NULL)
+	{
+		const float hFov = 105.;
+		const Point2f fov(hFov * (M_PI / 180.), hFov * (M_PI / 180.) * ((float)frame.rows / frame.cols));
+		gd = new GoalDetector(fov, frame.size(), !batch);
+	}
+
 
 	gd->findBoilers(frame, depth);
 	const Point3f pt = gd->goal_pos();
@@ -82,6 +95,9 @@ int main(int argc, char** argv)
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 10);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 10);
 	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
+	
+	bool down_sample = false;
+	nh.getParam("down_sample", down_sample);
 
 	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher
 	ros::Time stop_t = ros::Time::now() + wait_t;
@@ -103,11 +119,6 @@ int main(int argc, char** argv)
 		// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
 		sync3.registerCallback(boost::bind(&callbackNavx, _1, _2, _3));
 	}
-	// Create goal detector class
-	const float hFov = 105.;
-	const Size size(1280/2, 720/2); // 720P but downsampled by 2x for speed
-	const Point2f fov(hFov * (M_PI / 180.), hFov * (M_PI / 180.) * ((float)size.height / size.width));
-	gd = new GoalDetector(fov, size, !batch);
 
 	// Set up publisher
 	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 10);
