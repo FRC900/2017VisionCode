@@ -29,31 +29,45 @@ static GoalDetector *gd = NULL;
 static bool batch = true;
 static bool down_sample = false;
 
-
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
-	cv_bridge::CvImagePtr cvFrame = cv_bridge::toCvCopy(frameMsg, sensor_msgs::image_encodings::BGR8);
-	cv_bridge::CvImagePtr cvDepth = cv_bridge::toCvCopy(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
-	
-	Mat frame(cvFrame->image.clone());
-	Mat depth(cvDepth->image.clone());
-	
-	// pyrDown both inputs for speed?
+	cv_bridge::CvImageConstPtr cvFrame = cv_bridge::toCvShare(frameMsg, sensor_msgs::image_encodings::BGR8);
+	cv_bridge::CvImageConstPtr cvDepth = cv_bridge::toCvShare(depthMsg, sensor_msgs::image_encodings::TYPE_32FC1);
+
+	// Avoid copies by using pointers to RGB and depth info
+	// These pointers are either to the original data or to
+	// the downsampled data, depending on the down_sample flag
+	const Mat *framePtr = &cvFrame->image;
+	const Mat *depthPtr = &cvDepth->image;
+
+	// To hold downsampled images, if necessary
+	Mat frame;
+	Mat depth;
+
+	// Downsample for speed purposes
 	if(down_sample)
 	{
-		pyrDown(frame, frame);
-		pyrDown(depth, depth);
+		pyrDown(*framePtr, frame);
+		pyrDown(*depthPtr, depth);
+
+		// And update pointers to use the downsampled
+		// versions of the RGB and depth data
+		framePtr = &frame;
+		depthPtr = &depth;
 	}
 
+	// Initialize goal detector object the first time
+	// through here. Use the size of the frame
+	// grabbed from the ZED messages
 	if(gd == NULL)
 	{
 		const float hFov = 105.;
-		const Point2f fov(hFov * (M_PI / 180.), hFov * (M_PI / 180.) * ((float)frame.rows / frame.cols));
-		gd = new GoalDetector(fov, frame.size(), !batch);
+		const Point2f fov(hFov * (M_PI / 180.),
+				          hFov * (M_PI / 180.) * ((float)framePtr->rows / framePtr->cols));
+		gd = new GoalDetector(fov, framePtr->size(), !batch);
 	}
 
-
-	gd->findBoilers(frame, depth);
+	gd->findBoilers(*framePtr, *depthPtr);
 	const Point3f pt = gd->goal_pos();
 
 	goal_detection::GoalDetection gd_msg;
