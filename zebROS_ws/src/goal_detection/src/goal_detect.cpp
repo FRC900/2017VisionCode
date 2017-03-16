@@ -81,8 +81,9 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, cons
 
 	if (!batch)
 	{
-		gd->drawOnFrame(frame, gd->getContours(cvFrame->image));
-		imshow("Image", frame);
+		Mat thisFrame(framePtr->clone());
+		gd->drawOnFrame(thisFrame, gd->getContours(cvFrame->image));
+		imshow("Image", thisFrame);
 		waitKey(5);
 	}
 }
