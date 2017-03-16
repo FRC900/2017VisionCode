@@ -41,7 +41,7 @@
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true">
   	<param name="down_sample" value="$(arg down_sample)" />
   </node>
-  <!-- node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" /-->
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
   <include file="$(find controller_node)/launch/record_master.launch" if="$(arg record)">
     <param name="down_sample" value="$(arg down_sample)" />
   </include>
