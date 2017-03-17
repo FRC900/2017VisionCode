@@ -32,6 +32,7 @@ display
 scalefactor
 vo
 zv
+test_zv
 iteration_data.dat
 fovis_zed_test
 GenInitNegFromVideo
