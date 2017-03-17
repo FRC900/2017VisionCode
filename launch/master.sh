@@ -9,7 +9,7 @@ sudo sysctl -p
 #echo 5800 5810 > /proc/sys/net/ipv4/ip_local_port_range
 #systemctl restart networking
 
-#sudo chmod a+rw /dev/ttyACM0
+sudo chmod a+rw /dev/ttyACM0
 
 sudo umount /mnt/900_2
 if sudo mount /dev/disk/by-id/$(ls /dev/disk/by-id/ | grep 'SanDisk.*part1') /mnt/900_2; then
