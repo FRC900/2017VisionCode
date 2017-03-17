@@ -373,11 +373,12 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 		}
 
 		// Remove objects which are obviously too small
-		// TODO :: Tune me, make me a percentage of screen area?
-		if ((br.area() <= 60.0))
+		// Works out to about 60 pixels on a 360P image
+		// or 250 pixels on 720P
+		if (br.area() <= (_frame_size.width * _frame_size.height * .00027))
 		{
 #ifdef VERBOSE
-			cout << "Contour " << i << " area out of range " << br.area() << endl;
+			cout << "Contour " << i << " area out of range " << br.area() << " vs " << _frame_size.width * _frame_size.height * .00027 << endl;
 #endif
 			continue;
 		}
