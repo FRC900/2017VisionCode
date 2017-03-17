@@ -27,9 +27,9 @@ else()
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
 endif()
 find_package(ZED)
-if (ZED_FOUND)
+#if (ZED_FOUND)
   add_definitions(-DZED_SUPPORT)
-endif()
+#endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(CUDA REQUIRED)
 if (CUDA_FOUND)
@@ -86,7 +86,8 @@ include_directories(
 	/home/ubuntu/2017VisionCode/libfovis/build/include/fovis
 	../../GIE/include
 	..
-	../navXTimeSync)
+	../navXTimeSync
+	../googletest/googletest)
 
 if ($MKL_FOUND)
 	include_directories (${MKL_INCLUDE_DIR})
@@ -182,6 +183,56 @@ CUDA_ADD_EXECUTABLE(zv
 	${NAVX_SRCS} 
 	${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
 
+CUDA_ADD_EXECUTABLE(test_zv
+	zca.cpp
+	zca.cu
+	cuda_utils.cpp
+	Classifier.cpp
+	CaffeClassifier.cpp
+	GIEClassifier.cpp
+	classifierio.cpp
+	cascadeclassifierio.cpp
+	detectstate.cpp
+	objdetect.cpp
+	scalefactor.cpp
+	fast_nms.cpp
+	depth_threshold.cu
+	detect.cpp
+	GoalDetector.cpp
+	objtype.cpp
+	track3d.cpp
+	mediain.cpp
+	asyncin.cpp
+	syncin.cpp
+	videoin.cpp
+	camerain.cpp
+	C920Camera.cpp
+	c920camerain.cpp
+	zedcamerain.cpp
+	zedsvoin.cpp
+	zmsin.cpp
+	imagein.cpp
+	cameraparams.cpp
+	zedparams.cpp
+	mediaout.cpp
+	aviout.cpp
+	pngout.cpp
+	zmsout.cpp
+	portable_binary_iarchive.cpp
+	portable_binary_oarchive.cpp
+	Args.cpp
+	WriteOnFrame.cpp
+	groundtruth.cpp
+	Utilities.cpp
+	#../fovis/FovisLocalizer.cpp
+	FlowLocalizer.cpp
+	kalman.cpp
+	hungarian.cpp
+	ZvSettings.cpp
+	colormap.cpp
+	unit_tests.cpp
+	${NAVX_SRCS} 
+	${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
 find_library (LibProtobuf protobuf /home/ubuntu/GIE/lib)
@@ -206,6 +257,25 @@ target_link_libraries( zv
 	#${LibEFence} 
 	)
 CUDA_ADD_CUBLAS_TO_TARGET(zv)
+
+
+target_link_libraries( test_zv
+	${LibProtobuf}
+	${OpenCV_LIBS}
+	${LibCaffe}
+	#fovis
+	${CMAKE_THREAD_LIBS_INIT}
+	${ZED_LIBRARIES}
+	${Boost_LIBRARIES}
+	${LibGLOG}
+	${ZMQ_LIBRARIES}
+	${LibNVCaffeParser}
+	${LibNVInfer}
+	${LibTinyXML2}
+	${MKL_LIBRARIES}
+	#${LibEFence} 
+	)
+CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
 
 # Only build this if ZED libs are available - it converts
 # from ZED's SVO format to our home-brewed ZMS video file
