@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 	imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 50);
 	raw_pub = nh.advertise<sensor_msgs::Imu>("/navx/raw", 50);
 	odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 50);
-	ros::Rate loop_time(10);
+	ros::Rate loop_time(15);
 	navx_publisher::stampedUInt64 timestamp;
 	geometry_msgs::Quaternion orientation;
 	geometry_msgs::Vector3 linear_accel;
