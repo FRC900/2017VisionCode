@@ -22,8 +22,8 @@ using namespace std;
 using namespace sensor_msgs;
 using namespace message_filters;
 
-static ZMSOut *zmsOut;
-static bool down_sample;
+static ZMSOut *zmsOut = NULL;
+static bool down_sample = false;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg)
 {

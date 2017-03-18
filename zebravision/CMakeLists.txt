@@ -136,7 +136,7 @@ set (NAVX_SRCS
 	../navXTimeSync/SerialIO.cpp
 	../navXTimeSync/SerialPort.cpp )
 
-set( ZV_BASE_FILES
+set (ZV_SRCS
 	zca.cpp
 	zca.cu
 	cuda_utils.cpp
@@ -185,8 +185,7 @@ set( ZV_BASE_FILES
 	colormap.cpp
 	${NAVX_SRCS} 
 	${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
-CUDA_ADD_EXECUTABLE(zv ${ZV_BASE_FILES} zv.cpp)
-
+CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS} zv.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
 find_library (LibProtobuf protobuf /home/ubuntu/GIE/lib)
@@ -194,7 +193,7 @@ find_library (LibWconv wconv /home/ubuntu/GIE/lib)
 find_library (LibTinyXML2 tinyxml2)
 find_library (LibEFence efence)
 
-target_link_libraries( zv
+set (ZV_LIBS
 	${LibProtobuf}
 	${OpenCV_LIBS}
 	${LibCaffe}
@@ -210,9 +209,8 @@ target_link_libraries( zv
 	${MKL_LIBRARIES}
 	#${LibEFence} 
 	)
+target_link_libraries( zv ${ZV_LIBS})
 CUDA_ADD_CUBLAS_TO_TARGET(zv)
-
-
 
 # Only build this if ZED libs are available - it converts
 # from ZED's SVO format to our home-brewed ZMS video file
@@ -234,23 +232,8 @@ CUDA_ADD_CUBLAS_TO_TARGET(rank_imagelist)
 
 if(test)
   enable_testing()
-  CUDA_ADD_EXECUTABLE(test_zv ${ZV_BASE_FILES} unit_tests.cpp)
-  target_link_libraries( test_zv
-	${LibProtobuf}
-	${OpenCV_LIBS}
-	${LibCaffe}
-	#fovis
-	${CMAKE_THREAD_LIBS_INIT}
-	${ZED_LIBRARIES}
-	${Boost_LIBRARIES}
-	${LibGLOG}
-	${ZMQ_LIBRARIES}
-	${LibNVCaffeParser}
-	${LibNVInfer}
-	${LibTinyXML2}
-	${MKL_LIBRARIES}
-	#${LibEFence} 
-	)
+  CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
+  target_link_libraries( test_zv ${ZV_LIBS})
   CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
   add_test(NAME unit_tests COMMAND test_zv)
 endif()
