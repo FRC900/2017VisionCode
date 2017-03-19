@@ -3,6 +3,7 @@ project(zv)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 set(CMAKE_BUILD_TYPE Release)
+set(test ON)
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 
 # Without -fno-finite-math-only, NaN checks are optimized away
@@ -27,9 +28,12 @@ else()
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
 endif()
 find_package(ZED)
-#if (ZED_FOUND)
+#Check if we are building with a GPU by checking CUDNN
+#If we aren't, don't add ZED support
+if (ZED_FOUND AND CUDNN_FOUND)
   add_definitions(-DZED_SUPPORT)
-#endif()
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(CUDA REQUIRED)
 if (CUDA_FOUND)
@@ -179,13 +183,9 @@ set (ZV_SRCS
 	hungarian.cpp
 	ZvSettings.cpp
 	colormap.cpp
-	zv.cpp 
 	${NAVX_SRCS} 
 	${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
-
-CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS})
-CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS})
-
+CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS} zv.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
 find_library (LibProtobuf protobuf /home/ubuntu/GIE/lib)
@@ -211,8 +211,6 @@ set (ZV_LIBS
 	)
 target_link_libraries( zv ${ZV_LIBS})
 CUDA_ADD_CUBLAS_TO_TARGET(zv)
-target_link_libraries( test_zv ${ZV_LIBS})
-CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
 
 # Only build this if ZED libs are available - it converts
 # from ZED's SVO format to our home-brewed ZMS video file
@@ -231,3 +229,11 @@ target_link_libraries( rank_imagelist ${Boost_LIBRARIES} ${OpenCV_LIBS} ${LibCaf
 CUDA_ADD_CUBLAS_TO_TARGET(rank_imagelist)
 #add_executable(depthtest depthtest.cpp)
 #target_link_libraries( depthtest ${OpenCV_LIBS} )
+
+if(test)
+  enable_testing()
+  CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
+  target_link_libraries( test_zv ${ZV_LIBS})
+  CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
+  add_test(NAME unit_tests COMMAND test_zv)
+endif()

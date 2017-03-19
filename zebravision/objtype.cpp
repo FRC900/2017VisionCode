@@ -111,6 +111,7 @@ ObjectType::ObjectType(int contour_type_id=1) {
 			contour_.push_back(Point2f(0.0251885683974,0.0218814793796));
 			contour_.push_back(Point2f(0.0125296239964,0.0172542619015));
 			contour_.push_back(Point2f(0,0.0122875187586));
+			name_ = "top_boiler_tape";
 			break;	
 		case 5: //bottom piece of tape (2017)
 			depth_ = 0;
@@ -178,6 +179,7 @@ ObjectType::ObjectType(int contour_type_id=1) {
 			contour_.push_back(Point2f(0.0251885683974,0.0218814793796));
 			contour_.push_back(Point2f(0.0125296239964,0.0172542619015));
 			contour_.push_back(Point2f(0,0.0122875187586));
+			name_ = "bottom_boiler_tape";
 			break;
 		default:
 			cerr << "error initializing object!" << endl;
@@ -192,13 +194,17 @@ ObjectType::ObjectType(const vector< Point2f > &contour_in, const string &name_i
 	depth_(depth_in),
 	name_(name_in)	
 {
+	if(contour_.size() == 0 || name_in.length() == 0 || depth_in < 0)
+		throw std::invalid_argument("bad argument to ObjectType");
 	computeProperties();
 }
 
 ObjectType::ObjectType(const vector< Point > &contour_in, const string &name_in, const float &depth_in):
 	depth_(depth_in),
 	name_(name_in)
-{
+{	
+	if(contour_.size() == 0 || name_in.length() == 0 || depth_in < 0)
+		throw std::invalid_argument("bad argument to ObjectType");
 	for(size_t i = 0; i < contour_in.size(); i++)
 	{
 		Point2f p;
