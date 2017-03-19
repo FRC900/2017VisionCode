@@ -2,22 +2,10 @@
 
 <launch>
 	<!-- Transform x y z roll pitch yaw -->
-	<node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed" args="0.3175 0.2413 0.60325 0 0 0 base_link zed_fuel_current_frame" />
 	<!--node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_base_frame" /-->
-	<node pkg="controller_node" type="transform_odom.py" name="transform_odom">
-		<param name="odom_node_name" value="odometry_transform_node" />
-		<param name="odom_pub_topic" value="/zed_fuel/odom/transformed" />
-		<param name="odom_sub_topic" value="/zed_fuel/odom" />
 
-		<param name="x_pos_shift"    value="0" />
-		<param name="y_pos_shift"    value="0" />
-		<param name="z_pos_shift"    value="0" />
+	<node name="zed_odom_transform" pkg="controller_node" type="transform_odom.py" output="screen" args="0 0 0 0 0 0 1 /zed_fuel/odom /zed_fuel/odom/filtered"/>
 
-		<param name="x_ori_shift"    value="0" />
-		<param name="y_ori_shift"    value="0" />
-		<param name="z_ori_shift"    value="0" />
-		<param name="w_ori_shift"    value="1" />
-	</node>
 	<!--node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0.5 1.5 0 0 0 0 map odom" /-->
 
 	<node name="ukf_localization_node" pkg="robot_localization" type="ukf_localization_node">
