@@ -3,6 +3,7 @@
 
 using namespace std;
 
+
 TEST(ObjectTypeConstructor, Id) {
 for(int i = 1; i < 6; i++) {
 	ObjectType o(i);
@@ -25,10 +26,39 @@ ASSERT_EQ(ObjectType(input, "test", 5.0).shape().size(), 3) << "Contour copied c
 }
 
 //WorldToScreen
-/*TEST(ObjectTypeWTS, BadInputs) {
-ObjectType o(1);
+TEST(ObjectTypeCoords, Reversible) {
 
-}*/
+ObjectType o(1);
+vector<cv::Point3f> input_points;
+input_points.push_back(cv::Point3f(-5,-5,-5));
+input_points.push_back(cv::Point3f(0,0,0));
+input_points.push_back(cv::Point3f(5,5,5));
+for(int i = 0; i < input_points.size(); i++) { 
+	cv::Point3f test_p = input_points[i];
+	float r = sqrtf(test_p.x * test_p.x + test_p.y * test_p.y + test_p.z * test_p.z);
+	cv::Point fov_size(90.0 / (2 * M_PI),  90.0 / (2 * M_PI) * (9. / 16.));
+	cv::Size frame_size(1080,720);
+	float cam_elev = 0;
+	cv::Point3f out_p = o.screenToWorldCoords(o.worldToScreenCoords(test_p,fov_size,frame_size, cam_elev), r, fov_size, frame_size, cam_elev);
+	ASSERT_NEAR(abs(out_p.x), abs(test_p.x), 0.2);
+	ASSERT_NEAR(abs(out_p.y), abs(test_p.y), 0.2);
+	ASSERT_NEAR(abs(out_p.z), abs(test_p.z), 0.2);
+}
+}
+
+TEST(ObjectTypeCoords, CenterSTW) {
+cv::Point fov_size(90.0 / (2 * M_PI),  90.0 / (2 * M_PI) * (9. / 16.));
+cv::Size frame_size(1080,720);
+float cam_elev = 0;
+ObjectType o(1);
+cv::Rect in(cv::Point(0,0), cv::Point(0,0));
+cv::Point3f out = o.screenToWorldCoords(in, 5.5, fov_size, frame_size, 0);
+ASSERT_NEAR(out.x, 0, 0.1);
+ASSERT_NEAR(out.y, 0, 0.1);
+ASSERT_NEAR(out.z, 17.5, 0.1);
+
+}
+
 
 
 int main(int argc, char **argv) {
