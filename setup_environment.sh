@@ -113,6 +113,8 @@ rm ./$ext
 #       repo isn't there in the first place?
 cd
 git clone https://github.com/FRC900/2017VisionCode.git
+git submodule init
+git submodule update
 cd 2017VisionCode
 
 #build stuff
