@@ -47,15 +47,18 @@ for(int i = 0; i < input_points.size(); i++) {
 }
 
 TEST(ObjectTypeCoords, CenterSTW) {
-cv::Point fov_size(90.0 / (2 * M_PI),  90.0 / (2 * M_PI) * (9. / 16.));
-cv::Size frame_size(1080,720);
+const cv::Size frame_size(1280,720);
+const float hFov = 105.;
+const cv::Point fov_size(hFov * (M_PI / 180.),
+		hFov * (M_PI / 180.) * ((float)frame_size.height / frame_size.width));
+
 float cam_elev = 0;
 ObjectType o(1);
-cv::Rect in(cv::Point(0,0), cv::Point(0,0));
-cv::Point3f out = o.screenToWorldCoords(in, 5.5, fov_size, frame_size, 0);
+cv::Rect in(cv::Point(frame_size.width/2,frame_size.height/2), cv::Size(0,0));
+cv::Point3f out = o.screenToWorldCoords(in, 5.5, fov_size, frame_size, cam_elev);
 ASSERT_NEAR(out.x, 0, 0.1);
-ASSERT_NEAR(out.y, 0, 0.1);
-ASSERT_NEAR(out.z, 17.5, 0.1);
+ASSERT_NEAR(out.y, 5.5 +o.depth()/2.0, 0.1);
+ASSERT_NEAR(out.z, 0, 0.1);
 
 }
 
