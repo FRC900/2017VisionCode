@@ -33,7 +33,7 @@ vector<cv::Point3f> input_points;
 input_points.push_back(cv::Point3f(-5,-5,-5));
 input_points.push_back(cv::Point3f(0,0,0));
 input_points.push_back(cv::Point3f(5,5,5));
-for(int i = 0; i < input_points.size(); i++) { 
+for(size_t i = 0; i < input_points.size(); i++) { 
 	cv::Point3f test_p = input_points[i];
 	float r = sqrtf(test_p.x * test_p.x + test_p.y * test_p.y + test_p.z * test_p.z);
 	cv::Point fov_size(90.0 / (2 * M_PI),  90.0 / (2 * M_PI) * (9. / 16.));
@@ -60,6 +60,10 @@ ASSERT_NEAR(out.x, 0, 0.1);
 ASSERT_NEAR(out.y, 5.5 +o.depth()/2.0, 0.1);
 ASSERT_NEAR(out.z, 0, 0.1);
 
+cv::Rect r(o.worldToScreenCoords(out, fov_size, frame_size, cam_elev));
+
+ASSERT_NEAR(r.x + r.width / 2, in.x, 0.001);
+ASSERT_NEAR(r.y + r.height / 2, in.y, 0.001);
 }
 
 
