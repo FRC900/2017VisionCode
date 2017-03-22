@@ -14,7 +14,6 @@ for(int i = 1; i < 6; i++) {
 }
 
 TEST(ObjectTypeConstructor, CustomContour) {
-
 vector< cv::Point > input;
 EXPECT_THROW(ObjectType(input, "test", 5.0), std::invalid_argument) << "Exception with empty contour";
 input.push_back(cv::Point(0,0));
@@ -23,11 +22,9 @@ input.push_back(cv::Point(1,0));
 
 EXPECT_THROW(ObjectType(input, "test", -5.0), std::invalid_argument) << "Exception with negative depth";
 ASSERT_EQ(ObjectType(input, "test", 5.0).shape().size(), 3) << "Contour copied correctly";
-
 }
 
 TEST(ObjectTypeConstructor, CustomContour2f) {
-
 vector< cv::Point2f > input;
 EXPECT_THROW(ObjectType(input, "test", 5.0), std::invalid_argument) << "Exception with empty contour";
 input.push_back(cv::Point2f(0,0));
@@ -36,11 +33,10 @@ input.push_back(cv::Point2f(1,0));
 
 EXPECT_THROW(ObjectType(input, "test", -5.0), std::invalid_argument) << "Exception with negative depth";
 ASSERT_EQ(ObjectType(input, "test", 5.0).shape().size(), 3) << "Contour copied correctly";
-
 }
+
 //WorldToScreen
 TEST(ObjectTypeCoords, Reversible) {
-
 ObjectType o(1);
 vector<cv::Point3f> input_points;
 input_points.push_back(cv::Point3f(-5,-5,-5));
@@ -80,9 +76,7 @@ ASSERT_NEAR(r.y + r.height / 2, in.y, 0.001);
 }
 
 
-
 int main(int argc, char **argv) {
-
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
