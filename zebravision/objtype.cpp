@@ -195,7 +195,7 @@ ObjectType::ObjectType(const vector< Point2f > &contour_in, const string &name_i
 	name_(name_in)	
 {
 	if(contour_in.size() == 0 || name_in.length() == 0 || depth_in < 0)
-		throw std::invalid_argument("bad argument to ObjectType 1");
+		throw std::invalid_argument("bad argument to ObjectType Point2f");
 	computeProperties();
 }
 
@@ -204,16 +204,10 @@ ObjectType::ObjectType(const vector< Point > &contour_in, const string &name_in,
 	name_(name_in)
 {	
 	if(contour_in.size() == 0 || name_in.length() == 0 || depth_in < 0)
-		throw std::invalid_argument("bad argument to ObjectType 2");
-	for(size_t i = 0; i < contour_in.size(); i++)
-	{
-		Point2f p;
-		p.x = (float)contour_in[i].x;
-		p.y = (float)contour_in[i].y;
-		contour_.push_back(p);
-	}
+		throw std::invalid_argument("bad argument to ObjectType Point");
+	for (auto it = contour_in.cbegin(); it != contour_in.cend(); ++it)
+		contour_.push_back(Point2f(it->x, it->y));
 	computeProperties();
-
 }
 
 void ObjectType::computeProperties()

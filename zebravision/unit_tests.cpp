@@ -12,7 +12,21 @@ for(int i = 1; i < 6; i++) {
 	ASSERT_GE(o.real_height(), 0) << "Type: " << i << "Real world height are defined";
 	}
 }
+
 TEST(ObjectTypeConstructor, CustomContour) {
+
+vector< cv::Point > input;
+EXPECT_THROW(ObjectType(input, "test", 5.0), std::invalid_argument) << "Exception with empty contour";
+input.push_back(cv::Point(0,0));
+input.push_back(cv::Point(1,1));
+input.push_back(cv::Point(1,0));
+
+EXPECT_THROW(ObjectType(input, "test", -5.0), std::invalid_argument) << "Exception with negative depth";
+ASSERT_EQ(ObjectType(input, "test", 5.0).shape().size(), 3) << "Contour copied correctly";
+
+}
+
+TEST(ObjectTypeConstructor, CustomContour2f) {
 
 vector< cv::Point2f > input;
 EXPECT_THROW(ObjectType(input, "test", 5.0), std::invalid_argument) << "Exception with empty contour";
@@ -24,7 +38,6 @@ EXPECT_THROW(ObjectType(input, "test", -5.0), std::invalid_argument) << "Excepti
 ASSERT_EQ(ObjectType(input, "test", 5.0).shape().size(), 3) << "Contour copied correctly";
 
 }
-
 //WorldToScreen
 TEST(ObjectTypeCoords, Reversible) {
 
