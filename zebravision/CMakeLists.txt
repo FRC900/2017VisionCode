@@ -19,9 +19,9 @@ elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a57")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a57")
   add_definitions(-DIS_JETSON=1)
-  #link_directories(/home/ubuntu/GIE/lib)
-  #find_library (LibNVCaffeParser nvcaffe_parser /home/ubuntu/GIE/lib)
-  #find_library (LibNVInfer nvinfer /home/ubuntu/GIE/lib)
+  #link_directories($ENV{HOME}/GIE/lib)
+  #find_library (LibNVCaffeParser nvcaffe_parser $ENV{HOME}/GIE/lib)
+  #find_library (LibNVInfer nvinfer $ENV{HOME}/GIE/lib)
   #add_definitions(-DUSE_GIE=1)
 else()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
@@ -58,7 +58,7 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESC "--long")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
-set (CAFFE_BASE_DIR "/home/ubuntu/caffe")
+set (CAFFE_BASE_DIR "$ENV{HOME}/caffe")
 
 # Caffe headers change the size of various
 # objects based on these defines. Try to match
@@ -87,7 +87,7 @@ include_directories(
 	${PCL_INCLUDE_DIRS}
 	.
 	../fovis
-	/home/ubuntu/2017VisionCode/libfovis/build/include/fovis
+	/home/$ENV{HOME}/2017VisionCode/libfovis/build/include/fovis
 	../../GIE/include
 	..
 	../navXTimeSync
@@ -97,11 +97,11 @@ if ($MKL_FOUND)
 	include_directories (${MKL_INCLUDE_DIR})
 endif()
 
-#link_directories(/home/ubuntu/GIE/lib)
+#link_directories($ENV{HOME}/GIE/lib)
 link_directories(/opt/intel/ipp90legacy/linux/lib/intel64/threaded)
 link_directories(${ZED_LIBRARY_DIR})
 link_directories(${CUDA_LIBRARY_DIRS})
-link_directories(/home/ubuntu/2017VisionCode/libfovis/build/lib/)
+link_directories(/home/$ENV{HOME}/2017VisionCode/libfovis/build/lib/)
 link_directories(/usr/local/cuda/lib64/stubs)
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -188,8 +188,8 @@ set (ZV_SRCS
 CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS} zv.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
-find_library (LibProtobuf protobuf /home/ubuntu/GIE/lib)
-find_library (LibWconv wconv /home/ubuntu/GIE/lib)
+find_library (LibProtobuf protobuf $ENV{HOME}/GIE/lib)
+find_library (LibWconv wconv $ENV{HOME}/GIE/lib)
 find_library (LibTinyXML2 tinyxml2)
 find_library (LibEFence efence)
 
