@@ -17,6 +17,7 @@
 namespace utils {
 
 std::pair<float, float> minOfDepthMat(const cv::Mat& img, const cv::Mat& mask, const cv::Rect& bound_rect, int range);
+float avgOfDepthMat(const cv::Mat& img, const cv::Mat& mask, const cv::Rect& bound_rect);
 void shrinkRect(cv::Rect &rect_in, float shrink_factor);
 
 //void printIsometry(const Eigen::Transform<double, 3, Eigen::Isometry> m);

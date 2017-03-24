@@ -322,6 +322,7 @@ const vector<DepthInfo> GoalDetector::getDepths(const Mat &depth, const vector< 
 		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
 		float depth_z_min = minMax.first;
 		float depth_z_max = minMax.second;
+		//const float average_depth = utils::avgOfDepthMat(depth, contour_mask, br);
 #ifdef VERBOSE
 		cout << "Depth " << i << ": " << depth_z_min << " " << depth_z_max << endl;
 #endif

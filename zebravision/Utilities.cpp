@@ -26,7 +26,7 @@ namespace utils {
 			for (int i = bound_rect.tl().x; i <= bound_rect.br().x; i++) //for each pixel in row
 			{
 				//cout << i << " " << j << " " << ptr_img[i] << " " << (int)ptr_mask[i] << endl;
-				if (ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+				if (ptr_mask[i] && !(isnan(ptr_img[i]) || isinf(ptr_img[i]) || (ptr_img[i] <= 0)))
 				{
 					found = true;
 					if (ptr_img[i] > max)
@@ -57,7 +57,7 @@ namespace utils {
 			const uchar *ptr_mask = mask.ptr<uchar>(j);
 		    for (int i = min_loc_x - range; i < (min_loc_x + range); i++)
 		    {
-		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || isinf(ptr_img[i]) || (ptr_img[i] <= 0)))
 		        {
 		            sum_min += ptr_img[i];
 		            num_pix_min++;
@@ -72,7 +72,7 @@ namespace utils {
 			const uchar *ptr_mask = mask.ptr<uchar>(j);
 		    for (int i = max_loc_x - range; i < (max_loc_x + range); i++)
 		    {
-		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || (ptr_img[i] <= 0)))
+		        if ((0 < i) && (i < img.cols) && (0 < j) && (j < img.rows) && ptr_mask[i] && !(isnan(ptr_img[i]) || isinf(ptr_img[i]) || (ptr_img[i] <= 0)))
 		        {
 		            sum_max += ptr_img[i];
 		            num_pix_max++;
@@ -89,6 +89,29 @@ namespace utils {
 		if (isinf(max_dist))
 			max_dist = -4;
 		return std::make_pair(min_dist, max_dist);
+	}
+
+	float avgOfDepthMat(const cv::Mat& img, const cv::Mat& mask, const cv::Rect& bound_rect) 
+	{
+		double sum = 0.0;
+		unsigned count = 0;
+		for (int j = bound_rect.tl().y; j <= bound_rect.br().y; j++) //for each row
+		{
+			const float *ptr_img  = img.ptr<float>(j);
+			const uchar *ptr_mask = mask.ptr<uchar>(j);
+
+			for (int i = bound_rect.tl().x; i <= bound_rect.br().x; i++) //for each pixel in row
+			{
+				if (ptr_mask[i] && !(isnan(ptr_img[i]) || isinf(ptr_img[i]) || (ptr_img[i] <= 0)))
+				{
+					sum += ptr_img[i] / 1000.;
+					count += 1;
+				}
+			}
+		}
+		if (count == 0)
+			return -1;
+		return sum / count;
 	}
 
 	void shrinkRect(cv::Rect &rect_in, float shrink_factor) {
