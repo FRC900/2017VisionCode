@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 
 <launch>
+  <node name="zed_odom_transform" pkg="controller_node" type="transform_odom.py" output="screen" args="0 0 0 0 0 0 1 /zed_fuel/odom /zed_fuel/odom/filtered"/>
   <include file="$(find rtabmap_ros)/launch/rtabmap.launch">
     <arg name="stereo" value="false" />
 
     <arg name="rtabmapviz" value="true" />
     
-    <arg name="localization" value="false" />
+    <arg name="localization" value="true" />
     
     <arg name="cfg" value="" />
     <arg name="gui_cfg" value="~/.ros/rtabmap_gui.ini" />
@@ -24,7 +25,7 @@
     <arg name="camera_info_topic" value="/zed_fuel/rgb/camera_info" />
 
     <arg name="visual_odometry" value="false" />
-    <arg name="odom_topic" value="/odometry/filtered" />
-    <arg name="odom_frame_id" value="odom" />
+	<arg name="odom_topic" value="/zed_fuel/odom/filtered" />
+    <arg name="odom_frame_id" value="base_link" />
   </include>
 </launch>

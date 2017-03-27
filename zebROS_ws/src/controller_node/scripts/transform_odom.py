@@ -38,39 +38,39 @@ class TransformOdometry:
         return self.odom_node_name
 
     def _transform_callback(self, odom_msg):
-        odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(self.z_ori_shift) - odom_msg.pose.pose.position.y * math.sin(self.z_ori_shift)
-        odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(self.z_ori_shift) + odom_msg.pose.pose.position.y * math.cos(self.z_ori_shift)
+        #odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(self.z_ori_shift) - odom_msg.pose.pose.position.y * math.sin(self.z_ori_shift)
+        #odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(self.z_ori_shift) + odom_msg.pose.pose.position.y * math.cos(self.z_ori_shift)
 	
-        odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(self.y_ori_shift) - odom_msg.pose.pose.position.z * math.sin(self.y_ori_shift)
-        odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(self.y_ori_shift) + odom_msg.pose.pose.position.z * math.cos(self.y_ori_shift)
+        #odom_msg.pose.pose.position.x = odom_msg.pose.pose.position.x * math.cos(self.y_ori_shift) - odom_msg.pose.pose.position.z * math.sin(self.y_ori_shift)
+        #odom_msg.pose.pose.position.y = odom_msg.pose.pose.position.x * math.sin(self.y_ori_shift) + odom_msg.pose.pose.position.z * math.cos(self.y_ori_shift)
 
-        odom_msg.pose.pose.position.z = 0
+        #odom_msg.pose.pose.position.z = 0
         
-        q = [odom_msg.pose.pose.orientation.x,
-             odom_msg.pose.pose.orientation.y,
-             odom_msg.pose.pose.orientation.z,
-             odom_msg.pose.pose.orientation.w]
+        #q = [odom_msg.pose.pose.orientation.x,
+        #     odom_msg.pose.pose.orientation.y,
+        #     odom_msg.pose.pose.orientation.z,
+        #     odom_msg.pose.pose.orientation.w]
 
-        new_vec = qv_mult(q, [self.x_pos_shift, self.y_pos_shift, self.z_pos_shift])
-        tx = self.x_pos_shift - new_vec[0]
-        ty = self.y_pos_shift - new_vec[1]
-        tz = self.z_pos_shift - new_vec[2]
+        #new_vec = qv_mult(q, [self.x_pos_shift, self.y_pos_shift, self.z_pos_shift])
+        #tx = self.x_pos_shift - new_vec[0]
+        #ty = self.y_pos_shift - new_vec[1]
+        #tz = self.z_pos_shift - new_vec[2]
 
-        odom_pub_msg = Odometry()
-        odom_pub_msg.header.seq = odom_msg.header.seq 
-        odom_pub_msg.header.stamp = odom_msg.header.stamp
-        odom_pub_msg.header.frame_id = odom_msg.header.frame_id
-        odom_pub_msg.child_frame_id = ""
-        odom_pub_msg.pose.pose.position.x = odom_msg.pose.pose.position.x + tx - self.x_pos_shift
-        odom_pub_msg.pose.pose.position.y = odom_msg.pose.pose.position.y + ty - self.y_pos_shift
-        odom_pub_msg.pose.pose.position.z = odom_msg.pose.pose.position.z + tz - self.z_pos_shift
-        odom_pub_msg.pose.pose.orientation.x = odom_msg.pose.pose.orientation.x
-        odom_pub_msg.pose.pose.orientation.y = odom_msg.pose.pose.orientation.y
-        odom_pub_msg.pose.pose.orientation.z = odom_msg.pose.pose.orientation.z
-        odom_pub_msg.pose.pose.orientation.w = odom_msg.pose.pose.orientation.w
-        odom_pub_msg.pose.covariance = odom_msg.pose.covariance
+        #odom_pub_msg = Odometry()
+        #odom_pub_msg.header.seq = odom_msg.header.seq 
+        #odom_pub_msg.header.stamp = odom_msg.header.stamp
+        #odom_pub_msg.header.frame_id = odom_msg.header.frame_id
+        #odom_pub_msg.child_frame_id = ""
+        #odom_pub_msg.pose.pose.position.x = odom_msg.pose.pose.position.x + tx - self.x_pos_shift
+        #odom_pub_msg.pose.pose.position.y = odom_msg.pose.pose.position.y + ty - self.y_pos_shift
+        #odom_pub_msg.pose.pose.position.z = odom_msg.pose.pose.position.z + tz - self.z_pos_shift
+        #odom_pub_msg.pose.pose.orientation.x = odom_msg.pose.pose.orientation.x
+        #odom_pub_msg.pose.pose.orientation.y = odom_msg.pose.pose.orientation.y
+        #odom_pub_msg.pose.pose.orientation.z = odom_msg.pose.pose.orientation.z
+        #odom_pub_msg.pose.pose.orientation.w = odom_msg.pose.pose.orientation.w
+        #odom_pub_msg.pose.covariance = odom_msg.pose.covariance
 
-        self.pub_odom_transform.publish(odom_pub_msg)
+        self.pub_odom_transform.publish(odom_msg)
 
 if __name__ == "__main__":
     rospy.init_node("odom_transform")
