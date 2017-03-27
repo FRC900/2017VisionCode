@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 #include "objtype.hpp"
+#include "GoalDetector.hpp"
+#include "zmsin.hpp"
 
 using namespace std;
 
@@ -75,6 +77,86 @@ ASSERT_NEAR(r.x + r.width / 2, in.x, 0.001);
 ASSERT_NEAR(r.y + r.height / 2, in.y, 0.001);
 }
 
+// Test fixture parameterized with name of video file to be tested
+class GDVideoTest : public ::testing::TestWithParam<string> {
+	public:
+		MediaIn *cap;
+		GoalDetector *gd;
+		vector<cv::Point3f> positions;
+		vector<int> corresponding_frames;
+		virtual void SetUp() {
+			ZvSettings *zvSettings = new ZvSettings("/home/ubuntu/2017VisionCode/zebravision/settings.xml");
+			cap = new ZMSIn(GetParam().c_str(), zvSettings);
+			gd = new GoalDetector(cap->getCameraParams().fov, cv::Size(cap->width(), cap->height()));
+		}
+		void processVideo() {
+		cv::Mat frame, depth;
+		int frameNumber = 1;
+			while(!cap->getFrame(frame, depth)) {
+				gd->findBoilers(frame, depth);
+				if(gd->Valid()) {
+					positions.push_back(gd->goal_pos());
+					corresponding_frames.push_back(frameNumber);	
+				}
+				frameNumber++;
+			}
+		}
+		cv::Point3f averagePos() {
+			cv::Point3f totalPosition; cv::Point3f averagePos;
+			for(int i = 0; i < positions.size(); i++) {
+				totalPosition.x = positions[i].x + totalPosition.x;
+				totalPosition.y = positions[i].y + totalPosition.y;
+				totalPosition.z = positions[i].z + totalPosition.z;
+			}
+			averagePos.x = totalPosition.x / positions.size();
+			averagePos.y = totalPosition.y / positions.size();
+			averagePos.z = totalPosition.z / positions.size();
+			return averagePos;
+		}
+
+		cv::Point3f variancePos() {
+			cv::Point3f avg = averagePos();
+			cv::Point3f totalVariance(0,0,0);
+			for(int i = 0; i < positions.size(); i++) {
+				totalVariance.x += abs( positions[i].x - avg.x);
+				totalVariance.y += abs( positions[i].y - avg.y);
+				totalVariance.z += abs( positions[i].z - avg.z);
+			}
+			cv::Point3f averageVariance;
+			averageVariance.x = totalVariance.x / positions.size();
+			averageVariance.y = totalVariance.y / positions.size();
+			averageVariance.z = totalVariance.z / positions.size();
+			return averageVariance;
+		}
+};
+
+TEST_P(GDVideoTest, TestVideoFile) {
+// Parse video file for information on the position
+// File format is: utest_x[xcm]_y[ycm]_z[zcm].zms
+string s = GetParam();
+int x = std::stoi(s.substr(s.find("x"), s.find("x",s.find("_")))); // Find from x to _
+int y = std::stoi(s.substr(s.find("y"), s.find("y",s.find("_")))); // Find from y to _
+int z = std::stoi(s.substr(s.find("z"), s.find("z",s.find(".")))); // Find from z to .
+cv::Point3f actual_position(x/100.0,y/100.0,z/100.0);
+
+processVideo();
+cv::Point3f average_computed_position = averagePos();
+
+// Check that the average position is no more than a certain distance off
+EXPECT_NEAR(average_computed_position.x, actual_position.x, 0.1); 
+EXPECT_NEAR(average_computed_position.y, actual_position.y, 0.1); 
+EXPECT_NEAR(average_computed_position.z, actual_position.z, 0.1); 
+
+// Check to make sure no positions are more than a certain distance off
+for(int i = 0; i < positions.size(); i++) {
+	EXPECT_NEAR(positions[i].x, actual_position.x, 0.2) << "Frame number: " << corresponding_frames[i];
+	EXPECT_NEAR(positions[i].y, actual_position.y, 0.2) << "Frame number: " << corresponding_frames[i];
+	EXPECT_NEAR(positions[i].z, actual_position.z, 0.2) << "Frame number: " << corresponding_frames[i];
+}
+
+}
+// Fill in names of video files here
+INSTANTIATE_TEST_CASE_P( LabVideos, GDVideoTest, ::testing::Values("videos/utest_x510_y101_z535.zms","videos/utest_x510_y101_z535.zms"));
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
