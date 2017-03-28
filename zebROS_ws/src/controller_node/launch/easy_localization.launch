@@ -1,12 +1,8 @@
 <?xml version="1.0"?>
 
 <launch>
-	<!-- Transform x y z roll pitch yaw -->
-	<!--node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_base_frame" /-->
-
-	<node name="zed_odom_transform" pkg="controller_node" type="transform_odom.py" output="screen" args="0 0 0 0 0 0 1 /zed_fuel/odom /zed_fuel/odom/filtered"/>
-
-	<!--node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0.5 1.5 0 0 0 0 map odom" /-->
+	<!-- Transform x y z x y z w -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="zed_initial_to_odom" args="0 0 0 0 0 0 1 odom zed_fuel_initial_frame" />
 
 	<node name="ukf_localization_node" pkg="robot_localization" type="ukf_localization_node">
 		<!-- 

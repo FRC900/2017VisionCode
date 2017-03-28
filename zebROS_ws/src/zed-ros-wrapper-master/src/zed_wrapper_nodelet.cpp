@@ -220,6 +220,7 @@ namespace zed_wrapper {
             odom.pose.pose.position.z = Path(1, 3) / 1000.0;
             odom.pose.pose.position.x = -Path(2, 3) / 1000.0;
             Eigen::Quaternionf quat(Path.block<3, 3>(0, 0));
+			quat.normalize();
             odom.pose.pose.orientation.x = -quat.z();
             odom.pose.pose.orientation.y = -quat.x();
             odom.pose.pose.orientation.z = quat.y();
@@ -256,6 +257,7 @@ namespace zed_wrapper {
             transformStamped.transform.translation.y = -Path(0, 3);
             transformStamped.transform.translation.z = Path(1, 3);
             Eigen::Quaternionf quat(Path.block<3, 3>(0, 0));
+			quat.normalize();
             transformStamped.transform.rotation.x = -quat.z();
             transformStamped.transform.rotation.y = -quat.x();
             transformStamped.transform.rotation.z = quat.y();
