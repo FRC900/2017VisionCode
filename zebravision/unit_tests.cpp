@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include "gtest/gtest.h"
 #include "objtype.hpp"
 #include "GoalDetector.hpp"
@@ -141,14 +142,16 @@ int x = std::stoi(s.substr(s.find("x")+1, (s.find("_",s.find("x")) - s.find("x")
 int y = std::stoi(s.substr(s.find("y")+1, (s.find("_",s.find("y")) - s.find("y")-1))); // Find from y to _
 int z = std::stoi(s.substr(s.find("z")+1, (s.find("_",s.find("z")) - s.find("z")-1))); // Find from z to _
 cv::Point3f actual_position(x/100.0,y/100.0,z/100.0);
-cout << "Actual Position: " << actual_position << endl;
+
+// Run processing
 processVideo();
 cv::Point3f average_computed_position = averagePos();
 
 // Check that the average position is no more than a certain distance off
-EXPECT_NEAR(average_computed_position.x, actual_position.x, 0.1); 
-EXPECT_NEAR(average_computed_position.y, actual_position.y, 0.1); 
-EXPECT_NEAR(average_computed_position.z, actual_position.z, 0.1); 
+float position_threshold = 0.5; // Meters
+EXPECT_NEAR(average_computed_position.x, actual_position.x, position_threshold); 
+EXPECT_NEAR(average_computed_position.y, actual_position.y, position_threshold); 
+EXPECT_NEAR(average_computed_position.z, actual_position.z, position_threshold); 
 
 // Check to make sure no positions are more than a certain distance off
 /*for(int i = 0; i < positions.size(); i++) {
@@ -156,12 +159,32 @@ EXPECT_NEAR(average_computed_position.z, actual_position.z, 0.1);
 	EXPECT_NEAR(positions[i].y, actual_position.y, 0.2) << "Frame number: " << corresponding_frames[i];
 	EXPECT_NEAR(positions[i].z, actual_position.z, 0.2) << "Frame number: " << corresponding_frames[i];
 } */
+// Check that the variance is not greater than a threshold in all dimensions
+cv::Point3f variance = variancePos();
+float variance_threshold = 0.01; // Meters
+EXPECT_LE(variance.x, variance_threshold);
+EXPECT_LE(variance.y, variance_threshold);
+EXPECT_LE(variance.z, variance_threshold);
 
 }
-// Fill in names of video files here
-INSTANTIATE_TEST_CASE_P( LabVideos, GDVideoTest, ::testing::Values("./videos/utest_x55_y164_z218.zms",""));
+
+vector<string> video_names;
+INSTANTIATE_TEST_CASE_P( LabVideos, GDVideoTest, ::testing::ValuesIn(video_names));
 
 int main(int argc, char **argv) {
+	// Read the directory ./videos and add all filenames to video_names
+	DIR *dirp = NULL;
+	struct dirent *dp = NULL;
+	dirp = opendir("./videos");
+	if (dirp == NULL)
+		cout << "Directory read error" << endl;
+	while ((dp = readdir(dirp)) != NULL) {
+		string file_name(dp->d_name); // Convert to string
+		if(file_name != "." && file_name != "..") {
+			video_names.push_back("./videos/" + file_name);
+			cout << "Read video:" << "./videos/" + file_name << endl;
+		}
+	}
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
