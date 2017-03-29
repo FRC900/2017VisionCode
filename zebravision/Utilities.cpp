@@ -104,14 +104,14 @@ namespace utils {
 			{
 				if (ptr_mask[i] && !(isnan(ptr_img[i]) || isinf(ptr_img[i]) || (ptr_img[i] <= 0)))
 				{
-					sum += ptr_img[i] / 1000.;
+					sum += ptr_img[i];
 					count += 1;
 				}
 			}
 		}
 		if (count == 0)
 			return -1;
-		return sum / count;
+		return (sum  / 1000.) / count;
 	}
 
 	void shrinkRect(cv::Rect &rect_in, float shrink_factor) {
