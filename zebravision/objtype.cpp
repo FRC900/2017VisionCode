@@ -264,34 +264,35 @@ Point3f ObjectType::screenToWorldCoords(const Rect &screen_position, double avg_
 
 	// avg_depth is to front of object.  Add in half the
 	// object's depth to move to the center of it
-	// This is kinda wrong since the center of the object
-	// will not have the same coords as the front if 
-	// the object is off-center from the screen
-	// Need to project the rect back along the azimuth
-	// and elevation to make this work
 	avg_depth += depth_ / 2.;
 	Point3f retPt(
 			avg_depth * cosf(inclination) * sinf(azimuth),
 			avg_depth * cosf(inclination) * cosf(azimuth),
 			avg_depth * sinf(inclination));
 
-	//cout << "screen pos: " << screen_position << endl;
-	//cout << "Rect center: " << rect_center << endl;
-	//cout << "Distance to center: " << dist_to_center << endl;
-	//cout << "Actual Azimuth: " << azimuth << endl;
-	//cout << "Actual Inclination: " << inclination << endl;
-	//cout << "Actual location: " << retPt << endl;
+#if 0
+	cout << "screen pos: " << screen_position << endl;
+	cout << "Rect center: " << rect_center << endl;
+	cout << "Distance to center: " << dist_to_center << endl;
+	cout << "Actual Azimuth: " << azimuth << endl;
+	cout << "Actual Inclination: " << inclination << endl;
+	cout << "Actual location: " << retPt << endl;
+#endif
 	return retPt;
 }
 
 Rect ObjectType::worldToScreenCoords(const Point3f &position, const Point2f &fov_size, const Size &frame_size, float cameraElevation) const
 {
-	// need somehow to subtract the depth_ projected along the azimuth angle
-	float azimuth = asinf(position.x / sqrtf(position.x * position.x + position.y * position.y));
-
+	// Object distance
 	float r = sqrtf(position.x * position.x + position.y * position.y + position.z * position.z) - depth_ / 2.;
-	float inclination = asinf( position.z / r ) + cameraElevation;
 
+	// Add depth_/2 back in to r since position.z isn't adjusted for object depth
+	// This will lead to a slightly inaccurate inclination
+	// since we're dividing z from the center of the object
+	// with r from the front of it
+	float inclination = asinf(position.z / (r+depth_/2.)) + cameraElevation;
+
+	float azimuth = asinf(position.x / sqrtf(position.x * position.x + position.y * position.y));
 
 	//inverse of formula in screenToWorldCoords()
 	Point2f dist_to_center(
@@ -306,20 +307,21 @@ Rect ObjectType::worldToScreenCoords(const Point3f &position, const Point2f &fov
 			angular_size.x * (frame_size.width / fov_size.x),
 			angular_size.y * (frame_size.height / fov_size.y));
 
-
 	Point topLeft(
 			cvRound(rect_center.x - (screen_size.x / 2.0)),
 			cvRound(rect_center.y - (screen_size.y / 2.0)));
 
-	//cout << "r = " << r << endl;
-	//cout << "azimuth = " << azimuth << endl;
-	//cout << "inclination = " << inclination << endl;
+#if 0
+	cout << "r = " << r << endl;
+	cout << "azimuth = " << azimuth << endl;
+	cout << "inclination = " << inclination << endl;
 
-	//cout << "Distance to center: " << dist_to_center << endl;
-	//cout << "rect_center " << rect_center << endl;
-	//cout << "angular_size " << angular_size << endl;
-	//cout << "screen_size " << screen_size << endl;
-	//cout << "worldToScreenCoords " << Rect(topLeft.x, topLeft.y, cvRound(screen_size.x), cvRound(screen_size.y)) << endl;
+	cout << "Distance to center: " << dist_to_center << endl;
+	cout << "rect_center " << rect_center << endl;
+	cout << "angular_size " << angular_size << endl;
+	cout << "screen_size " << screen_size << endl;
+	cout << "worldToScreenCoords " << Rect(topLeft.x, topLeft.y, cvRound(screen_size.x), cvRound(screen_size.y)) << endl;
+#endif
 	return Rect(topLeft.x, topLeft.y, cvRound(screen_size.x), cvRound(screen_size.y));
 }
 

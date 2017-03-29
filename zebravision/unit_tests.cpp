@@ -62,10 +62,10 @@ for(size_t i = 0; i < input_points.size(); i++) {
 		const cv::Point2f fov_size(hFov * (M_PI / 180.),
 				hFov * (M_PI / 180.) * ((float)frame_size.height / frame_size.width));
 		cv::Point3f out_p = o.screenToWorldCoords(o.worldToScreenCoords(test_p ,fov_size, frame_size, camera_elevation[j]), r, fov_size, frame_size, camera_elevation[j]);
-		// Objects with depth are a bit broken - fix eventually
-		float thresh = std::max<float>(o.depth()/2, 0.01);
-		ASSERT_NEAR(abs(out_p.x), abs(test_p.x), thresh) << "Input Coords " << input_points[i] << " camera_elevation " << camera_elevation[j] << " ObjectType(" << k << ")"; // some slop due to inaccuracies
-		ASSERT_NEAR(abs(out_p.y), abs(test_p.y), thresh) << "Input Coords " << input_points[i] << " camera_elevation " << camera_elevation[j] << " ObjectType(" << k << ")"; // in handling object depth
+
+		float thresh = .01; // 1 cm rounding error - some inherent from rounding from floats to ints in Rect() construction
+		ASSERT_NEAR(abs(out_p.x), abs(test_p.x), thresh) << "Input Coords " << input_points[i] << " camera_elevation " << camera_elevation[j] << " ObjectType(" << k << ")";
+		ASSERT_NEAR(abs(out_p.y), abs(test_p.y), thresh) << "Input Coords " << input_points[i] << " camera_elevation " << camera_elevation[j] << " ObjectType(" << k << ")";
 		ASSERT_NEAR(abs(out_p.z), abs(test_p.z), thresh) << "Input Coords " << input_points[i] << " camera_elevation " << camera_elevation[j] << " ObjectType(" << k << ")";
 		}
 	}
