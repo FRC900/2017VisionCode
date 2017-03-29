@@ -258,37 +258,45 @@ Point3f ObjectType::screenToWorldCoords(const Rect &screen_position, double avg_
 			rect_center.x - (frame_size.width / 2.0),
 			-rect_center.y + (frame_size.height / 2.0));
 
-// This uses formula from http://www.chiefdelphi.com/forums/showpost.php?p=1571187&postcount=4
+	// This uses formula from http://www.chiefdelphi.com/forums/showpost.php?p=1571187&postcount=4
 	float azimuth = atanf(dist_to_center.x / (.5 * frame_size.width / tanf(fov_size.x / 2)));
 	float inclination = atanf(dist_to_center.y / (.5 * frame_size.height / tanf(fov_size.y / 2))) - cameraElevation;
 
 	// avg_depth is to front of object.  Add in half the
 	// object's depth to move to the center of it
+	// This is kinda wrong since the center of the object
+	// will not have the same coords as the front if 
+	// the object is off-center from the screen
+	// Need to project the rect back along the azimuth
+	// and elevation to make this work
 	avg_depth += depth_ / 2.;
 	Point3f retPt(
 			avg_depth * cosf(inclination) * sinf(azimuth),
 			avg_depth * cosf(inclination) * cosf(azimuth),
 			avg_depth * sinf(inclination));
 
+	//cout << "screen pos: " << screen_position << endl;
+	//cout << "Rect center: " << rect_center << endl;
 	//cout << "Distance to center: " << dist_to_center << endl;
-	//cout << "Actual Inclination: " << inclination << endl;
 	//cout << "Actual Azimuth: " << azimuth << endl;
+	//cout << "Actual Inclination: " << inclination << endl;
 	//cout << "Actual location: " << retPt << endl;
 	return retPt;
 }
 
-Rect ObjectType::worldToScreenCoords(const Point3f &_position, const Point2f &fov_size, const Size &frame_size, float cameraElevation) const
+Rect ObjectType::worldToScreenCoords(const Point3f &position, const Point2f &fov_size, const Size &frame_size, float cameraElevation) const
 {
-	float r = sqrtf(_position.x * _position.x + _position.y * _position.y + _position.z * _position.z) - depth_ / 2.;
-	float azimuth = asinf(_position.x / sqrt(_position.x * _position.x + _position.y * _position.y));
-	float inclination = asinf( _position.z / r ) + cameraElevation;
+	// need somehow to subtract the depth_ projected along the azimuth angle
+	float azimuth = asinf(position.x / sqrtf(position.x * position.x + position.y * position.y));
+
+	float r = sqrtf(position.x * position.x + position.y * position.y + position.z * position.z) - depth_ / 2.;
+	float inclination = asinf( position.z / r ) + cameraElevation;
+
 
 	//inverse of formula in screenToWorldCoords()
 	Point2f dist_to_center(
 			tanf(azimuth) * (0.5 * frame_size.width / tanf(fov_size.x / 2)),
 			tanf(inclination) * (0.5 * frame_size.height / tanf(fov_size.y / 2)));
-	
-	//cout << "Distance to center: " << dist_to_center << endl;
 	Point2f rect_center(
 			dist_to_center.x + (frame_size.width / 2.0),
 			-dist_to_center.y + (frame_size.height / 2.0));
@@ -298,10 +306,20 @@ Rect ObjectType::worldToScreenCoords(const Point3f &_position, const Point2f &fo
 			angular_size.x * (frame_size.width / fov_size.x),
 			angular_size.y * (frame_size.height / fov_size.y));
 
+
 	Point topLeft(
 			cvRound(rect_center.x - (screen_size.x / 2.0)),
 			cvRound(rect_center.y - (screen_size.y / 2.0)));
 
+	//cout << "r = " << r << endl;
+	//cout << "azimuth = " << azimuth << endl;
+	//cout << "inclination = " << inclination << endl;
+
+	//cout << "Distance to center: " << dist_to_center << endl;
+	//cout << "rect_center " << rect_center << endl;
+	//cout << "angular_size " << angular_size << endl;
+	//cout << "screen_size " << screen_size << endl;
+	//cout << "worldToScreenCoords " << Rect(topLeft.x, topLeft.y, cvRound(screen_size.x), cvRound(screen_size.y)) << endl;
 	return Rect(topLeft.x, topLeft.y, cvRound(screen_size.x), cvRound(screen_size.y));
 }
 
