@@ -89,7 +89,7 @@ include_directories(
 	.
 	../fovis
 	/home/$ENV{HOME}/2017VisionCode/libfovis/build/include/fovis
-	../../GIE/include
+	#../../GIE/include
 	..
 	../navXTimeSync
 	../googletest/googletest)
@@ -235,6 +235,7 @@ if(test)
   find_package(GTest REQUIRED)
   enable_testing()
   CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
+  list(REMOVE_ITEM ZV_LIBS opencv_ts)
   target_link_libraries( test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
   CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
   add_test(NAME unit_tests COMMAND test_zv)
