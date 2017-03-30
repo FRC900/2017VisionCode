@@ -22,6 +22,7 @@
   <arg name="name" default="zed_goal" />
   <arg name="record" default="false" />
   <arg name="down_sample" default="false" />
+  <arg name="sub_rate" default="10" />
   
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
@@ -42,11 +43,10 @@
 
   <node name="goal_detection_node" pkg="goal_detection" type="goal_detection_node" respawn="true">
   	<param name="down_sample" value="$(arg down_sample)" />
+  	<param name="sub_rate" value="$(arg sub_rate)" />
   </node>
-  <!-- 
-  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
-  -->
+  <!--node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" /-->
   <include file="$(find controller_node)/launch/record_master.launch" if="$(arg record)">
-    <param name="down_sample" value="$(arg down_sample)" />
+    <arg name="down_sample" value="$(arg down_sample)" />
   </include>
 </launch>
