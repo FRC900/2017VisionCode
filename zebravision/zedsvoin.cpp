@@ -16,7 +16,7 @@ ZedSVOIn::ZedSVOIn(const char *inFileName, ZvSettings *settings) :
 
 	// Ball detection runs at ~10 FPS on Jetson
 	// so run camera capture more slowly
-	parameters.camera_fps = 
+	parameters.camera_fps =
 #ifdef IS_JETSON
 		15;
 #else
@@ -127,7 +127,7 @@ bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pc
 }
 
 
-bool ZedSVOIn::postLockFrameNumber(int framenumber) 
+bool ZedSVOIn::postLockFrameNumber(int framenumber)
 {
 	if (!zed_.isOpened())
 	   return false;
