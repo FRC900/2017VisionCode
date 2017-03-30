@@ -28,6 +28,7 @@ static ros::Publisher pub;
 static GoalDetector *gd = NULL;
 static bool batch = true;
 static bool down_sample;
+static int sub_rate;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
@@ -108,9 +109,11 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 	down_sample = false;
+    sub_rate = 10;
 	nh.getParam("down_sample", down_sample);
-	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 10);
-	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 10);
+    nh.getParam("sub_rate", sub_rate);
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", sub_rate);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", sub_rate);
 	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
 
 	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher
