@@ -9,7 +9,7 @@ ZedParams::ZedParams(void)
 
 #ifdef ZED_SUPPORT
 
-using namespace sl::zed;
+using namespace sl;
 
 CameraParams ZedParams::get(void) const
 {
@@ -22,19 +22,17 @@ CameraParams ZedParams::get(void) const
 // is to just set it once in the constructor once
 // a Zed object is opened and then from there on return
 // the results 
-void ZedParams::init(sl::zed::Camera *zed, bool left)
+void ZedParams::init(sl::Camera &zed, bool left)
 {
-	if (!zed)
-		return;
-
-	CamParameters zedp = left ?
-		zed->getParameters()->LeftCam :
-		zed->getParameters()->RightCam;
+	CameraParameters zedp = left ?
+		zed.getCameraInformation().calibration_parameters.left_cam:
+		zed.getCameraInformation().calibration_parameters.right_cam;
 
 	// TODO : ZED SDK added hFOV and vFOV fields to 
 	// CamParameters - use them
-	unsigned height = zed->getImageSize().height;
-	unsigned width  = zed->getImageSize().width;
+    Resolution image_size = zed.getResolution();
+	unsigned height = image_size.height;
+	unsigned width  = image_size.width;
 	// Pick FOV based on 4:3 or 16:9 aspect ratio
 	float hFovDegrees;
 	if (height == 480) // 640x480. TODO :: widescreen VGA?

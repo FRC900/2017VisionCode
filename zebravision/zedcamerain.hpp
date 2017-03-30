@@ -14,7 +14,7 @@
 #include "zedparams.hpp"
 
 #ifdef ZED_SUPPORT
-#include <zed/Camera.hpp>
+#include <sl/Camera.hpp>
 #endif
 
 class ZvSettings;
@@ -41,18 +41,24 @@ class ZedCameraIn : public AsyncIn
 		bool postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud);
 #ifdef ZED_SUPPORT
 	private:
-		sl::zed::Camera *zed_;
-		cv::Mat          localFrame_;
-		cv::Mat          localDepth_;
+		sl::Camera                        zed_;
+		sl::Mat                           localFrameZed_;
+		cv::Mat                           localFrame_;
+		sl::Mat                           localDepthZed_;
+		cv::Mat                           localDepth_;
+		sl::Mat                           localCloudZed_;
         pcl::PointCloud<pcl::PointXYZRGB> localCloud_;
 
-		int              brightness_;
-		int              contrast_;
-		int              hue_;
-		int              saturation_;
-		int              gain_;
-		int              exposure_;
-		ZedParams        params_;
+		int                               brightness_;
+		int                               contrast_;
+		int                               hue_;
+		int                               saturation_;
+		int                               gain_;
+		int                               exposure_;
+		int                               whiteBalance_;
+		ZedParams                         params_;
+
+		bool                              opened_;
 
 		// Helpers to save and load settings in XML file
 		bool loadSettings(void);
@@ -66,5 +72,6 @@ class ZedCameraIn : public AsyncIn
 		friend void zedSaturationCallback(int value, void *data);
 		friend void zedGainCallback(int value, void *data);
 		friend void zedExposureCallback(int value, void *data);
+		friend void zedWhiteBalanceCallback(int value, void *data);
 #endif
 };
