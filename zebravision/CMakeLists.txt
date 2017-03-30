@@ -19,6 +19,8 @@ elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a57")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a57")
   add_definitions(-DIS_JETSON=1)
+  unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
+  set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
   #link_directories($ENV{HOME}/GIE/lib)
   #find_library (LibNVCaffeParser nvcaffe_parser $ENV{HOME}/GIE/lib)
   #find_library (LibNVInfer nvinfer $ENV{HOME}/GIE/lib)
@@ -27,12 +29,6 @@ else()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
 endif()
-find_package(ZED)
-#Check if we are building with a GPU by checking CUDNN
-#If we aren't, don't add ZED support
-if (ZED_FOUND AND CUDNN_FOUND)
-  add_definitions(-DZED_SUPPORT)
-endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(CUDA REQUIRED)
@@ -40,11 +36,16 @@ if (CUDA_FOUND)
 	include(CUDNN)
 	detect_cuDNN()
 endif()
-set (CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+
+find_package(ZED)
+#Check if we are building with a GPU by checking CUDNN
+#If we aren't, don't add ZED support
+if (ZED_FOUND)
+  add_definitions(-DZED_SUPPORT)
+endif()
 
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(ZMQ REQUIRED)
 find_package(MKL QUIET)
 if (MKL_FOUND)
@@ -58,7 +59,7 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESC "--long")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
-set (CAFFE_BASE_DIR "$ENV{HOME}/caffe")
+set (CAFFE_BASE_DIR "/home/ubuntu/caffe")
 
 # Caffe headers change the size of various
 # objects based on these defines. Try to match
@@ -188,8 +189,8 @@ set (ZV_SRCS
 CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS} zv.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
-find_library (LibProtobuf protobuf $ENV{HOME}/GIE/lib)
-find_library (LibWconv wconv $ENV{HOME}/GIE/lib)
+#find_library (LibProtobuf protobuf $ENV{HOME}/GIE/lib)
+#find_library (LibWconv wconv $ENV{HOME}/GIE/lib)
 find_library (LibTinyXML2 tinyxml2)
 find_library (LibEFence efence)
 
