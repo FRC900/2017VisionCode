@@ -27,12 +27,6 @@ else()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
 endif()
-find_package(ZED)
-#Check if we are building with a GPU by checking CUDNN
-#If we aren't, don't add ZED support
-if (ZED_FOUND AND CUDNN_FOUND)
-  add_definitions(-DZED_SUPPORT)
-endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(CUDA REQUIRED)
@@ -40,7 +34,14 @@ if (CUDA_FOUND)
 	include(CUDNN)
 	detect_cuDNN()
 endif()
-set (CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+
+find_package(ZED)
+#Check if we are building with a GPU by checking CUDNN
+#If we aren't, don't add ZED support
+if (ZED_FOUND AND CUDNN_FOUND)
+	message("-- Using ZED")
+  add_definitions(-DZED_SUPPORT)
+endif()
 
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -114,6 +115,7 @@ LIST(APPEND CUDA_NVCC_FLAGS --compiler-options -fno-strict-aliasing -lineinfo -u
 if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf" OR
     ${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_53,code=sm_53)
+  #LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_62,code=sm_62)
 else()
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=compute_35)
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_52,code=sm_52)
@@ -234,7 +236,8 @@ if(test)
   find_package(GTest REQUIRED)
   enable_testing()
   CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
-  target_link_libraries( test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
+  list(REMOVE_ITEM ZV_LIBS opencv_ts)
+  target_link_libraries(test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
   CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
   add_test(NAME unit_tests COMMAND test_zv)
 endif()
