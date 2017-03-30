@@ -20,7 +20,7 @@
   <arg name="disable_calibrate" default="true" />
   <arg name="name" default="zed_goal" />
   <arg name="record" default="false" />
-  <arg name="down_sample" default="false" />
+  <arg name="down_sample" default="true" />
   <arg name="sub_rate" default="10" />
   
   <group ns="$(arg name)">
