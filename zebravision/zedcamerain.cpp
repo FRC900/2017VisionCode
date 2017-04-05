@@ -38,7 +38,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	}
 
 	InitParameters parameters;
-	parameters.camera_resolution = RESOLUTION_HD720;
+	parameters.camera_resolution = RESOLUTION_VGA;
 
 	// Ball detection runs at ~10 FPS on Jetson
 	// so run camera capture more slowly
@@ -54,7 +54,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	// exponentially. The closer it gets the longer the
 	// disparity search will take. In case of limited
 	// computation power, consider increasing the value.
-	parameters.depth_minimum_distance = 1100; // in coordinate_units, so ~1m
+	parameters.depth_minimum_distance = 1000; // in coordinate_units, so ~1m
 
 	// init computation mode of the zed
 	ERROR_CODE err = zed_.open(parameters);
