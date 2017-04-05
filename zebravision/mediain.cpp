@@ -12,6 +12,7 @@ MediaIn::MediaIn(ZvSettings *settings) :
 	width_(0),
 	height_(0),
 	settings_(settings),
+	usePointCloud_(false),
 	frameNumber_(0),
 	lockedFrameNumber_(0),
 	timeStamp_(0), // TODO : default to setTimeStamp() instead?
@@ -63,6 +64,7 @@ bool MediaIn::getFrame(Mat &frame, Mat &depth, bool pause)
 
 bool MediaIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
 {
+	usePointCloud_ = true;
 	cloud = pcl::PointCloud<pcl::PointXYZRGB>();
 	// Call derived class version of non-point cloud method
 	// to get frame+depth data, if any
@@ -79,6 +81,7 @@ bool MediaIn::getDepth(Mat &depth, bool pause)
 bool MediaIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
 {
 	(void)pause;
+	usePointCloud_ = true;
 	cloud = pcl::PointCloud<pcl::PointXYZRGB>();
 	return false;
 }

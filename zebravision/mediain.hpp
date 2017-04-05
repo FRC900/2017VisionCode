@@ -74,6 +74,12 @@ class MediaIn
 		// Saved settings for this input type
 		ZvSettings *settings_;
 
+		// Disable point cloud processing until 
+		// a getFrame() or getPointCloud() call
+		// asks for it - speeds up processing for
+		// cases which don't use it
+		bool usePointCloud_;
+
 		void setTimeStamp(long long timeStamp = -1);
 		void lockTimeStamp(void);
 		void setFrameNumber(int frameNumber);

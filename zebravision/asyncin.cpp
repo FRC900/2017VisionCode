@@ -153,6 +153,8 @@ bool AsyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB>
 	if (!isOpened())
 		return false;
 
+	usePointCloud_ = true;
+
 	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())
 			return false;
@@ -200,6 +202,8 @@ bool AsyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause
 {
 	if (!isOpened())
 		return false;
+
+	usePointCloud_ = true;
 
 	if (!pause || pausedFrame_.empty())
 		if (!copyBuffers())

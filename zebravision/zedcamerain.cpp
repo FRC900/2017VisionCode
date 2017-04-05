@@ -28,8 +28,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	gain_(1),
 	exposure_(1), // Should set exposure = -1 => auto exposure/auto-gain
 	whiteBalance_(0), // Auto white-balance?
-	opened_(false),
-	usePointCloud_(false)
+	opened_(false)
 {
 	if (!Camera::isZEDconnected()) // Open an actual camera for input
 	{
@@ -40,8 +39,8 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	InitParameters parameters;
 	parameters.camera_resolution = RESOLUTION_VGA;
 
-	// Ball detection runs at ~10 FPS on Jetson
-	// so run camera capture more slowly
+	// Runs cleanly at 30 FPS on TX1, doesn't init
+	// at 60FPS?
 	parameters.camera_fps = 30;
 
 	parameters.depth_mode = DEPTH_MODE_PERFORMANCE;
