@@ -1,43 +1,28 @@
 cmake_minimum_required(VERSION 2.8.7)
 
 project(zed_wrapper)
-include ("../cmake_modules/CMakeOpt.cmake")
 
 # if CMAKE_BUILD_TYPE is not specified, take 'Release' as default
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-find_package(ZED 1.1 REQUIRED)
-
-#If you have compilation issues, edit OCV_VERSION and CUDA_VERSION according to the following values :
-#ZED SDK 1.1.1 : (https://www.stereolabs.com/developers/#download_anchor)
-#   TX1 Jetpack 2.3 : OpenCV 2.4, CUDA 8.0
-#   TX1 Jetpack < 2.3 : OpenCV 2.4, CUDA 7.0
-#   TK1 : OpenCV 2.4, CUDA 6.5
-#   Ubuntu 14 : OpenCV 3.1, CUDA 7.5
-#   Ubuntu 16 : OpenCV 3.1, CUDA 8.0
+find_package(ZED 2.0 REQUIRED)
 
 ##For Jetson, OpenCV4Tegra is based on OpenCV2.4
 exec_program(uname ARGS -p OUTPUT_VARIABLE CMAKE_SYSTEM_NAME2)
 if ( CMAKE_SYSTEM_NAME2 MATCHES "aarch64" ) # Jetson TX1
     SET(OCV_VERSION "2.4")
     SET(CUDA_VERSION "8.0")
-    set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
-elseif(CMAKE_SYSTEM_NAME2 MATCHES "armv7l" ) # Jetson TK1
-    SET(OCV_VERSION "2.4")
-    SET(CUDA_VERSION "6.5")
-    set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+    SET(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 else() # Ubuntu Desktop
     SET(OCV_VERSION "3.1")
     SET(CUDA_VERSION "8.0")
-    message("*** On Ubuntu 14, change line 30 of CMakeLists.txt to CUDA 7.5")
 endif()
 find_package(OpenCV ${OCV_VERSION} COMPONENTS core highgui imgproc REQUIRED)
 find_package(CUDA ${CUDA_VERSION} REQUIRED)
 
 find_package(PCL REQUIRED)
-list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 
 find_package(catkin REQUIRED COMPONENTS
   image_transport
@@ -88,8 +73,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 ###############################################################################
 # EXECUTABLE
 
-add_definitions(-std=c++11)# -m64) #-Wall)
-
+add_definitions(-std=c++11)
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4") ## if using from pcl package (pcl/vtk bug)
 set(LINK_LIBRARIES
   ${catkin_LIBRARIES}
   ${ZED_LIBRARIES}
@@ -98,11 +83,11 @@ set(LINK_LIBRARIES
   ${PCL_LIBRARIES})
 
 add_library(ZEDWrapper src/zed_wrapper_nodelet.cpp)
-target_link_libraries(ZEDWrapper X11 ${LINK_LIBRARIES})
+target_link_libraries(ZEDWrapper ${LINK_LIBRARIES})
 add_dependencies(ZEDWrapper ${PROJECT_NAME}_gencfg)
 
 add_executable(zed_wrapper_node src/zed_wrapper_node.cpp)
-target_link_libraries(zed_wrapper_node ZEDWrapper X11 ${LINK_LIBRARIES})
+target_link_libraries(zed_wrapper_node ZEDWrapper ${LINK_LIBRARIES})
 add_dependencies(zed_wrapper_node ${PROJECT_NAME}_gencfg)
 
 ###############################################################################

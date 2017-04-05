@@ -1,9 +1,8 @@
-<?xml version="1.0"?>
-
 <launch>
 
   <arg name="svo_file" default=""/>
   <arg name="zed_id" default="0"/>
+
   <arg name="brightness" default="-1"/>
   <arg name="contrast" default="6"/>
   <arg name="hue" default="6"/>
@@ -14,19 +13,21 @@
   <arg name="disable_calibrate" default="false"/>
   <arg name="zed_name" default="zed"/>
 
-  <group ns="$(arg zed_name)">
+  <group ns="$(arg zed_name">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
       <arg name="zed_id" value="$(arg zed_id)" />
-      <arg name="brightness" value="$(arg brightness)" />
-      <arg name="contrast" value="$(arg contrast)" />
-      <arg name="hue" value="$(arg hue)" />
-      <arg name="saturation" value="$(arg saturation)" />
-      <arg name="gain" value="$(arg gain)" />
-      <arg name="zed_name" value="$(arg zed_name)"/>
-      <arg name="exposure" value="$(arg exposure)" />
-      <arg name="flip" value="$(arg flip)" />
-      <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
+
+	  <arg name="brightness" value="$(arg brightness)" />
+	  <arg name="contrast" value="$(arg contrast)" />
+	  <arg name="hue" value="$(arg hue)" />
+	  <arg name="saturation" value="$(arg saturation)" />
+	  <arg name="gain" value="$(arg gain)" />
+	  <arg name="zed_name" value="$(arg zed_name)"/>
+	  <arg name="exposure" value="$(arg exposure)" />
+	  <arg name="flip" value="$(arg flip)" />
+	  <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
+
     </include>
   </group>
 
