@@ -37,12 +37,12 @@ if (CUDA_FOUND)
 	detect_cuDNN()
 endif()
 
-find_package(ZED)
+#find_package(ZED)
 #Check if we are building with a GPU by checking CUDNN
 #If we aren't, don't add ZED support
-if (ZED_FOUND)
-  add_definitions(-DZED_SUPPORT)
-endif()
+#if (ZED_FOUND)
+#  add_definitions(-DZED_SUPPORT)
+#endif()
 
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -59,7 +59,7 @@ get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_describe(GIT_DESC "--long")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/version.cpp" @ONLY)
 
-set (CAFFE_BASE_DIR "/home/ubuntu/caffe")
+set (CAFFE_BASE_DIR "$ENV{HOME}/caffe")
 
 # Caffe headers change the size of various
 # objects based on these defines. Try to match
@@ -89,7 +89,7 @@ include_directories(
 	.
 	../fovis
 	/home/$ENV{HOME}/2017VisionCode/libfovis/build/include/fovis
-	../../GIE/include
+	#../../GIE/include
 	..
 	../navXTimeSync
 	../googletest/googletest)
@@ -235,6 +235,7 @@ if(test)
   find_package(GTest REQUIRED)
   enable_testing()
   CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
+  list(REMOVE_ITEM ZV_LIBS opencv_ts)
   target_link_libraries( test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
   CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
   add_test(NAME unit_tests COMMAND test_zv)

@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   navx_publisher
   message_generation
+  geometry_msgs
+  std_msgs
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -110,7 +113,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} ../../../zebravision ../../..)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES goal_detection
-  CATKIN_DEPENDS roscpp message_runtime navx_publisher
+  CATKIN_DEPENDS roscpp message_runtime navx_publisher geometry_msgs std_msgs sensor_msgs
 #  DEPENDS system_lib
 )
 
