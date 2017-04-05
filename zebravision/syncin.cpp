@@ -162,6 +162,8 @@ bool SyncIn::getFrame(Mat &frame, Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> 
 	if (!isOpened())
 		return false;
 
+	usePointCloud_ = true;
+
 	// If not paused, copy the next frame data from
 	// frame_. This is the Mat holding the next
 	// frame read from the video that update()
@@ -219,6 +221,8 @@ bool SyncIn::getPointCloud(pcl::PointCloud<pcl::PointXYZRGB> &cloud, bool pause)
 {
 	if (!isOpened())
 		return false;
+
+	usePointCloud_ = true;
 
 	// If not paused, copy the next frame data from
 	// frame_. This is the Mat holding the next

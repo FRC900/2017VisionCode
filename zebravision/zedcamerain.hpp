@@ -60,7 +60,6 @@ class ZedCameraIn : public AsyncIn
 		ZedParams                         params_;
 
 		bool                              opened_;
-		bool                              usePointCloud_;
 
 		// Helpers to save and load settings in XML file
 		bool loadSettings(void);
