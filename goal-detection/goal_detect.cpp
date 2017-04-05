@@ -39,19 +39,17 @@ int main(int argc, char **argv)
 
 	Mat image;
 	Mat depth;
-	//Mat depthNorm;
 	Rect bound;
 	FrameTicker frameTicker;
 	while (cap->getFrame(image, depth))
 	{
 		frameTicker.mark();
-		//imshow ("Normalized Depth", depthNorm);
 
 		gd.findBoilers(image, depth);
 		gd.drawOnFrame(image, gd.getContours(image));
 
 		stringstream ss;
-		ss << fixed << setprecision(2) << frameTicker.getFPS() << "FPS";
+		ss << fixed << setprecision(2) << cap->FPS() << "C:" << frameTicker.getFPS() << "GD FPS";
 		putText(image, ss.str(), Point(image.cols - 15 * ss.str().length(), 50), FONT_HERSHEY_PLAIN, 1.5, Scalar(0,0,255));
 		rectangle(image, gd.goal_rect(), Scalar(255,0,0), 2);
 		imshow ("Image", image);
