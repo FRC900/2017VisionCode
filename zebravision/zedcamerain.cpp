@@ -28,7 +28,8 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	gain_(1),
 	exposure_(1), // Should set exposure = -1 => auto exposure/auto-gain
 	whiteBalance_(0), // Auto white-balance?
-	opened_(false)
+	opened_(false),
+	usePointCloud_(false)
 {
 	if (!Camera::isZEDconnected()) // Open an actual camera for input
 	{
@@ -63,18 +64,18 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 		return;
 	}
 	opened_ = true;
+	zed_.setCameraFPS(15);
     // Create sl and cv Mat to get ZED left image and depth image
     // Best way of sharing sl::Mat and cv::Mat :
     // Create a sl::Mat and then construct a cv::Mat using the ptr to sl::Mat data.
     Resolution image_size = zed_.getResolution();
-    localFrameZed_= sl::Mat(image_size, MAT_TYPE_8U_C4); // Create a sl::Mat to handle Left image
-    localFrame_   = cv::Mat(localFrameZed_.getHeight(), localFrameZed_.getWidth(), CV_8UC4, localFrameZed_.getPtr<sl::uchar1>(sl::MEM_CPU)); // Create an OpenCV Mat that shares sl::Mat buffer
+	width_  = image_size.width;
+	height_ = image_size.height;
+    localFrameZed_.alloc(image_size, MAT_TYPE_8U_C4); // Create a sl::Mat to handle Left image
+    localFrameRGBA_ = cv::Mat(height_, width_, CV_8UC4, localFrameZed_.getPtr<sl::uchar1>(sl::MEM_CPU)); // Create an OpenCV Mat that shares sl::Mat buffer
 
-    localDepthZed_ = sl::Mat(image_size, MAT_TYPE_32F_C1);
-    localDepth_    = cv::Mat(localDepthZed_.getHeight(), localDepthZed_.getWidth(), CV_32FC1, localDepthZed_.getPtr<sl::uchar1>(sl::MEM_CPU));
-
-	width_ = localFrameZed_.getWidth();
-	height_ = localFrameZed_.getHeight();
+    localDepthZed_.alloc(image_size, MAT_TYPE_32F_C1);
+    localDepth_ = cv::Mat(height_, width_, CV_32FC1, localDepthZed_.getPtr<sl::uchar1>(sl::MEM_CPU));
 
 	if (!loadSettings())
 		cerr << "Failed to load ZedCameraIn settings from XML" << endl;
@@ -182,8 +183,10 @@ bool ZedCameraIn::preLockUpdate(void)
 
 	RuntimeParameters runtime_parameters;
 	runtime_parameters.sensing_mode = SENSING_MODE_STANDARD; // Use STANDARD sensing mode
+	runtime_parameters.enable_depth = true;
+	runtime_parameters.enable_point_cloud = usePointCloud_;
 
-	while (zed_.grab(runtime_parameters))
+	while (zed_.grab(runtime_parameters) != SUCCESS)
 	{
 		// grab() will return true if the next
 		// frame isn't ready yet
@@ -198,33 +201,40 @@ bool ZedCameraIn::preLockUpdate(void)
 	}
 
 	zed_.retrieveImage(localFrameZed_, left ? VIEW_LEFT : VIEW_RIGHT);
+#if 0
 	if (localFrameZed_.getMemoryType() == MEM_GPU)
 		localFrameZed_.updateCPUfromGPU();
+#endif
 	// TODO :: See about running the cvtColor in GPU space?
-	cvtColor(localFrame_, localFrame_, CV_RGBA2RGB);
+	cvtColor(localFrameRGBA_, localFrameRGB_, CV_RGBA2RGB);
 
 	zed_.retrieveMeasure(localDepthZed_, MEASURE_DEPTH);
+#if 0
 	if (localDepthZed_.getMemoryType() == MEM_GPU)
 		localDepthZed_.updateCPUfromGPU();
+#endif
 
-	zed_.retrieveMeasure(localCloudZed_, MEASURE_XYZRGBA);
-	float *pCloud = localCloudZed_.getPtr<float>();
 	localCloud_.clear();
-	for (int i = 0; i < (localDepth_.rows * localDepth_.cols); i++)
+	if (usePointCloud_)
 	{
-		if (isValidMeasure(pCloud[i * 4]))
+		zed_.retrieveMeasure(localCloudZed_, MEASURE_XYZRGBA);
+		float *pCloud = localCloudZed_.getPtr<float>();
+		for (int i = 0; i < (localDepth_.rows * localDepth_.cols); i++)
 		{
-			pcl::PointXYZRGB pt;
-			pt.x = pCloud[i * 4 + 0];
-			pt.y = pCloud[i * 4 + 1];
-			pt.z = pCloud[i * 4 + 2];
-			float color = pCloud[i * 4 + 3];
-			// Color conversion (RGBA as float32 -> RGB as uint32)
-			uint32_t color_uint = *(uint32_t*) &color;
-			unsigned char* color_uchar = (unsigned char*) &color_uint;
-			color_uint = ((uint32_t) color_uchar[0] << 16 | (uint32_t) color_uchar[1] << 8 | (uint32_t) color_uchar[2]);
-			pt.rgb = *reinterpret_cast<float*> (&color_uint);
-			localCloud_.push_back(pt);
+			if (isValidMeasure(pCloud[i * 4]))
+			{
+				pcl::PointXYZRGB pt;
+				pt.x = pCloud[i * 4 + 0];
+				pt.y = pCloud[i * 4 + 1];
+				pt.z = pCloud[i * 4 + 2];
+				float color = pCloud[i * 4 + 3];
+				// Color conversion (RGBA as float32 -> RGB as uint32)
+				uint32_t color_uint = *(uint32_t*) &color;
+				unsigned char* color_uchar = (unsigned char*) &color_uint;
+				color_uint = ((uint32_t) color_uchar[0] << 16 | (uint32_t) color_uchar[1] << 8 | (uint32_t) color_uchar[2]);
+				pt.rgb = *reinterpret_cast<float*> (&color_uint);
+				localCloud_.push_back(pt);
+			}
 		}
 	}
 
@@ -234,7 +244,7 @@ bool ZedCameraIn::preLockUpdate(void)
 
 bool ZedCameraIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
-	localFrame_.copyTo(frame);
+	localFrameRGB_.copyTo(frame);
 	localDepth_.copyTo(depth);
 	cloud = localCloud_;
 
@@ -308,13 +318,13 @@ void zedWhiteBalanceCallback(int value, void *data)
 		// as the boolean parameter (default) does. 
 		if (value == 0)
 		{
-			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_AUTO_WHITEBALANCE, true, value == 0);
-			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_WHITEBALANCE, -1, value == 0);
+			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_AUTO_WHITEBALANCE, true);
+			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_WHITEBALANCE, -1);
 		}
 		else
 		{
-			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_AUTO_WHITEBALANCE, false, value == 0);
-			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_WHITEBALANCE, value * 100 + 2700, value == 0);
+			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_AUTO_WHITEBALANCE, false);
+			zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_WHITEBALANCE, value * 100 + 2700);
 		}
 	}
 }

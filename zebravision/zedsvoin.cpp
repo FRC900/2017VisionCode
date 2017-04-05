@@ -45,14 +45,13 @@ ZedSVOIn::ZedSVOIn(const char *inFileName, ZvSettings *settings) :
     // Best way of sharing sl::Mat and cv::Mat :
     // Create a sl::Mat and then construct a cv::Mat using the ptr to sl::Mat data.
     Resolution image_size = zed_.getResolution();
-    localFrameZed_= sl::Mat(image_size, MAT_TYPE_8U_C4); // Create a sl::Mat to handle Left image
-    localFrame_   = cv::Mat(localFrameZed_.getHeight(), localFrameZed_.getWidth(), CV_8UC4, localFrameZed_.getPtr<sl::uchar1>(sl::MEM_CPU)); // Create an OpenCV Mat that shares sl::Mat buffer
+	width_  = image_size.width;
+	height_ = image_size.height;
+    localFrameZed_.alloc(image_size, MAT_TYPE_8U_C4); // Create a sl::Mat to handle Left image
+    localFrame_   = cv::Mat(height_, width_, CV_8UC4, localFrameZed_.getPtr<sl::uchar1>(sl::MEM_CPU)); // Create an OpenCV Mat that shares sl::Mat buffer
 
-    localDepthZed_ = sl::Mat(image_size, MAT_TYPE_32F_C1);
-    localDepth_    = cv::Mat(localDepthZed_.getHeight(), localDepthZed_.getWidth(), CV_32FC1, localDepthZed_.getPtr<sl::uchar1>(sl::MEM_CPU));
-
-	width_ = localFrameZed_.getWidth();
-	height_ = localFrameZed_.getHeight();
+    localDepthZed_.alloc(image_size, MAT_TYPE_32F_C1);
+    localDepth_    = cv::Mat(height_, width_, CV_32FC1, localDepthZed_.getPtr<sl::uchar1>(sl::MEM_CPU));
 
 	params_.init(zed_, true);
 	startThread();
@@ -88,7 +87,7 @@ bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pc
 	if (!zed_.isOpened())
 		return false;
 
-	if (zed_.grab())
+	if (zed_.grab() != SUCCESS)
 		return false;
 	const bool left = true;
 

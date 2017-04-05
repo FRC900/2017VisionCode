@@ -43,7 +43,8 @@ class ZedCameraIn : public AsyncIn
 	private:
 		sl::Camera                        zed_;
 		sl::Mat                           localFrameZed_;
-		cv::Mat                           localFrame_;
+		cv::Mat                           localFrameRGBA_;
+		cv::Mat                           localFrameRGB_;
 		sl::Mat                           localDepthZed_;
 		cv::Mat                           localDepth_;
 		sl::Mat                           localCloudZed_;
@@ -59,6 +60,7 @@ class ZedCameraIn : public AsyncIn
 		ZedParams                         params_;
 
 		bool                              opened_;
+		bool                              usePointCloud_;
 
 		// Helpers to save and load settings in XML file
 		bool loadSettings(void);
