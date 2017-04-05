@@ -42,18 +42,19 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 
 	// Ball detection runs at ~10 FPS on Jetson
 	// so run camera capture more slowly
-	parameters.camera_fps = 
-#ifdef IS_JETSON
-		15;
-#else
-		30;
-#endif
+	parameters.camera_fps = 30;
 
 	parameters.depth_mode = DEPTH_MODE_PERFORMANCE;
 	parameters.coordinate_units = UNIT_MILLIMETER;
 	parameters.coordinate_system = COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP ; // Y pointing out and Z pointing up. Only used for point cloud?
 	parameters.sdk_verbose = 1;
 	parameters.camera_buffer_count_linux = 4; // default : experiment with lower
+
+	// The computation time is affected by the value,
+	// exponentially. The closer it gets the longer the
+	// disparity search will take. In case of limited
+	// computation power, consider increasing the value.
+	parameters.depth_minimum_distance = 1100; // in coordinate_units, so ~1m
 
 	// init computation mode of the zed
 	ERROR_CODE err = zed_.open(parameters);
@@ -64,7 +65,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 		return;
 	}
 	opened_ = true;
-	zed_.setCameraFPS(15);
+	zed_.setCameraFPS(30);
     // Create sl and cv Mat to get ZED left image and depth image
     // Best way of sharing sl::Mat and cv::Mat :
     // Create a sl::Mat and then construct a cv::Mat using the ptr to sl::Mat data.
