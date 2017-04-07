@@ -349,7 +349,7 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 	// Create some target stats based on our idealized goal model
 	//center of mass as a percentage of the object size from top left
 	const Point2f com_percent_expected(_goal_shape.com().x / _goal_shape.width(),
-	_goal_shape.com().y / _goal_shape.height());
+									   _goal_shape.com().y / _goal_shape.height());
 	// Ratio of contour area to bounding box area
 	const float filledPercentageExpected = _goal_shape.area() / _goal_shape.boundingArea();
 
@@ -536,11 +536,8 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
 
     Mat erodeElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
     Mat dilateElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
-	for (int i = 0; i < 2; ++i)
-	{
-		erode(imageOut, imageOut, erodeElement, Point(-1, -1), 1);
-		dilate(imageOut, imageOut, dilateElement, Point(-1, -1), 1);
-	}
+	erode(imageOut, imageOut, erodeElement, Point(-1, -1), 1);
+	dilate(imageOut, imageOut, dilateElement, Point(-1, -1), 1);
 
 	// Use Ostu adaptive thresholding.  This will turn
 	// the gray scale image into a binary black and white one, with pixels
