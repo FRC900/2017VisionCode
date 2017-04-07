@@ -67,25 +67,25 @@ using namespace std;
 
 static const boost::array<double, 36> STANDARD_POSE_COVARIANCE =
 { { 0.1, 0, 0, 0, 0, 0,
-	    0, 0.1, 0, 0, 0, 0,
-		    0, 0, 0.1, 0, 0, 0,
-			    0, 0, 0, 0.17, 0, 0,
-				    0, 0, 0, 0, 0.17, 0,
-					    0, 0, 0, 0, 0, 0.17 } };
+	0, 0.1, 0, 0, 0, 0,
+	0, 0, 0.1, 0, 0, 0,
+	0, 0, 0, 0.17, 0, 0,
+	0, 0, 0, 0, 0.17, 0,
+	0, 0, 0, 0, 0, 0.17 } };
 static const boost::array<double, 36> STANDARD_TWIST_COVARIANCE =
 { { 0.05, 0, 0, 0, 0, 0,
-	    0, 0.05, 0, 0, 0, 0,
-		    0, 0, 0.05, 0, 0, 0,
-			    0, 0, 0, 0.09, 0, 0,
-				    0, 0, 0, 0, 0.09, 0,
-					    0, 0, 0, 0, 0, 0.09 } };
+	0, 0.05, 0, 0, 0, 0,
+	0, 0, 0.05, 0, 0, 0,
+	0, 0, 0, 0.09, 0, 0,
+	0, 0, 0, 0, 0.09, 0,
+	0, 0, 0, 0, 0, 0.09 } };
 static const boost::array<double, 36> BAD_COVARIANCE =
 { { 9999, 0, 0, 0, 0, 0,
-	    0, 9999, 0, 0, 0, 0,
-		    0, 0, 9999, 0, 0, 0,
-			    0, 0, 0, 9999, 0, 0,
-				    0, 0, 0, 0, 9999, 0,
-					    0, 0, 0, 0, 0, 9999 } };
+	0, 9999, 0, 0, 0, 0,
+	0, 0, 9999, 0, 0, 0,
+	0, 0, 0, 9999, 0, 0,
+	0, 0, 0, 0, 9999, 0,
+	0, 0, 0, 0, 0, 9999 } };
 
 namespace zed_wrapper {
 
@@ -131,6 +131,7 @@ namespace zed_wrapper {
 		int saturation;
 		int gain;
 		int exposure;
+		int whitebalance;
 		bool flip;
 		bool disable_calibrate;
 		std::string zed_name;
@@ -521,6 +522,7 @@ namespace zed_wrapper {
 					zed->setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, saturation, saturation < 0);
 					zed->setCameraSettings(sl::CAMERA_SETTINGS_GAIN, gain, gain < 0);
 					zed->setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, exposure, exposure < 0);
+					zed->setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance, whitebalance < 0);
 
                     old_image = zed->grab(runParams); // Ask to not compute the depth
 
@@ -649,6 +651,7 @@ namespace zed_wrapper {
 			saturation = -1;
 			gain = -1;
 			exposure = -1;
+			whitebalance = -1;
 			flip = false;
 			disable_calibrate = false;
 
@@ -658,28 +661,7 @@ namespace zed_wrapper {
             zed_name = "zed";
 			odometry_DB = "";
 
-			nh = getMTNodeHandle();
-			nh_ns = getMTPrivateNodeHandle();
-																	
-			// get parameters from launch file
-			nh_ns.getParam("resolution", resolution);
-			nh_ns.getParam("quality", quality);
-			nh_ns.getParam("sensing_mode", sensing_mode);
-			nh_ns.getParam("brightness", brightness);
-			nh_ns.getParam("contrast", contrast);
-			nh_ns.getParam("hue", hue);
-			nh_ns.getParam("saturation", saturation);
-			nh_ns.getParam("gain", gain);
-			nh_ns.getParam("exposure", exposure);
-			nh_ns.getParam("flip", flip);
-			nh_ns.getParam("disable_calibrate", disable_calibrate);
-																	
-			nh_ns.getParam("frame_rate", rate);
-			nh_ns.getParam("odometry_DB", odometry_DB);
-			nh_ns.getParam("openni_depth_mode", openniDepthMode);
-			nh_ns.getParam("gpu_id", gpu_id);
-			nh_ns.getParam("zed_id", zed_id);
-			nh_ns.getParam("zed_name", zed_name);
+            nh_ns.getParam("zed_name", zed_name);
 
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
@@ -716,10 +698,22 @@ namespace zed_wrapper {
 			odometry_frame_id = "/" + zed_name + "_initial_frame";
 			odometry_transform_frame_id = "/" + zed_name + "_current_frame";
 
+			nh = getMTNodeHandle();
+			nh_ns = getMTPrivateNodeHandle();
+
             // Get parameters from launch file
             nh_ns.getParam("resolution", resolution);
             nh_ns.getParam("quality", quality);
             nh_ns.getParam("sensing_mode", sensing_mode);
+			nh_ns.getParam("brightness", brightness);
+			nh_ns.getParam("contrast", contrast);
+			nh_ns.getParam("hue", hue);
+			nh_ns.getParam("saturation", saturation);
+			nh_ns.getParam("gain", gain);
+			nh_ns.getParam("exposure", exposure);
+			nh_ns.getParam("whitebalance", whitebalance);
+			nh_ns.getParam("flip", flip);
+			nh_ns.getParam("disable_calibrate", disable_calibrate);
             nh_ns.getParam("frame_rate", rate);
             nh_ns.getParam("odometry_DB", odometry_DB);
             nh_ns.getParam("openni_depth_mode", openniDepthMode);
@@ -764,8 +758,9 @@ namespace zed_wrapper {
             param.coordinate_units = sl::UNIT_MILLIMETER;
             param.coordinate_system = sl::COORDINATE_SYSTEM_IMAGE;
             param.depth_mode = static_cast<sl::DEPTH_MODE> (quality);
+			param.sdk_verbose = true;
 			param.camera_disable_self_calib = disable_calibrate;
-            param.camera_image_flip = flip;param.sdk_verbose = true;
+            param.camera_image_flip = flip;
             param.sdk_gpu_id = gpu_id;
 
             sl::ERROR_CODE err = sl::ERROR_CODE_CAMERA_NOT_DETECTED;
@@ -782,7 +777,6 @@ namespace zed_wrapper {
             f = boost::bind(&ZEDWrapperNodelet::callback, this, _1, _2);
             server.setCallback(f);
             confidence = 80;
-
 
             // Create all the publishers
             // Image publishers

@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <arg name="svo_file"/>
   <arg name="zed_id"/>
@@ -9,11 +10,12 @@
   <arg name="saturation"/>
   <arg name="gain"/>
   <arg name="exposure"/>
+  <arg name="whitebalance"/>
   <arg name="flip"/>
   <arg name="disable_calibrate"/>
 
   <include file="$(find zed_wrapper)/launch/zed_tf.launch" >
-  <arg name="camera" value="$(arg zed_name)" />
+	<arg name="camera" value="$(arg zed_name)" />
   </include>
   <node name="zed_wrapper_node" pkg="zed_wrapper" type="zed_wrapper_node" output="log">
     <!-- SVO file path -->
@@ -25,7 +27,7 @@
     <param name="resolution"            value="2" />
     <param name="quality"               value="3" />
     <param name="sensing_mode"          value="1" />
-    <param name="frame_rate"            value="60" />
+    <param name="frame_rate"            value="15" />
     <param name="odometry_db"           value="" />
     <param name="openni_depth_mode"     value="0" />
     <param name="gpu_id"                value="-1" />
@@ -36,6 +38,7 @@
 	<param name="saturation"            value="$(arg saturation)" />
 	<param name="gain"                  value="$(arg gain)" />
 	<param name="exposure"              value="$(arg exposure)" />
+	<param name="whitebalance"          value="$(arg whitebalance)" />
 	<param name="flip"                  value="$(arg flip)" />
 	<param name="disable_calibrate"     value="$(arg disable_calibrate)" />
 

@@ -1,5 +1,6 @@
-<launch>
+<?xml version="1.0"?>
 
+<launch>
   <arg name="svo_file" default=""/>
   <arg name="zed_id" default="0"/>
 
@@ -9,6 +10,7 @@
   <arg name="saturation" default="-i"/>
   <arg name="gain" default="-1"/>
   <arg name="exposure" default="-1"/>
+  <arg name="whitebalance" default="-1"/>
   <arg name="flip" default="false"/>
   <arg name="disable_calibrate" default="false"/>
   <arg name="zed_name" default="zed"/>

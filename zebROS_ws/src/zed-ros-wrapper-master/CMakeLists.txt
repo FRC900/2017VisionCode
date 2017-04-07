@@ -7,6 +7,8 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
+include ("../cmake_modules/CMakeOpt.cmake")
+
 find_package(ZED 2.0 REQUIRED)
 
 ##For Jetson, OpenCV4Tegra is based on OpenCV2.4
