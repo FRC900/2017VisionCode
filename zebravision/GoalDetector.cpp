@@ -50,6 +50,8 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 	//ObjectType(5) == bottom piece of tape
 	clear();
 	const vector<vector<Point>> goal_contours = getContours(image);
+	if (goal_contours.size() == 0)
+		return;
 	const vector<DepthInfo> top_goal_depths = getDepths(depth,goal_contours,4, ObjectType(4).real_height());
 	const vector<DepthInfo> bottom_goal_depths = getDepths(depth,goal_contours,5, ObjectType(5).real_height());
 
@@ -534,8 +536,8 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
 				bluePlusRed);
 	subtract(splitImage[1], bluePlusRed, imageOut);
 
-    Mat erodeElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
-    Mat dilateElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
+    static const Mat erodeElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
+    static const Mat dilateElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
 	erode(imageOut, imageOut, erodeElement, Point(-1, -1), 1);
 	dilate(imageOut, imageOut, dilateElement, Point(-1, -1), 1);
 
@@ -546,7 +548,7 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
 	// from the function.  If this value is too low, it means the image is
 	// really dark and the returned threshold image will be mostly noise.
 	// In that case, skip processing it entirely.
-	double otsuThreshold = threshold(imageOut, imageOut, 0., 255., CV_THRESH_BINARY | CV_THRESH_OTSU);
+	const double otsuThreshold = threshold(imageOut, imageOut, 0., 255., CV_THRESH_BINARY | CV_THRESH_OTSU);
 #ifdef VERBOSE
 	cout << "OTSU THRESHOLD " << otsuThreshold << endl;
 #endif
