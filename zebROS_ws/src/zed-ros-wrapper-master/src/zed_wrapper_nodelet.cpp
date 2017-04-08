@@ -516,14 +516,6 @@ namespace zed_wrapper {
                     } else
                         runParams.enable_depth = false;
 
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, brightness, brightness < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, contrast, contrast < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_HUE, hue, hue < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, saturation, saturation < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_GAIN, gain, gain < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, exposure, exposure < 0);
-					zed->setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance, whitebalance < 0);
-
                     old_image = zed->grab(runParams); // Ask to not compute the depth
 
                     grabbing = false;
@@ -769,6 +761,16 @@ namespace zed_wrapper {
                 NODELET_INFO_STREAM(errorCode2str(err));
                 std::this_thread::sleep_for(std::chrono::milliseconds(2000));
             }
+
+			// Apply camera settings once the camera
+			// is opened correctly
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, brightness, brightness < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, contrast, contrast < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_HUE, hue, hue < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, saturation, saturation < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_GAIN, gain, gain < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, exposure, exposure < 0);
+			zed->setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance, whitebalance < 0);
 
             //ERRCODE display
             dynamic_reconfigure::Server<zed_wrapper::ZedConfig> server;
