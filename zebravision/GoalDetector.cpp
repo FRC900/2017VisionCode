@@ -534,13 +534,10 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
 				bluePlusRed);
 	subtract(splitImage[1], bluePlusRed, imageOut);
 
-    Mat erodeElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
-    Mat dilateElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
-	for (int i = 0; i < 2; ++i)
-	{
-		erode(imageOut, imageOut, erodeElement, Point(-1, -1), 1);
-		dilate(imageOut, imageOut, dilateElement, Point(-1, -1), 1);
-	}
+    static const Mat erodeElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
+    static const Mat dilateElement(getStructuringElement(MORPH_RECT, Size(3, 3)));
+	erode(imageOut, imageOut, erodeElement, Point(-1, -1), 1);
+	dilate(imageOut, imageOut, dilateElement, Point(-1, -1), 1);
 
 	// Use Ostu adaptive thresholding.  This will turn
 	// the gray scale image into a binary black and white one, with pixels
@@ -549,7 +546,7 @@ bool GoalDetector::generateThresholdAddSubtract(const Mat& imageIn, Mat& imageOu
 	// from the function.  If this value is too low, it means the image is
 	// really dark and the returned threshold image will be mostly noise.
 	// In that case, skip processing it entirely.
-	double otsuThreshold = threshold(imageOut, imageOut, 0., 255., CV_THRESH_BINARY | CV_THRESH_OTSU);
+	const double otsuThreshold = threshold(imageOut, imageOut, 0., 255., CV_THRESH_BINARY | CV_THRESH_OTSU);
 #ifdef VERBOSE
 	cout << "OTSU THRESHOLD " << otsuThreshold << endl;
 #endif
