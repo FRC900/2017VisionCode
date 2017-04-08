@@ -18,7 +18,7 @@
   <arg name="exposure" default="5" />
   <arg name="whitebalance" default="5" />
   <arg name="flip" default="false" />
-  <arg name="disable_calibrate" default="true" />
+  <arg name="disable_calibrate" default="false" />
   <arg name="name" default="zed_goal" />
   <arg name="record" default="false" />
   <arg name="down_sample" default="false" />
