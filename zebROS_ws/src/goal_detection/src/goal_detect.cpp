@@ -29,7 +29,6 @@ static ros::Publisher pub;
 static GoalDetector *gd = NULL;
 static bool batch = true;
 static bool down_sample;
-static int sub_rate;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
@@ -112,12 +111,14 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 	down_sample = false;
-    sub_rate = 10;
+    int sub_rate = 10;
+	int pub_rate = 1;
 	nh.getParam("down_sample", down_sample);
     nh.getParam("sub_rate", sub_rate);
+    nh.getParam("pub_rate", pub_rate);
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", sub_rate);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", sub_rate);
-	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 100);
+	message_filters::Subscriber<navx_publisher::stampedUInt64> navx_sub(nh, "/navx/time", 50);
 
 	ros::Duration wait_t(5.0); //wait 5 seconds for a navx publisher
 	ros::Time stop_t = ros::Time::now() + wait_t;
@@ -129,8 +130,8 @@ int main(int argc, char** argv)
 	
 	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy2;
 	typedef sync_policies::ApproximateTime<Image, Image, navx_publisher::stampedUInt64> MySyncPolicy3;
-	Synchronizer<MySyncPolicy2> sync2(MySyncPolicy2(50), frame_sub, depth_sub);
-	Synchronizer<MySyncPolicy3> sync3(MySyncPolicy3(50), frame_sub, depth_sub, navx_sub);
+	Synchronizer<MySyncPolicy2> sync2(MySyncPolicy2(10), frame_sub, depth_sub);
+	Synchronizer<MySyncPolicy3> sync3(MySyncPolicy3(10), frame_sub, depth_sub, navx_sub);
 	if(navx_sub.getSubscriber().getNumPublishers() == 0) {
 		cout << "Navx not found, running in debug mode" << endl;
 		// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
@@ -141,7 +142,7 @@ int main(int argc, char** argv)
 	}
 
 	// Set up publisher
-	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", 10);
+	pub = nh.advertise<goal_detection::GoalDetection>("goal_detect_msg", pub_rate);
 
 	ros::spin();
 
