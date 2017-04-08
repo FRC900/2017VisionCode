@@ -2,7 +2,7 @@ CMake_minimum_required(VERSION 2.8)
 project(zv)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 set(test ON)
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 
@@ -17,8 +17,8 @@ if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a15 -mfpu=neon-vfpv4")
 elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
   set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a57")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a57")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
   #link_directories($ENV{HOME}/GIE/lib)
   #find_library (LibNVCaffeParser nvcaffe_parser $ENV{HOME}/GIE/lib)
   #find_library (LibNVInfer nvinfer $ENV{HOME}/GIE/lib)
@@ -89,7 +89,7 @@ include_directories(
 	.
 	../fovis
 	/home/$ENV{HOME}/2017VisionCode/libfovis/build/include/fovis
-	../../GIE/include
+	#../../GIE/include
 	..
 	../navXTimeSync
 	../googletest/googletest)
@@ -190,8 +190,8 @@ set (ZV_SRCS
 CUDA_ADD_EXECUTABLE(zv ${ZV_SRCS} zv.cpp)
 find_library (LibCaffe caffe PATH ${CAFFE_BASE_DIR}/build/lib)
 find_library (LibGLOG  glog)
-find_library (LibProtobuf protobuf $ENV{HOME}/GIE/lib)
-find_library (LibWconv wconv $ENV{HOME}/GIE/lib)
+#find_library (LibProtobuf protobuf $ENV{HOME}/GIE/lib)
+#find_library (LibWconv wconv $ENV{HOME}/GIE/lib)
 find_library (LibTinyXML2 tinyxml2)
 find_library (LibEFence efence)
 
