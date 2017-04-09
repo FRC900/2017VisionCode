@@ -113,9 +113,9 @@ rm ./$ext
 #       repo isn't there in the first place?
 cd
 git clone https://github.com/FRC900/2017VisionCode.git
+cd 2017VisionCode
 git submodule init
 git submodule update
-cd 2017VisionCode
 
 #build stuff
 cd libfovis
@@ -131,7 +131,6 @@ make -j4
 #mount and setup autostart script
 if [ "$jetson" = true ] ; then
 	sudo mkdir /mnt/900_2
-	sudo cp ~/2017VisionCode/zv.conf /etc/init
 	sudo mkdir -p /usr/local/zed/settings
 	sudo chmod 755 /usr/local/zed/settings
 	sudo cp ~/2017VisionCode/calibration_files/*.conf /usr/local/zed/settings
