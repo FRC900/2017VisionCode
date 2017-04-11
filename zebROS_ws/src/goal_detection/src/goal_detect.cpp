@@ -71,7 +71,9 @@ void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, cons
 	const Point3f pt = gd->goal_pos();
 
 	goal_detection::GoalDetection gd_msg;
-	//gd_msg.header.stamp = ros::Time::now();
+	gd_msg.header.seq = frameMsg->header.seq;
+	gd_msg.header.stamp = frameMsg->header.stamp;
+    gd_msg.header.frame_id = frameMsg->header.frame_id;
 	gd_msg.location.x = pt.x;
 	gd_msg.location.y = pt.y;
 	gd_msg.location.z = pt.z;
