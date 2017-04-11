@@ -653,7 +653,6 @@ namespace zed_wrapper {
             zed_name = "zed";
 			odometry_DB = "";
 
-            nh_ns.getParam("zed_name", zed_name);
 
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
@@ -711,6 +710,7 @@ namespace zed_wrapper {
             nh_ns.getParam("openni_depth_mode", openniDepthMode);
             nh_ns.getParam("gpu_id", gpu_id);
             nh_ns.getParam("zed_id", zed_id);
+            nh_ns.getParam("zed_name", zed_name);
             if (openniDepthMode)
                 NODELET_INFO_STREAM("Openni depth mode activated");
 
