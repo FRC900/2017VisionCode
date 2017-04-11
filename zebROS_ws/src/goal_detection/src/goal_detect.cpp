@@ -26,8 +26,8 @@ using namespace message_filters;
 
 static ros::Publisher pub;
 static GoalDetector *gd = NULL;
-static bool batch = true;
-static bool down_sample;
+static const bool batch = true;
+static bool down_sample = false;
 
 void callback(const ImageConstPtr& frameMsg, const ImageConstPtr& depthMsg, const navx_publisher::stampedUInt64ConstPtr &navxMsg)
 {
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "goal_detect");
 
-	ros::NodeHandle nh;
+	ros::NodeHandle nh("~");
 	down_sample = false;
     int sub_rate = 10;
 	int pub_rate = 1;
@@ -124,11 +124,11 @@ int main(int argc, char** argv)
 		ros::spinOnce();
 		cout << "Waiting for a navx publisher" << endl;
 	}
-	
+
 	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy2;
 	typedef sync_policies::ApproximateTime<Image, Image, navx_publisher::stampedUInt64> MySyncPolicy3;
-	Synchronizer<MySyncPolicy2> sync2(MySyncPolicy2(10), frame_sub, depth_sub);
-	Synchronizer<MySyncPolicy3> sync3(MySyncPolicy3(10), frame_sub, depth_sub, navx_sub);
+	Synchronizer<MySyncPolicy2> sync2(MySyncPolicy2(50), frame_sub, depth_sub);
+	Synchronizer<MySyncPolicy3> sync3(MySyncPolicy3(50), frame_sub, depth_sub, navx_sub);
 	if(navx_sub.getSubscriber().getNumPublishers() == 0) {
 		cout << "Navx not found, running in debug mode" << endl;
 		// ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
