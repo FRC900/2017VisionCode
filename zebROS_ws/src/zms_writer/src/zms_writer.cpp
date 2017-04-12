@@ -73,14 +73,14 @@ int main(int argc, char** argv)
 	sprintf(name, "/mnt/900_2/cap%d.zms", index);
 	zmsOut = new ZMSOut(name, 1, 250, true);
 
-	ros::NodeHandle nh;
+	ros::NodeHandle nh("~");
 	down_sample = false;
 	nh.getParam("down_sample", down_sample);
 	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 20);
 	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 20);
 
-	typedef sync_policies::ApproximateTime<Image, Image > MySyncPolicy;
-	Synchronizer<MySyncPolicy> sync(MySyncPolicy(100), frame_sub, depth_sub);
+	typedef sync_policies::ApproximateTime<Image, Image> MySyncPolicy;
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(20), frame_sub, depth_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2));
 
 	ros::spin();
