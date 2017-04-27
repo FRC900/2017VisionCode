@@ -60,6 +60,3 @@ Makefile
 *.avi
 *.zms
 
-# ROS Package setup
-zebROS_ws/build/*
-zebROS_ws/devel/*

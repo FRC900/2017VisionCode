@@ -1,0 +1,8 @@
+# ROS Package setup
+build/*
+devel/*
+build_isolated/*
+devel_isolated/*
+install_isolated/*
+no_build/*
+
