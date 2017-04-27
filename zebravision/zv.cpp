@@ -193,12 +193,12 @@ int main( int argc, const char** argv )
 
 	//stuff to handle ctrl+c and escape gracefully
 	struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = my_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = SA_SIGINFO;
-    sigaction(SIGINT, &sigIntHandler, NULL);
+	sigIntHandler.sa_handler = my_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = SA_SIGINFO;
+	sigaction(SIGINT, &sigIntHandler, NULL);
 
-	string windowName = "Zebravision"; // GUI window name
+	string windowName("Zebravision"); // GUI window name
 	string capPath; // Output directory for captured images
 	MediaIn* cap; //input object
 
@@ -222,7 +222,7 @@ int main( int argc, const char** argv )
 	//also checks to make sure that the cap object works
 	if (!cap->getFrame(frame, depth))
 	{
-		cerr << "Could not open input " << args.inputName << endl;
+		cerr << "Could not read frame from input " << args.inputName << endl;
 		return 0;
 	}
 

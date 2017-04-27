@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
 
   <arg name="svo_file1" default=""/> <!-- <arg name="svo_file1" default="path/to/svo/file.svo"> -->

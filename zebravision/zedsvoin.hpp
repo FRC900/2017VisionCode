@@ -6,7 +6,7 @@
 #include <boost/thread.hpp>
 #include <opencv2/core/core.hpp>
 #ifdef ZED_SUPPORT
-#include <zed/Camera.hpp>
+#include <sl/Camera.hpp>
 #endif
 #include "syncin.hpp"
 #include "zedparams.hpp"
@@ -37,7 +37,16 @@ class ZedSVOIn : public SyncIn
 		bool postLockFrameNumber(int framenumber);
 #ifdef ZED_SUPPORT
 	private:
-		sl::zed::Camera *zed_;
-		ZedParams        params_;
+		sl::Camera                        zed_;
+		ZedParams                         params_;
+		sl::Mat                           localFrameZed_;
+		cv::Mat                           localFrame_;
+		sl::Mat                           localDepthZed_;
+		cv::Mat                           localDepth_;
+		sl::Mat                           localCloudZed_;
+        pcl::PointCloud<pcl::PointXYZRGB> localCloud_;
+		bool                              opened_;
+		int                               frames_;
+
 #endif
 };

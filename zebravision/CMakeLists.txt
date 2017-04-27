@@ -12,15 +12,23 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -flto=4 -fno-fini
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Ofast -flto=4 -fno-finite-math-only")
 set(CMAKE_MODULE_PATH "/usr/share/cmake-2.8/Modules/")
 if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf")
+  unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
+  option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a15 -mfpu=neon-vfpv4")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a15 -mfpu=neon-vfpv4")
-  add_definitions(-DIS_JETSON=1)
 elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
+<<<<<<< HEAD
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a57")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a57")
   add_definitions(-DIS_JETSON=1)
   unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
   set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+=======
+  unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
+  option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
+>>>>>>> ZED2.0
   #link_directories($ENV{HOME}/GIE/lib)
   #find_library (LibNVCaffeParser nvcaffe_parser $ENV{HOME}/GIE/lib)
   #find_library (LibNVInfer nvinfer $ENV{HOME}/GIE/lib)
@@ -37,12 +45,22 @@ if (CUDA_FOUND)
 	detect_cuDNN()
 endif()
 
+<<<<<<< HEAD
 #find_package(ZED)
 #Check if we are building with a GPU by checking CUDNN
 #If we aren't, don't add ZED support
 #if (ZED_FOUND)
 #  add_definitions(-DZED_SUPPORT)
 #endif()
+=======
+find_package(ZED)
+#Check if we are building with a GPU by checking CUDNN
+#If we aren't, don't add ZED support
+if (ZED_FOUND AND CUDNN_FOUND)
+	message("-- Using ZED")
+  add_definitions(-DZED_SUPPORT)
+endif()
+>>>>>>> ZED2.0
 
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -115,6 +133,7 @@ LIST(APPEND CUDA_NVCC_FLAGS --compiler-options -fno-strict-aliasing -lineinfo -u
 if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf" OR
     ${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_53,code=sm_53)
+  LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_62,code=sm_62)
 else()
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_35,code=compute_35)
   LIST(APPEND CUDA_NVCC_FLAGS -gencode arch=compute_52,code=sm_52)
@@ -236,7 +255,7 @@ if(test)
   enable_testing()
   CUDA_ADD_EXECUTABLE(test_zv ${ZV_SRCS} unit_tests.cpp)
   list(REMOVE_ITEM ZV_LIBS opencv_ts)
-  target_link_libraries( test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
+  target_link_libraries(test_zv ${ZV_LIBS} ${GTEST_MAIN_LIBRARIES} ${GTEST_LIBRARIES})
   CUDA_ADD_CUBLAS_TO_TARGET(test_zv)
   add_test(NAME unit_tests COMMAND test_zv)
 endif()

@@ -10,14 +10,15 @@
 	-->
   <arg name="svo_file" default="" />
   <arg name="zed_id" default="0" />
-  <arg name="brightness" default="-1" />
-  <arg name="contrast" default="6" />
+  <arg name="brightness" default="2" />
+  <arg name="contrast" default="5" />
   <arg name="hue" default="6" />
   <arg name="saturation" default="3" />
-  <arg name="gain" default="1" />
-  <arg name="exposure" default="5" />
+  <arg name="gain" default="0" />
+  <arg name="exposure" default="45" />
+  <arg name="whitebalance" default="-1" />
   <arg name="flip" default="false" />
-  <arg name="disable_calibrate" default="true" />
+  <arg name="disable_calibrate" default="false" />
   <arg name="name" default="zed_goal" />
   <arg name="record" default="false" />
   <arg name="down_sample" default="true" />
@@ -35,6 +36,7 @@
       <arg name="saturation" value="$(arg saturation)" />
       <arg name="gain" value="$(arg gain)" />
       <arg name="exposure" value="$(arg exposure)" />
+      <arg name="whitebalance" value="$(arg whitebalance)" />
       <arg name="flip" value="$(arg flip)" />
       <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
     </include>
