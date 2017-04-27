@@ -52,6 +52,11 @@
                                          false, false, false]
         </rosparam>
 		<!-- imu0 (NavX): roll, pitch, yaw, x-acc, y-acc, z-acc -->
-		<!--rosparam param="imu0_config"> [false, false, false, true, true, true, false, false, false, false, false, false, true, true, true]</rosparam -->
+		<!--rosparam param="imu0_config"> [false, false, false, 
+										   true, true, true, 
+										   false, false, false, 
+										   false, false, false, 
+										   true, true, true]
+		</rosparam -->
 	</node>
 </launch>
