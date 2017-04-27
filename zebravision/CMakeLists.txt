@@ -2,7 +2,7 @@ CMake_minimum_required(VERSION 2.8)
 project(zv)
 
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 set(test ON)
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 

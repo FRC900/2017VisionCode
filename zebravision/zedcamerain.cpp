@@ -302,7 +302,7 @@ void zedExposureCallback(int value, void *data)
     ZedCameraIn *zedPtr = static_cast<ZedCameraIn *>(data);
 	zedPtr->exposure_ = value;
 	if (zedPtr->opened_)
-		zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_EXPOSURE, value - 2, value == 0);
+		zedPtr->zed_.setCameraSettings(CAMERA_SETTINGS_EXPOSURE, value - 1, value == 0);
 }
 
 
