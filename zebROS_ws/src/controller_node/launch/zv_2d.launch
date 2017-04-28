@@ -18,7 +18,7 @@
 
 <launch>
   <param name="robot_description"
-    textfile="$(find cartographer_ros)/urdf/zv_2d.urdf" />
+    textfile="$(find controller_node)/urdf/zv_2d.urdf" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher"
     type="robot_state_publisher" />
@@ -26,7 +26,7 @@
   <node name="cartographer_node" pkg="cartographer_ros"
       type="cartographer_node" args="
           -configuration_directory $(find cartographer_ros)/configuration_files
-          -configuration_basename zv_2d.lua"
+		  -configuration_basename ../../controller_node/configuration_files/zv_2d.lua"
       output="screen">
     <remap from="echoes" to="horizontal_laser_2d" />
   </node>

@@ -22,9 +22,9 @@
   <!-- Switch to urdf instead? -->
   <node pkg="tf2_ros" type="static_transform_publisher" name="laser" args="0 0 .19625 0 0 0 base_link laser" />
 
-  <include file="$(find cartographer_ros)/launch/zv_2d.launch" />
+  <include file="$(find controller_node)/launch/zv_2d.launch" />
   <node name="rviz" pkg="rviz" type="rviz" required="true"
-      args="-d $(find cartographer_ros)/configuration_files/demo_2d.rviz" />
+      args="-d $(find controller_node)/configuration_files/demo_2d.rviz" />
   <node name="playbag" pkg="rosbag" type="play"
       args="--clock $(arg bag_filename)" />
 </launch>
