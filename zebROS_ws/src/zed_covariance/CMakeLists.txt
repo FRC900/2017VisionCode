@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(zed_covariance)
 
-IF(NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE Release)
-ENDIF(NOT CMAKE_BUILD_TYPE)
-
 include ("../cmake_modules/CMakeOpt.cmake")
 
 add_definitions(-std=c++11 -Wall)

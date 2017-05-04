@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(zms_writer)
-set(CMAKE_BUILD_TYPE Release)
 
 include ("../cmake_modules/CMakeOpt.cmake")
 

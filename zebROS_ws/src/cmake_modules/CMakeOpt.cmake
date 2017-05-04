@@ -1,5 +1,8 @@
 # Various compiler optimizations to apply to all nodes
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
 
 add_definitions(-std=c++11 -Wall -Wextra -Wno-switch -ftrack-macro-expansion=0)
 
