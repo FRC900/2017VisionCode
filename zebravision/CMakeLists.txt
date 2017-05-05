@@ -17,18 +17,11 @@ if (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "arm-linux-gnueabihf")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a15 -mfpu=neon-vfpv4")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a15 -mfpu=neon-vfpv4")
 elseif (${CMAKE_LIBRARY_ARCHITECTURE} STREQUAL "aarch64-linux-gnu")
-<<<<<<< HEAD
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -mcpu=cortex-a57")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -mcpu=cortex-a57")
-  add_definitions(-DIS_JETSON=1)
+  # Jetson TX1/TX2 are 64-bit ARM targets
   unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
   set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
-=======
-  unset(CUDA_USE_STATIC_CUDA_RUNTIME CACHE)
-  option(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -march=native -mtune=native")
->>>>>>> ZED2.0
   #link_directories($ENV{HOME}/GIE/lib)
   #find_library (LibNVCaffeParser nvcaffe_parser $ENV{HOME}/GIE/lib)
   #find_library (LibNVInfer nvinfer $ENV{HOME}/GIE/lib)
@@ -45,26 +38,15 @@ if (CUDA_FOUND)
 	detect_cuDNN()
 endif()
 
-<<<<<<< HEAD
-#find_package(ZED)
-#Check if we are building with a GPU by checking CUDNN
-#If we aren't, don't add ZED support
-#if (ZED_FOUND)
-#  add_definitions(-DZED_SUPPORT)
-#endif()
-=======
 find_package(ZED)
 #Check if we are building with a GPU by checking CUDNN
 #If we aren't, don't add ZED support
 if (ZED_FOUND AND CUDNN_FOUND)
-	message("-- Using ZED")
   add_definitions(-DZED_SUPPORT)
 endif()
->>>>>>> ZED2.0
 
 find_package(Boost COMPONENTS filesystem system serialization iostreams thread REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(ZMQ REQUIRED)
 find_package(MKL QUIET)
 if (MKL_FOUND)
 	add_definitions(-DUSE_MKL=1)
@@ -101,8 +83,6 @@ include_directories(
 	${CAFFE_BASE_DIR}/build/include
 	${CAFFE_BASE_DIR}/include
 	${Boost_INCLUDE_DIR}
-	${ZMQ_INCLUDE_DIRS}
-   	${EIGEN3_INCLUDE_DIR}
 	${PCL_INCLUDE_DIRS}
 	.
 	../fovis
@@ -222,7 +202,6 @@ set (ZV_LIBS
 	${ZED_LIBRARIES}
 	${Boost_LIBRARIES}
 	${LibGLOG}
-	${ZMQ_LIBRARIES}
 	${LibNVCaffeParser}
 	${LibNVInfer}
 	${LibTinyXML2}
