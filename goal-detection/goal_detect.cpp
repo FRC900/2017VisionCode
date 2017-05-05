@@ -1,6 +1,5 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <zmq.hpp>
 
 #include "zedcamerain.hpp"
 #include "zedsvoin.hpp"
@@ -28,13 +27,6 @@ int main(int argc, char **argv)
 	GoalDetector gd(Point2f(cap->getCameraParams().fov.x, 
 				            cap->getCameraParams().fov.y), 
 			        Size(cap->width(),cap->height()), true);
-
-	zmq::context_t context(1);
-	zmq::socket_t publisher(context, ZMQ_PUB);
-
-	std::cout<< "Starting network publisher 5800" << std::endl;
-	publisher.bind("tcp://*:5800");
-
 	Mat image;
 	Mat depth;
 	Rect bound;
@@ -52,20 +44,8 @@ int main(int argc, char **argv)
 		rectangle(image, gd.goal_rect(), Scalar(255,0,0), 2);
 		imshow ("Image", image);
 
-		stringstream gString;
-		gString << "G ";
-		gString << fixed << setprecision(4) << gd.dist_to_goal() << " ";
-		gString << fixed << setprecision(2) << gd.angle_to_goal();
-
-		cout << "G : " << gString.str().length() << " : " << gString.str() << endl;
-		zmq::message_t grequest(gString.str().length() - 1);
-		memcpy((void *)grequest.data(), gString.str().c_str(), gString.str().length() - 1);
-		publisher.send(grequest);
-
 		if ((uchar)waitKey(5) == 27)
-		{
 			break;
-		}
 	}
 	return 0;
 }
