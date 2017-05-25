@@ -632,6 +632,7 @@ namespace zed_wrapper {
             zed.reset();
         }
 
+		boost::shared_ptr<dynamic_reconfigure::Server<zed_wrapper::ZedConfig>> server;
         void onInit(void) {
             // Launch file parameters
             resolution = sl::RESOLUTION_HD720;
@@ -771,14 +772,13 @@ namespace zed_wrapper {
 			zed->setCameraSettings(sl::CAMERA_SETTINGS_GAIN, gain, gain < 0);
 			zed->setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, exposure, exposure < 0);
 			zed->setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, whitebalance, whitebalance < 0);
-
-            //ERRCODE display
-            dynamic_reconfigure::Server<zed_wrapper::ZedConfig> server;
+			//Reconfigure confidence
+            server = boost::make_shared<dynamic_reconfigure::Server<zed_wrapper::ZedConfig>>();
             dynamic_reconfigure::Server<zed_wrapper::ZedConfig>::CallbackType f;
 
             f = boost::bind(&ZEDWrapperNodelet::callback, this, _1, _2);
-            server.setCallback(f);
-            confidence = 80;
+            server->setCallback(f);
+			nh_ns.getParam("confidence", confidence);
 
             // Create all the publishers
             // Image publishers
