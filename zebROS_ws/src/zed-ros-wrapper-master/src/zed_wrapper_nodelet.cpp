@@ -208,7 +208,7 @@ namespace zed_wrapper {
          * \param frameId : the id of the reference frame of the image
          * \param t : the ros::Time to stamp the image
          */
-        sensor_msgs::ImagePtr imageToROSmsg(cv::Mat img, const std::string encodingType, std::string frameId, ros::Time t) {
+        sensor_msgs::ImagePtr imageToROSmsg(const cv::Mat &img, const std::string &encodingType, const std::string &frameId, const ros::Time &t) {
             sensor_msgs::ImagePtr ptr = boost::make_shared<sensor_msgs::Image>();
             sensor_msgs::Image& imgMessage = *ptr;
             imgMessage.header.stamp = t;
@@ -227,7 +227,7 @@ namespace zed_wrapper {
             else {
                 uchar* opencvData = img.data;
                 uchar* rosData = (uchar*) (&imgMessage.data[0]);
-                for (unsigned int i = 0; i < img.rows; i++) {
+                for (int i = 0; i < img.rows; i++) {
                     memcpy(rosData, opencvData, imgMessage.step);
                     rosData += imgMessage.step;
                     opencvData += img.step;
@@ -242,7 +242,7 @@ namespace zed_wrapper {
          * \param odom_frame_id : the id of the reference frame of the pose
          * \param t : the ros::Time to stamp the image
          */
-        void publishOdom(sl::Pose pose, ros::Publisher &pub_odom, string odom_frame_id, ros::Time t) {
+        void publishOdom(sl::Pose pose, ros::Publisher &pub_odom, const string &odom_frame_id, const ros::Time &t) {
             nav_msgs::Odometry odom;
             odom.header.stamp = t;
             odom.header.frame_id = odom_frame_id;
@@ -279,10 +279,10 @@ namespace zed_wrapper {
          * \param odometry_transform_frame_id : the id of the transformation
          * \param t : the ros::Time to stamp the image
          */
-        void publishTrackedFrame(sl::Pose pose, tf2_ros::TransformBroadcaster &trans_br, string odometry_transform_frame_id, ros::Time t) {
+        void publishTrackedFrame(sl::Pose pose, tf2_ros::TransformBroadcaster &trans_br, const string &odometry_transform_frame_id, const ros::Time &t) {
 
             geometry_msgs::TransformStamped transformStamped;
-            transformStamped.header.stamp = ros::Time::now();
+            transformStamped.header.stamp = t;
             transformStamped.header.frame_id = zed_name + "_initial_frame";
             transformStamped.child_frame_id = odometry_transform_frame_id;
             sl::Translation translation = pose.getTranslation();
@@ -303,7 +303,7 @@ namespace zed_wrapper {
          * \param img_frame_id : the id of the reference frame of the image
          * \param t : the ros::Time to stamp the image
          */
-        void publishImage(cv::Mat img, image_transport::Publisher &pub_img, string img_frame_id, ros::Time t) {
+        void publishImage(const cv::Mat &img, image_transport::Publisher &pub_img, const string &img_frame_id, const ros::Time &t) {
             pub_img.publish(imageToROSmsg(img, sensor_msgs::image_encodings::BGR8, img_frame_id, t));
         }
 
@@ -313,7 +313,7 @@ namespace zed_wrapper {
          * \param depth_frame_id : the id of the reference frame of the depth image
          * \param t : the ros::Time to stamp the depth image
          */
-        void publishDepth(cv::Mat depth, image_transport::Publisher &pub_depth, string depth_frame_id, ros::Time t) {
+        void publishDepth(const cv::Mat &depth, image_transport::Publisher &pub_depth, const string &depth_frame_id, const ros::Time &t) {
             string encoding;
             if (openniDepthMode) {
                 //depth *= 1000.0f;
@@ -436,12 +436,12 @@ namespace zed_wrapper {
             right_cam_info_msg->header.frame_id = right_frame_id;
         }
 
-        void callback(zed_wrapper::ZedConfig &config, uint32_t level) {
+        void callback(const zed_wrapper::ZedConfig &config, uint32_t level) {
             NODELET_INFO("Reconfigure confidence : %d", config.confidence);
             confidence = config.confidence;
         }
 
-        void device_poll() {
+        void device_poll(void) {
             ros::Rate loop_rate(rate);
             ros::Time old_t = ros::Time::now();
             bool old_image = false;
@@ -632,7 +632,7 @@ namespace zed_wrapper {
             zed.reset();
         }
 
-        void onInit() {
+        void onInit(void) {
             // Launch file parameters
             resolution = sl::RESOLUTION_HD720;
             quality = sl::DEPTH_MODE_PERFORMANCE;
