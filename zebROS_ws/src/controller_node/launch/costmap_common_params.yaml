@@ -1,0 +1,16 @@
+obstacle_range: 2.5
+raytrace_range: 3.0
+
+#Including bumpers we are 35.25x39.25 
+#Check that x and y are correct
+footprint: [[0,0], [.8954,0], [.8954,.997], [0,.997]]
+
+# robot_radius: ir_of_robot - we are not a circle so
+# use above footprint instead
+#inflation_radius: 1.34
+
+observation_sources: laser_scan_sensor #point_cloud_sensor
+
+laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+
+#point_cloud_sensor: {sensor_frame: zed_frame, data_type: PointCloud, topic: /zed_fuel/point_cloud/cloud_registered, marking: true, clearing: true}
