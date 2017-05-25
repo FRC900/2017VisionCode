@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 	imu_msg_raw.angular_velocity_covariance = imu_msg.angular_velocity_covariance;
 	imu_msg_raw.orientation_covariance = imu_msg.orientation_covariance;
 
-	unsigned long long last_time = 0ULL;
+	ros::Time last_time;
 	tf::Quaternion last_rot (tf::Vector3(0.,0.,0.),0.);
 	tf::Quaternion rot;
 
@@ -141,13 +141,13 @@ int main(int argc, char** argv)
 		if(firstrun) last_rot = pose;
 		rot = pose * last_rot.inverse();
 		tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
-		const double time = timestamp.data - last_time;
-		imu_msg.angular_velocity.x = pitch / time;
-		imu_msg.angular_velocity.y = -roll / time;
-		imu_msg.angular_velocity.z = -yaw / time;
+		const double dTime = odom.header.stamp.toSec() - last_time.toSec();
+		imu_msg.angular_velocity.x = pitch / dTime;
+		imu_msg.angular_velocity.y = -roll / dTime;
+		imu_msg.angular_velocity.z = -yaw / dTime;
 		imu_msg_raw.angular_velocity = imu_msg.angular_velocity;
 		last_rot = pose;
-		last_time = timestamp.data;
+		last_time = odom.header.stamp;
 
 		firstrun = false;
 
@@ -162,7 +162,6 @@ int main(int argc, char** argv)
 		odom.twist.twist.linear.z = nx.GetVelocityZ();
 
 		odom.twist.twist.angular = imu_msg.angular_velocity;
-
 		
 		//publish to ROS topics
 		time_pub.publish(timestamp);
