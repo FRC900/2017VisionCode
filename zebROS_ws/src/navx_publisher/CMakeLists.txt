@@ -158,9 +158,9 @@ target_link_libraries(navx_publisher_node
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(navx_publisher_node
-  ${OpenCV_LIBS}
-)
+#target_link_libraries(navx_publisher_node
+#  ${OpenCV_LIBS}
+#)
 
 #############
 ## Install ##
