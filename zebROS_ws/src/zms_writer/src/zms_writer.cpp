@@ -85,10 +85,7 @@ int main(int argc, char** argv)
 	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), frame_sub, depth_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2));
 
-	ros::AsyncSpinner spinner(2);
-	spinner.start();
-
-	ros::waitForShutdown();
+	ros::spin();
 
 	delete zmsOut;
 
