@@ -4,12 +4,11 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 #include "geometry_msgs/Quaternion.h"
 #include "sensor_msgs/Imu.h"
 #include "nav_msgs/Odometry.h"
-#include "geometry_msgs/Vector3.h"
 #include "navXTimeSync/AHRS.h"
 #include "navx_publisher/stampedUInt64.h"
 #include <tf/transform_datatypes.h>
