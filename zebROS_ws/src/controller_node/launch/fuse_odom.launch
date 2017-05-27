@@ -4,26 +4,6 @@
 -->
 
 <launch>
-	<!-- 
-		Transform: x y z roll pitch yaw 
-		Need 1 transform for each sensor source mapping
-		from the base_link (fixed known point on the
-		robot, for example, the center) to the location
-		of each sensor
-	-->
-<!-- Maybe move these to the launch files which start up each sensor? -->
-
-	<--node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_frame" />
-
-	<--node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed" args="0.25 0 0 0 0 0 base_link zed_frame" />
-
-	<!-- Assume wheel odometry is already transformed to base_link? -->
-
-	<!-- Not sure about this - why would ZED position change
-		 over time so use a fixed transform instead
-		 <node name="zed_odom_transform" pkg="controller_node" type="transform_odom.py" output="screen" args="0 0 0 0 0 0 1 /zed_fuel/odom /zed_fuel/odom/filtered"/>
-	-->
-
 	<!-- not here? SLAM or amcl should be responsible for this -->
 	<!--node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0.5 1.5 0 0 0 0 map odom" /-->
 
@@ -41,8 +21,7 @@
 		<param name="two_d_mode" value="true" />
 		<param name="imu0_remove_gravitational_acceleration" value="false" />
 
-		<!-- We really need wheel encoder odometry -->
-		<param name="odom0" value="/zed_fuel/odom/filtered" />
+		<param name="odom0" value="/zed_fuel/odom" />
 		<!--param name="odom1" value="/wheel_encoders/odom" /-->
 		<param name="imu0" value="/navx/raw" />
 
@@ -82,25 +61,25 @@
                                          false, false, false,
                                          false, false, false]
         </rosparam>
-		<!-- odom1 (Wheel encoder odometry): x, y pos + yaw velocity?
+		<!-- odom1 (Wheel encoder odometry): x, y, yaw pos?
 			 Could probably get acceleration from the raw
              data but does it matter if we feed consecutive
              velocity measurements to the UKF? -->
 <!--
 		<rosparam param="odom1_config"> [true , true , false,
+                                         false, false, true,
                                          false, false, false,
                                          false, false, false,
-                                         false, false, true ,
                                          false, false, false]
--->
         </rosparam>
+-->
 		<!-- imu0 (NavX): roll, pitch, yaw, x-acc, y-acc, z-acc -->
 		<!-- maybe add in r/p/y velocity? /-->
-		<--rosparam param="imu0_config"> [false, false, false, 
-										  true,  true,  true, 
-										  false, false, false, 
-										  false, false, false, 
-										  true,  true,  true]
-		</rosparam>
+		<rosparam param="imu0_config"> [false, false, false,
+                                        true,  true,  true,
+                                        false, false, false,
+                                        false, false, false,
+                                        true,  true,  true]
+        </rosparam>
 	</node>
 </launch>

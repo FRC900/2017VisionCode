@@ -19,6 +19,7 @@
   <arg name="whitebalance" default="-1" />
   <arg name="flip" default="true" />
   <arg name="disable_calibrate" default="false" />
+  <arg name="publish_transform" default="false" />
   <arg name="name" default="zed_fuel" />
   <arg name="record" default="false" />
   
@@ -36,8 +37,46 @@
       <arg name="whitebalance" value="$(arg whitebalance)" />
       <arg name="flip" value="$(arg flip)" />
       <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
+      <arg name="publish_transform" value="$(arg publish_transform)" />
     </include>
   </group>
   <include file="$(find controller_node)/launch/record_slave.launch" if="$(arg record)"/>
-  <!--node name="fuel_detection_node" pkg="fuel_detection" type="fuel_detection_node" respawn="true" /-->
+  
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+	<!-- 
+		Transform: x y z roll pitch yaw 
+		Need 1 transform for each sensor source mapping
+		from the base_link (fixed known point on the
+		robot, for example, the center) to the location
+		of each sensor
+	-->
+
+  <!-- 
+	    link position of camera on robot to base_link 
+		Need two of these, both with same x,y,z r,p,y offset
+		First one links the odom fixed starting point to 
+		the fixed starting point of the camera's initial frame. Typically
+		the fixed odom frame is where the base_link of the robot
+		is when it starts up, so an offset is needed to account for
+		where the camera is relative to the base link.
+		The current camera frame is where the camera is now. Since 
+		it is fixed to the robot, it is the same static distance away
+		from base_link at all times.  
+   -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_zed_initial_frame" args="0 0 0 0 0 0 odom $(arg name)_initial_frame" />
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed_fuel"  args="0.25 0 0 0 0 0 base_link $(arg name)_current_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_frame" />
+
+  <include file="$(find controller_node)/launch/fuse_odom.launch"/>
+
+  <!-- start up Lidar, and identify where it is on the robot -->
+  <include file="$(find rplidar_ros)/launch/rplidar.launch" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_laser" args="0 0 .19625 0 0 0 base_link laser" />
+
+  <!-- This will eventually be handled by localization of some sort
+	   but for now include a dummy transform so map and odom are 
+       linked 
+	-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="dummy_odom_to_map" args="0 0 0 0 0 0 map odom" />
 </launch>
