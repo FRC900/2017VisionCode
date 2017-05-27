@@ -9,8 +9,8 @@ footprint: [[0,0], [.8954,0], [.8954,.997], [0,.997]]
 # use above footprint instead
 #inflation_radius: 1.34
 
-observation_sources: laser_scan_sensor #point_cloud_sensor
+observation_sources: laser_scan_sensor point_cloud_sensor
 
 laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
 
-#point_cloud_sensor: {sensor_frame: zed_frame, data_type: PointCloud, topic: /zed_fuel/point_cloud/cloud_registered, marking: true, clearing: true}
+point_cloud_sensor: {sensor_frame: zed_frame, data_type: PointCloud2, topic: /zed_fuel/point_cloud/cloud_registered, marking: true, clearing: true}

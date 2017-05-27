@@ -79,4 +79,6 @@
        linked 
 	-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="dummy_odom_to_map" args="0 0 0 0 0 0 map odom" />
+
+  <include file="$(find controller_node)/launch/move_base.launch"/>
 </launch>

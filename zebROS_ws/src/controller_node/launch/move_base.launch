@@ -10,10 +10,10 @@
   <!-- include file="$(find amcl)/examples/amcl_omni.launch" /-->
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find controller_node)/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find controller_node)/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find controller_node)/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find controller_node)/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find controller_node)/base_local_planner_params.yaml" command="load" />
+	  <rosparam file="$(find controller_node)/launch/costmap_common_params.yaml" command="load" ns="global_costmap" />
+	  <rosparam file="$(find controller_node)/launch/costmap_common_params.yaml" command="load" ns="local_costmap" />
+	  <rosparam file="$(find controller_node)/launch/local_costmap_params.yaml" command="load" />
+	  <rosparam file="$(find controller_node)/launch/global_costmap_params.yaml" command="load" />
+	  <rosparam file="$(find controller_node)/launch/base_local_planner_params.yaml" command="load" />
   </node>
 </launch>
