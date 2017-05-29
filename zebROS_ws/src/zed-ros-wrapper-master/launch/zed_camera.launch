@@ -13,6 +13,7 @@
   <arg name="whitebalance"/>
   <arg name="flip"/>
   <arg name="disable_calibrate"/>
+  <arg name="publish_transform"/>
 
   <include file="$(find zed_wrapper)/launch/zed_tf.launch" >
 	<arg name="camera" value="$(arg zed_name)" />
@@ -23,6 +24,7 @@
 
     <!-- ZED parameters -->
     <param name="zed_id"                value="$(arg zed_id)" />
+	<param name="zed_name"              value="$(arg zed_name)" />
 
     <param name="resolution"            value="2" />
     <param name="quality"               value="1" />
@@ -42,6 +44,7 @@
 	<param name="whitebalance"          value="$(arg whitebalance)" />
 	<param name="flip"                  value="$(arg flip)" />
 	<param name="disable_calibrate"     value="$(arg disable_calibrate)" />
+	<param name="publish_transform"     value="$(arg publish_transform)" />
 
     <!-- ROS topic names -->
     <param name="rgb_topic"             value="rgb/image_rect_color" />
@@ -66,7 +69,7 @@
   </node>
 
   <!-- ROS URDF description of the ZED -->
-  <param name="zed_description" textfile="$(find zed_wrapper)/urdf/zed.urdf" />
+  <param name="zed_description" textfile="$(find zed_wrapper)/urdf/$(arg zed_name).urdf" />
   <node name="zed_state_publisher" pkg="robot_state_publisher" type="state_publisher">
     <remap from="robot_description" to="zed_description" />
   </node>

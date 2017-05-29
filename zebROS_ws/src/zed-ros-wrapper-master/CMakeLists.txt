@@ -107,5 +107,5 @@ install(FILES
   nodelet_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY
-  launch
+  launch urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

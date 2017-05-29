@@ -15,6 +15,7 @@
 
           <!-- ZED parameters -->
           <param name="zed_id"                value="$(arg zed_id1)" />
+		  <param name="zed_name"              value="$(arg zed_name)" />
 
           <param name="resolution"            value="2" />
           <param name="quality"               value="1" />
@@ -63,6 +64,7 @@
 
           <!-- ZED parameters -->
           <param name="zed_id"                value="$(arg zed_id2)" />
+		  <param name="zed_name"              value="$(arg zed_name)" />
 
           <param name="resolution"            value="2" />
           <param name="quality"               value="1" />

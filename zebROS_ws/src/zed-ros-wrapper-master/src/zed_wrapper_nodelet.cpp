@@ -108,6 +108,7 @@ namespace zed_wrapper {
         ros::Publisher pub_odom;
 
         // tf
+		bool publish_transform;
         tf2_ros::TransformBroadcaster transform_odom_broadcaster;
         std::string left_frame_id;
         std::string right_frame_id;
@@ -281,6 +282,10 @@ namespace zed_wrapper {
          */
         void publishTrackedFrame(sl::Pose pose, tf2_ros::TransformBroadcaster &trans_br, const string &odometry_transform_frame_id, const ros::Time &t) {
 
+			// If other odom sources are running we don't need ZED visual
+			// odometry publishing odom->base_link type transform info
+			if (!publish_transform)
+				return;
             geometry_msgs::TransformStamped transformStamped;
             transformStamped.header.stamp = t;
             transformStamped.header.frame_id = zed_name + "_initial_frame";
@@ -377,7 +382,7 @@ namespace zed_wrapper {
          * \param right_frame_id : the id of the reference frame of the right camera
          */
         void fillCamInfo(sl::Camera* zed, sensor_msgs::CameraInfoPtr left_cam_info_msg, sensor_msgs::CameraInfoPtr right_cam_info_msg,
-                string left_frame_id, string right_frame_id) {
+                const string &left_frame_id, const string &right_frame_id) {
 
             int width = zed->getResolution().width;
             int height = zed->getResolution().height;
@@ -651,9 +656,17 @@ namespace zed_wrapper {
             rate = 30;
             gpu_id = -1;
             zed_id = 0;
-            zed_name = "zed";
 			odometry_DB = "";
 
+			nh = getMTNodeHandle();
+			nh_ns = getMTPrivateNodeHandle();
+            if (!nh_ns.getParam("zed_name", zed_name))
+				zed_name = "zed";
+
+            if (!nh_ns.getParam("publish_transform", publish_transform))
+				publish_transform = true;
+
+			cout << "Really read zed_name = " << zed_name << endl;
 
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
@@ -690,8 +703,6 @@ namespace zed_wrapper {
 			odometry_frame_id = "/" + zed_name + "_initial_frame";
 			odometry_transform_frame_id = "/" + zed_name + "_current_frame";
 
-			nh = getMTNodeHandle();
-			nh_ns = getMTPrivateNodeHandle();
 
             // Get parameters from launch file
             nh_ns.getParam("resolution", resolution);
@@ -711,7 +722,6 @@ namespace zed_wrapper {
             nh_ns.getParam("openni_depth_mode", openniDepthMode);
             nh_ns.getParam("gpu_id", gpu_id);
             nh_ns.getParam("zed_id", zed_id);
-            nh_ns.getParam("zed_name", zed_name);
             if (openniDepthMode)
                 NODELET_INFO_STREAM("Openni depth mode activated");
 
