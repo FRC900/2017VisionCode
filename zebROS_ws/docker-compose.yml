@@ -1,0 +1,17 @@
+version: '3'
+volumes:
+  - ./src:/ws:ro
+services:
+  master:
+    build: .
+    container_name: master
+    command:
+      - catkin_make
+
+  talker:
+    build: .
+    container_name: talker
+    environment:
+      - "ROS_HOSTNAME=talker"
+      - "ROS_MASTER_URI=http://master:11311"
+    command: rosrun roscpp_tutorials talker
