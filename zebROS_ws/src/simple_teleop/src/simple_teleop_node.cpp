@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Int32.h>
 
 class RobotDriver
 {
@@ -10,13 +11,15 @@ class RobotDriver
 		ros::NodeHandle nh_;
 		//! We will be publishing to the "/base_controller/command" topic to issue commands
 		ros::Publisher cmd_vel_pub_;
+		ros::Publisher test_pub_;
 
 	public:
 		//! ROS node initialization
 			//set up the publisher for the cmd_vel topic
 		RobotDriver(const ros::NodeHandle &nh) :
 			nh_(nh),
-			cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1))
+			cmd_vel_pub_(nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1)),
+			test_pub_(nh_.advertise<std_msgs::Int32>("test_pub", 1))
 		{
 		}
 
@@ -29,16 +32,21 @@ class RobotDriver
 
 			//we will be sending commands of type "twist"
 			geometry_msgs::Twist base_cmd;
+			std_msgs::Int32 int32_msg;
 
 			char cmd[50];
-			while(nh_.ok()){
+			bool quit = false;
+			int index = 0;
+			while(nh_.ok() && !quit){
 
 				std::cin.getline(cmd, 50);
+#if 0
 				if(cmd[0]!='+' && cmd[0]!='l' && cmd[0]!='r' && cmd[0]!='.')
 				{
 					std::cout << "unknown command:" << cmd << "\n";
 					continue;
 				}
+#endif
 
 				base_cmd.linear.x = base_cmd.linear.y = base_cmd.angular.z = 0;
 				//move forward
@@ -57,11 +65,16 @@ class RobotDriver
 				}
 				//quit
 				else if(cmd[0]=='.'){
-					break;
+					quit = true;
+				}
+				else // e-stop like right now
+				{
 				}
 
 				//publish the assembled command
 				cmd_vel_pub_.publish(base_cmd);
+				int32_msg.data = index++;
+				test_pub_.publish(int32_msg);
 			}
 			return true;
 		}
