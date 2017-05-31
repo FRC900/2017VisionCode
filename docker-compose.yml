@@ -1,0 +1,33 @@
+version: '3'
+#volumes:
+  # Build a directory structure similar to the 2017VisionCode
+  # so that CMake finds dependencies
+  # - zebROS_ws/src:/ws/zebROS_ws/src
+  # - zebravision/:/ws/zebravision
+  # - navXTimeSync/:/ws/navXTimeSync
+  # Disabled right now because code is copied in on build
+services:
+  master:
+    image: ros:kinetic-ros-core
+    environment:
+      - "ROS_HOSTNAME=master"
+    command:
+      - roscore
+
+  compute:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - "ROS_HOSTNAME=compute"
+      - "ROS_MASTER_URI=http://master:11311"
+    container_name: master
+    command: bash -c "source /ws/zebROS_ws/devel_isolated/setup.bash && roslaunch controller_node controller_compute"
+
+  zed:
+   build: .
+   container_name: zed
+   environment:
+     - "ROS_HOSTNAME=zed"
+     - "ROS_MASTER_URI=http://master:11311"
+   command: bash -c "source /ws/zebROS_ws/devel_isolated/setup.bash && roslaunch controller_node controller_compute"
