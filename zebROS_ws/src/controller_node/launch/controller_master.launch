@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <launch>
-  <!-- 
+  <!--
   Master Node Launcher
   * ZED Wrapper Instance
   * Goal Detection Node
@@ -25,7 +25,7 @@
   <arg name="down_sample" default="true" />
   <arg name="sub_rate" default="10" />
   <arg name="pub_rate" default="1" />
-  
+
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
