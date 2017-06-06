@@ -34,7 +34,7 @@ rosdep update
 # (Latest as of 4/27/2017, at least)
 cd ~/2017VisionCode/zebROS_ws
 # Merge the cartographer_ros.rosinstall file and fetch code for dependencies.
-wstool merge -t src https://raw.githubusercontent.com/googlecartographer/cartographer_ros/master/cartographer_ros.rosinstall
+wstool merge -t src https://raw.githubusercontent.com/FRC900/cartographer_ros/master/cartographer_ros.rosinstall
 wstool update -t src
 
 # Install deb dependencies.
