@@ -2,4 +2,5 @@
 cartographer/*
 cartographer_ros/*
 ceres-solver/*
+.rosinstall
 
