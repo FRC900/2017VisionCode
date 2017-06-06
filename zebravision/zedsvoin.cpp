@@ -4,36 +4,54 @@ using namespace std;
 
 #ifdef ZED_SUPPORT
 using namespace cv;
-using namespace sl::zed;
+using namespace sl;
 
 ZedSVOIn::ZedSVOIn(const char *inFileName, ZvSettings *settings) :
 	SyncIn(settings),
-	zed_(NULL)
+	opened_(false),
+	frames_(-1)
 {
-	zed_ = new Camera(inFileName);
-	if (!zed_)
-		return;
+	InitParameters parameters;
+	parameters.camera_resolution = RESOLUTION_HD720;
 
-	InitParams parameters;
-	parameters.mode = PERFORMANCE;
-	parameters.unit = MILLIMETER;
-	parameters.verbose = 1;
+	// Ball detection runs at ~10 FPS on Jetson
+	// so run camera capture more slowly
+	parameters.camera_fps =
+#ifdef IS_JETSON
+		15;
+#else
+		30;
+#endif
+
+	parameters.depth_mode = DEPTH_MODE_PERFORMANCE;
+	parameters.coordinate_units = UNIT_MILLIMETER;
+	parameters.coordinate_system = COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP ; // Y pointing out and Z pointing up. Only used for point cloud?
+	parameters.sdk_verbose = 1;
+	parameters.camera_buffer_count_linux = 4; // default : experiment with lower
+	parameters.svo_input_filename = inFileName;
+
 	// init computation mode of the zed
-	ERRCODE err = zed_->init(parameters);
+	ERROR_CODE err = zed_.open(parameters);
 
 	// Quit if an error occurred
 	if (err != SUCCESS)
 	{
-		cout << errcode2str(err) << endl;
-		delete zed_;
-		zed_ = NULL;
+		cout << errorCode2str(err) << endl;
 		return;
 	}
-	//only for Jetson K1/X1 - see if it helps
-	Camera::sticktoCPUCore(2);
+	opened_ = true;
+	frames_ = zed_.getSVONumberOfFrames();
+    // Create sl and cv Mat to get ZED left image and depth image
+    // Best way of sharing sl::Mat and cv::Mat :
+    // Create a sl::Mat and then construct a cv::Mat using the ptr to sl::Mat data.
+    Resolution image_size = zed_.getResolution();
+	width_  = image_size.width;
+	height_ = image_size.height;
+    localFrameZed_.alloc(image_size, MAT_TYPE_8U_C4); // Create a sl::Mat to handle Left image
+    localFrame_   = cv::Mat(height_, width_, CV_8UC4, localFrameZed_.getPtr<sl::uchar1>(sl::MEM_CPU)); // Create an OpenCV Mat that shares sl::Mat buffer
 
-	width_  = zed_->getImageSize().width;
-	height_ = zed_->getImageSize().height;
+    localDepthZed_.alloc(image_size, MAT_TYPE_32F_C1);
+    localDepth_    = cv::Mat(height_, width_, CV_32FC1, localDepthZed_.getPtr<sl::uchar1>(sl::MEM_CPU));
 
 	params_.init(zed_, true);
 	startThread();
@@ -48,13 +66,13 @@ ZedSVOIn::ZedSVOIn(const char *inFileName, ZvSettings *settings) :
 ZedSVOIn::~ZedSVOIn()
 {
 	stopThread();
-	if (zed_)
-		delete zed_;
+	zed_.close();
+	opened_ = false;
 }
 
 bool ZedSVOIn::isOpened(void) const
 {
-	return zed_ != NULL; 
+	return opened_;
 }
 
 
@@ -66,19 +84,25 @@ CameraParams ZedSVOIn::getCameraParams(void) const
 
 bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pcl::PointXYZRGB> &cloud)
 {
-	if (!zed_)
+	if (!zed_.isOpened())
 		return false;
 
-	if (zed_->grab())
+	if (zed_.grab() != SUCCESS)
 		return false;
 	const bool left = true;
-	sl::zed::Mat slFrame = zed_->retrieveImage(left ? SIDE::LEFT : SIDE::RIGHT);
-	cvtColor(slMat2cvMat(slFrame), frame, CV_RGBA2RGB);
 
-	sl::zed::Mat slDepth = zed_->retrieveMeasure(MEASURE::DEPTH);
-	slMat2cvMat(slDepth).copyTo(depth);
+	zed_.retrieveImage(localFrameZed_, left ? VIEW_LEFT : VIEW_RIGHT);
+	if (localFrameZed_.getMemoryType() == MEM_GPU)
+		localFrameZed_.updateCPUfromGPU();
+	cvtColor(localFrame_, frame, CV_RGBA2RGB);
 
-	const float *pCloud = (const float *)zed_->retrieveMeasure(MEASURE::XYZRGBA).data;
+	zed_.retrieveMeasure(localDepthZed_, MEASURE_DEPTH);
+	if (localDepthZed_.getMemoryType() == MEM_GPU)
+		localDepthZed_.updateCPUfromGPU();
+	localDepth_.copyTo(depth);
+
+	zed_.retrieveMeasure(localCloudZed_, MEASURE_XYZRGBA);
+	float *pCloud = localCloudZed_.getPtr<float>();
 	cloud.clear();
 	for (int i = 0; i < (depth.rows * depth.cols); i++)
 	{
@@ -102,22 +126,18 @@ bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pc
 }
 
 
-bool ZedSVOIn::postLockFrameNumber(int framenumber) 
+bool ZedSVOIn::postLockFrameNumber(int framenumber)
 {
-	return zed_ && zed_->setSVOPosition(framenumber);
+	if (!zed_.isOpened())
+	   return false;
+	zed_.setSVOPosition(framenumber);
+	return true;
 }
 
 
 int ZedSVOIn::frameCount(void) const
 {
-	// Luckily getSVONumberOfFrames() returns -1 if we're
-	// capturing from a camera, which is also what the rest
-	// of our code expects in that case
-	if (zed_)
-		return zed_->getSVONumberOfFrames();
-
-	// If using zms or a live camera, there's no way to tell
-	return -1;
+	return frames_;
 }
 
 
@@ -139,6 +159,7 @@ bool ZedSVOIn::postLockUpdate(cv::Mat &frame, cv::Mat &depth, pcl::PointCloud<pc
 {
 	(void)frame;
 	(void)depth;
+	(void)cloud;
 	return true;
 }
 

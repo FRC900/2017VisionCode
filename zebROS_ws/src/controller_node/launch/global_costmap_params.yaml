@@ -1,0 +1,9 @@
+global_costmap:
+  global_frame: odom # switch to map once mapping is running?
+  robot_base_frame: base_link
+  update_frequency: 5.0
+  
+  # Set this to true once a map server is running
+  # That will cause the costmap to fill in spaces
+  # the map_server shows as inaccessable (inside walls, etc)
+  static_map: false

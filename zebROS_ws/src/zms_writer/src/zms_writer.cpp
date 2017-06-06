@@ -7,7 +7,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/sync_policies/exact_time.h>
 #include <geometry_msgs/TransformStamped.h>
 
 #include <cv_bridge/cv_bridge.h>
@@ -74,13 +74,15 @@ int main(int argc, char** argv)
 	zmsOut = new ZMSOut(name, 1, 250, true);
 
 	ros::NodeHandle nh("~");
-	down_sample = false;
 	nh.getParam("down_sample", down_sample);
-	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 20);
-	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 20);
 
-	typedef sync_policies::ApproximateTime<Image, Image> MySyncPolicy;
-	Synchronizer<MySyncPolicy> sync(MySyncPolicy(20), frame_sub, depth_sub);
+	// Sync up timestamps to find image and depth
+	// data from the same frame
+	message_filters::Subscriber<Image> frame_sub(nh, "/zed_goal/left/image_rect_color", 5);
+	message_filters::Subscriber<Image> depth_sub(nh, "/zed_goal/depth/depth_registered", 5);
+
+	typedef sync_policies::ExactTime<Image, Image> MySyncPolicy;
+	Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), frame_sub, depth_sub);
 	sync.registerCallback(boost::bind(&callback, _1, _2));
 
 	ros::spin();

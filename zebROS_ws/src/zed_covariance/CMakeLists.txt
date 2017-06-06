@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(zed_covariance)
-set(CMAKE_BUILD_TYPE Release)
+
+include ("../cmake_modules/CMakeOpt.cmake")
 
 add_definitions(-std=c++11 -Wall)
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};../../../zebravision/cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../zebravision/cmake")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)

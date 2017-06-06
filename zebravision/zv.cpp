@@ -8,7 +8,6 @@
 #include <signal.h>
 
 #include <boost/filesystem.hpp>
-#include <zmq.hpp>
 
 #include "opencv2_3_shim.hpp"
 #include "detectstate.hpp"
@@ -45,7 +44,6 @@ using namespace cv::cuda;
 #endif
 
 //function prototypes
-void sendZMQData(size_t objectCount, zmq::socket_t& publisher, const vector<TrackedObjectDisplay>& displayList, const GoalDetector& gd, long long timestamp);
 void writeImage(const Mat& frame, const vector<Rect>& rects, size_t index, const char *path, int frameNumber);
 string getDateTimeString(void);
 void drawRects(Mat image, const vector<Rect> &detectRects, Scalar rectColor = Scalar(0,0,255), bool text = true);
@@ -193,12 +191,12 @@ int main( int argc, const char** argv )
 
 	//stuff to handle ctrl+c and escape gracefully
 	struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = my_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = SA_SIGINFO;
-    sigaction(SIGINT, &sigIntHandler, NULL);
+	sigIntHandler.sa_handler = my_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = SA_SIGINFO;
+	sigaction(SIGINT, &sigIntHandler, NULL);
 
-	string windowName = "Zebravision"; // GUI window name
+	string windowName("Zebravision"); // GUI window name
 	string capPath; // Output directory for captured images
 	MediaIn* cap; //input object
 
@@ -222,7 +220,7 @@ int main( int argc, const char** argv )
 	//also checks to make sure that the cap object works
 	if (!cap->getFrame(frame, depth))
 	{
-		cerr << "Could not open input " << args.inputName << endl;
+		cerr << "Could not read frame from input " << args.inputName << endl;
 		return 0;
 	}
 
@@ -266,14 +264,6 @@ int main( int argc, const char** argv )
 
 	// Create list of tracked objects
 	TrackedObjectList objectTrackingList(Size(cap->width(),cap->height()), camParams.fov);
-
-	zmq::context_t context(1);
-	zmq::socket_t publisher(context, ZMQ_PUB);
-
-	std::cout<< "Starting network publisher 5800" << std::endl;
-	publisher.bind("tcp://*:5800");
-
-	const size_t netTableArraySize = 7; // 7 objects
 
 	FrameTicker frameTicker;
 
@@ -470,7 +460,6 @@ int main( int argc, const char** argv )
 		// Send data over the network
 		// If objdetction is enabled, send detection data
 		// always send goal detection info
-        sendZMQData(detectState ? netTableArraySize : 0, publisher, displayList, gd, cap->timeStamp());
 
 		// Ground truth is a way of storing known locations of objects in a file.
 		// Check ground truth data on videos and images,
@@ -885,50 +874,6 @@ int main( int argc, const char** argv )
   	if(cap)
     	delete cap;
 	return 0;
-}
-
-void sendZMQData(size_t objectCount, zmq::socket_t& publisher, const vector<TrackedObjectDisplay>& displayList, const GoalDetector& gd, long long timestamp)
-{
-	// Only send objdetect data if the objdetection code is running
-	if (objectCount)
-	{
-		stringstream objdetString;
-
-		// TODO : figure out if there should be a colon
-		// or not after the B/G character - it isn't 
-		// consistent right now
-		objdetString << "B ";
-		for (size_t i = 0; i < objectCount; i++)
-		{
-			if (i < displayList.size())
-			{
-				objdetString << fixed << setprecision(2) << displayList[i].ratio << " ";
-				objdetString << fixed << setprecision(2) << displayList[i].position.x << " ";
-				objdetString << fixed << setprecision(2) << displayList[i].position.y << " ";
-				objdetString << fixed << setprecision(2) << displayList[i].position.z << " ";
-			}
-			else
-			{
-				objdetString << "0.00 0.00 0.00 0.00 ";
-			}
-		}
-
-		cout << "B : " << timestamp << " : " << objdetString.str() << endl;
-		zmq::message_t request(objdetString.str().length() - 1);
-		memcpy((void *)request.data(), objdetString.str().c_str(), objdetString.str().length() - 1);
-		publisher.send(request);
-	}
-
-    //Creates immutable strings for 0MQ Output
-    stringstream goalString;
-    goalString << "G : ";
-    goalString << fixed << setprecision(4) << gd.dist_to_goal() << " ";
-    goalString << fixed << setprecision(2) << gd.angle_to_goal();
-
-    cout << "G " << timestamp << " : " << goalString.str().length() << " : " << goalString.str() << endl;
-    zmq::message_t grequest(goalString.str().length() - 1);
-    memcpy((void *)grequest.data(), goalString.str().c_str(), goalString.str().length() - 1);
-    publisher.send(grequest);
 }
 
 

@@ -1,0 +1,5 @@
+# Separate git repos
+cartographer/*
+cartographer_ros/*
+ceres-solver/*
+

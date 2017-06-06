@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <launch>
 
   <arg name="svo_file1" default=""/> <!-- <arg name="svo_file1" default="path/to/svo/file.svo"> -->
@@ -16,6 +15,7 @@
 
           <!-- ZED parameters -->
           <param name="zed_id"                value="$(arg zed_id1)" />
+		  <param name="zed_name"              value="$(arg zed_name)" />
 
           <param name="resolution"            value="2" />
           <param name="quality"               value="1" />
@@ -24,6 +24,7 @@
           <param name="odometry_db"           value="" />
           <param name="openni_depth_mode"     value="0" />
           <param name="gpu_id"                value="0" />
+		  <param name="confidence"            value="80" /> 
 
           <!-- ROS topic names -->
           <param name="rgb_topic"             value="rgb/image_rect_color" />
@@ -63,6 +64,7 @@
 
           <!-- ZED parameters -->
           <param name="zed_id"                value="$(arg zed_id2)" />
+		  <param name="zed_name"              value="$(arg zed_name)" />
 
           <param name="resolution"            value="2" />
           <param name="quality"               value="1" />

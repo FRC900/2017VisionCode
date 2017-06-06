@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef ZED_SUPPORT
-#include <zed/Camera.hpp>
+#include <sl/Camera.hpp>
 #include "cameraparams.hpp"
 #endif
 
@@ -13,7 +13,7 @@ class ZedParams
 		ZedParams(void);
 
 #ifdef ZED_SUPPORT
-		void init(sl::zed::Camera *zed, bool left);
+		void init(sl::Camera &zed, bool left);
 		CameraParams get(void) const;
 
 	private:

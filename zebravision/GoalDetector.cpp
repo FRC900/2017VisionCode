@@ -174,15 +174,6 @@ void GoalDetector::findBoilers(const cv::Mat& image, const cv::Mat& depth) {
 #endif
 				continue;
 			}
-#if 0
-			if(top_info[i].pos.z < bottom_info[j].pos.z)
-			{
-#ifdef VERBOSE_BOILER
-				cout << i << " " << j << " z compare failed" << endl;
-#endif
-				continue;
-			}
-#endif
 
 			// Only do distance checks if we believe the
 			// depth info is correct
@@ -313,19 +304,20 @@ const vector<DepthInfo> GoalDetector::getDepths(const Mat &depth, const vector< 
 	DepthInfo depthInfo;
 	for(size_t i = 0; i < contours.size(); i++) {
 		// get the minimum and maximum depth values in the contour,
-		Rect br(boundingRect(contours[i]));
-		Moments mu = moments(contours[i], false);
-		Point com = Point(mu.m10 / mu.m00, mu.m01 / mu.m00);
+		const Rect br(boundingRect(contours[i]));
+		const Moments mu = moments(contours[i], false);
+		const Point com = Point(mu.m10 / mu.m00, mu.m01 / mu.m00);
 		//Point center(rect.tl().x+rect.size().width/2, rect.tl().y+rect.size().height/2);
 		
 		//create a mask which is the same shape as the contour
 		contour_mask.setTo(Scalar(0));
 		drawContours(contour_mask, contours, i, Scalar(255), CV_FILLED);
 		// copy them into individual floats
-		pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
-		float depth_z_min = minMax.first;
-		float depth_z_max = minMax.second;
-		//const float average_depth = utils::avgOfDepthMat(depth, contour_mask, br);
+		//pair<float, float> minMax = utils::minOfDepthMat(depth, contour_mask, br, 10);
+		const float average_depth = utils::avgOfDepthMat(depth, contour_mask, br);
+		float depth_z_min = average_depth;
+		float depth_z_max = average_depth;
+
 #ifdef VERBOSE
 		cout << "Depth " << i << ": " << depth_z_min << " " << depth_z_max << endl;
 #endif
@@ -396,16 +388,6 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 			continue;
 		}
 
-		// Remove objects too low on the screen
-		/*if (br.br().y > (_frame_size.width * 0.4f))
-		{
-#ifdef VERBOSE
-			cout << "Contour " << i << " br().y out of range "<< br.br().y << endl;
-#endif
-			continue;
-		}*/
-
-
 		
 #if 0
 		// TODO : Figure out how well this works in practice
@@ -423,14 +405,13 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 		//including area and x,y,z position of the goal
 		ObjectType goal_actual(contours[i], "Actual Goal", 0);
 		TrackedObject goal_tracked_obj(0, _goal_shape, br, depth_maxs[i].depth, _fov_size, _frame_size,-((float)_camera_angle/10.) * M_PI / 180.0);
-		//TrackedObject goal_tracked_obj(0, _goal_shape, br, depth_maxs[i].depth, _fov_size, _frame_size, -16 * M_PI / 180.0);
 
 		// Gets the bounding box area observed divided by the
 		// bounding box area calculated given goal size and distance
 		// For an object the size of a goal we'd expect this to be
 		// close to 1.0 with some variance due to perspective
-		float exp_area = goal_tracked_obj.getScreenPosition(_fov_size, _frame_size).area();
-		float actualScreenArea = (float)br.area() / exp_area;
+		const float exp_area = goal_tracked_obj.getScreenPosition(_fov_size, _frame_size).area();
+		const float actualScreenArea = (float)br.area() / exp_area;
 /*
 		if (((exp_area / br.area()) < 0.20) || ((exp_area / br.area()) > 5.00))
 		{
@@ -487,7 +468,7 @@ const vector<GoalInfo> GoalDetector::getInfo(const vector<vector<Point>> &contou
 		cout << "confidence: " << confidence << endl;
 		cout << "Height exp/act: " << _goal_shape.real_height() << "/" <<  goal_tracked_obj.getPosition().z - _goal_shape.height() / 2.0 << endl;
 		cout << "Depth max: " << depth_maxs[i].depth << " " << depth_maxs[i].error << endl;
-		cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
+		//cout << "Area exp/act: " << (int)exp_area << "/" << br.area() << endl;
 		cout << "Aspect ratio exp/act : " << expectedRatio << "/" << actualRatio << endl;
 		cout << "br: " << br << endl;
 		cout << "com: " << goal_actual.com() << endl;
@@ -695,36 +676,3 @@ void GoalDetector::isValid()
 #endif
 }
 
-
-#if 0
-// Simple class to encapsulate a rect plus a slightly
-// more complex than normal comparison function
-SmartRect::SmartRect(const cv::Rect &rectangle):
-   myRect(rectangle)
-{
-}
-
-// Overload equals. Make it so that empty rects never
-// compare true, even to each other.
-// Also, allow some minor differences in rectangle positions
-// to still count as equivalent.
-bool SmartRect::operator== (const SmartRect &thatRect)const
-{
-	if(myRect == Rect() || thatRect.myRect == Rect())
-	{
-		return false;
-	}
-	double intersectArea = (myRect & thatRect.myRect).area();
-	double unionArea     = myRect.area() + thatRect.myRect.area() - intersectArea;
-
-	return (intersectArea / unionArea) >= .8;
-}
-
-std::ostream& operator<<(std::ostream& os, const SmartRect &obj) {
-	if(obj.myRect == Rect())
-		os << "NULL";
-	else
-		os << obj.myRect;
-	return os;
-}
-#endif

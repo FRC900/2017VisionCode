@@ -7,3 +7,9 @@
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest.git
+[submodule "zebROS_ws/src/steered_wheel_base_controller"]
+	path = zebROS_ws/src/steered_wheel_base_controller
+	url = https://github.com/FRC900/steered_wheel_base_controller.git
+[submodule "zebROS_ws/src/ros_control_boilerplate"]
+	path = zebROS_ws/src/ros_control_boilerplate
+	url = https://github.com/FRC900/ros_control_boilerplate.git
