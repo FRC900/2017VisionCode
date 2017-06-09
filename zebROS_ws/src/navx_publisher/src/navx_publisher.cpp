@@ -27,7 +27,6 @@ int main(int argc, char** argv)
 	ros::Publisher imu_pub = nh.advertise<sensor_msgs::Imu>("/navx/imu", 75);
 	ros::Publisher raw_pub = nh.advertise<sensor_msgs::Imu>("/navx/raw", 75);
 	ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("/navx/odom", 75);
-	ros::Rate loop_time(75);
 	navx_publisher::stampedUInt64 timestamp;
 	sensor_msgs::Imu imu_msg;
 	sensor_msgs::Imu imu_msg_raw;
@@ -36,7 +35,6 @@ int main(int argc, char** argv)
 	imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 	imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
 	imu_msg.orientation_covariance = {0,0,0,0,0,0,0,0,0};
-
 
 	imu_msg_raw.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
 	imu_msg_raw.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
@@ -95,24 +93,52 @@ int main(int argc, char** argv)
 
 	bool firstrun = true;
 
-	AHRS nx("/dev/ttyACM0");
+	ros::Rate loop_time(210);
+	AHRS nx("/dev/ttyACM0", AHRS::SerialDataType::kProcessedData, 200);
 	while(ros::ok()) {
 		unsigned long long nxstamp = nx.GetLastSensorTimestamp();
 		if (firstrun || (nxstamp != timestamp.data))
 		{
-			timestamp.data = nxstamp;
-
 			//set the timestamp for all headers
 			odom.header.stamp = 
 			imu_msg.header.stamp = 
 			imu_msg_raw.header.stamp = 
 			timestamp.header.stamp = ros::Time::now();
 
+			float nx_roll;
+			float nx_pitch;
+			float nx_yaw;
+			float nx_qx;
+			float nx_qy;
+			float nx_qz;
+			float nx_qw;
+			float nx_ax;
+			float nx_ay;
+			float nx_az;
+			long  nx_stamp;
+
 			//pull orientation data from NavX
-			imu_msg.orientation.x = nx.GetQuaternionX();
-			imu_msg.orientation.y = nx.GetQuaternionY();
-			imu_msg.orientation.z = nx.GetQuaternionZ();
-			imu_msg.orientation.w = nx.GetQuaternionW();
+			//all in one shot
+			nx.GetRPYQAccel(nx_roll, nx_pitch, nx_yaw,
+					nx_qx, nx_qy, nx_qz, nx_qw,
+					nx_ax, nx_ay, nx_az,
+					nx_stamp);
+
+			nx_yaw   *= M_PI / 180.;
+			nx_pitch *= -M_PI / 180.;
+			nx_roll  *= M_PI / 180.;
+
+			tf::Quaternion q = tf::createQuaternionFromRPY(nx_roll, nx_pitch, nx_yaw);
+
+			//std::cout << "From NX : " << nx_qx << " " << nx_qy << " " << nx_qz << " " << nx_qw << std::endl;
+			//std::cout << "From RPY : " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << std::endl;
+
+
+			tf::quaternionTFToMsg(q, imu_msg.orientation);
+			imu_msg.linear_acceleration.x = nx_ax;
+			imu_msg.linear_acceleration.y = nx_ay;
+			imu_msg.linear_acceleration.z = nx_az;
+			timestamp.data = nx_stamp;
 
 			imu_msg_raw.orientation.x = imu_msg.orientation.x;
 			imu_msg_raw.orientation.y = imu_msg.orientation.y;
@@ -120,19 +146,17 @@ int main(int argc, char** argv)
 			imu_msg_raw.orientation.w = imu_msg.orientation.w;
 
 			const double grav = 9.80665;
-			// Pull acceleration data from navx
-			imu_msg.linear_acceleration.x = nx.GetWorldLinearAccelX() * grav;
-			imu_msg.linear_acceleration.y = nx.GetWorldLinearAccelY() * grav;
-			imu_msg.linear_acceleration.z = nx.GetWorldLinearAccelZ() * grav;
-
+			imu_msg.linear_acceleration.x *= grav;
+			imu_msg.linear_acceleration.y *= grav;
+			imu_msg.linear_acceleration.z *= grav;
 
 #if 1
 			imu_msg_raw.linear_acceleration = imu_msg.linear_acceleration;
 #else
 			//uncomment this to add gravity back into /navx/raw
-			//const double nx_yaw = nx.GetYaw() * M_PI / 180.;
-			const double nx_pitch = nx.GetPitch() * M_PI / 180.;
-			const double nx_roll = nx.GetRoll() * M_PI / 180.;
+			nx_yaw   *= M_PI / 180.;
+			nx_pitch *= M_PI / 180.;
+			nx_roll  *= M_PI / 180.;
 			imu_msg_raw.linear_acceleration.x = imu_msg.linear_acceleration.x + sin(nx_roll)*cos(nx_pitch)*grav;
 			imu_msg_raw.linear_acceleration.y = imu_msg.linear_acceleration.y + cos(nx_roll)*sin(nx_pitch)*grav;
 			imu_msg_raw.linear_acceleration.z = imu_msg.linear_acceleration.z + cos(nx_pitch)*cos(nx_roll)*grav;
