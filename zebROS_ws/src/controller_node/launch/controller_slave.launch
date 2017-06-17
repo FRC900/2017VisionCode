@@ -3,10 +3,14 @@
 <launch>
   <!-- 
   Slave Node Launcher
-  * ZED Wrapper Instance
-  * Fuel Detection Node
-  * Robot Localization Node
-  * RTABMAP Node
+  # ZED Wrapper Instance
+  # NavX
+  # LIDAR
+  # TF2 static transforms for ZED, NavX and LIDAR
+  # Dummy odom->map identity transform as a placeholder until
+  #    localization works
+  # ukf node to fuse NavX, ZED and wheel encoder odometry
+  # move_base
 	-->
   <arg name="svo_file" default="" />
   <arg name="zed_id" default="0" />
@@ -42,7 +46,6 @@
   </group>
   <include file="$(find controller_node)/launch/record_slave.launch" if="$(arg record)"/>
   
-  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
 	<!-- 
 		Transform: x y z roll pitch yaw 
 		Need 1 transform for each sensor source mapping
@@ -62,11 +65,17 @@
 		The current camera frame is where the camera is now. Since 
 		it is fixed to the robot, it is the same static distance away
 		from base_link at all times.  
+		The cameral frame is defined to be the center of the left
+        camera lens.  There is a urdf file which defines the center
+        of the camera (which is also the depth frame) as well as the
+        right camera frame.
    -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_zed_initial_frame" args="0 0 0 0 0 0 odom $(arg name)_initial_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_zed_fuel_initial" args="0.297688 0.0079375 0.1749425 0 0 0 odom $(arg name)_initial_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed_fuel_current" args="0.297688 0.0079375 0.1749425 0 0 0 base_link $(arg name)_current_frame" />
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed_fuel"  args="0.25 0 0 0 0 0 base_link $(arg name)_current_frame" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0.1143 0.1143 0.0254 0 0 0 base_link navx_frame" />
+  <!-- TODO : check rotation of the NavX -->
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="-0.2914015 -0.072263 0.0244348 0 0 0 base_link navx_frame" />
 
   <include file="$(find controller_node)/launch/fuse_odom.launch"/>
 
@@ -80,5 +89,8 @@
 	-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="dummy_odom_to_map" args="0 0 0 0 0 0 map odom" />
 
+  <!-- Start move_base, which does goal planning and pathing
+	   for the drive code
+	-->
   <include file="$(find controller_node)/launch/move_base.launch"/>
 </launch>
