@@ -6,14 +6,17 @@ using namespace std;
 
 // --percent - grab capture every %
 // --frames - grab capture every absolute frame #
-//
+// --oneFrame - grab a single frame
 int main(int argc, char **argv)
 {
 	const string framesOpt  = "--frames=";
 	const string percentOpt = "--percent=";
+	const string oneFrameOpt = "--oneFrame=";
 	const string badOpt     = "--";
 	double percent   = 0.01;
 	double frames;
+	double startFrame = 0;
+	bool   oneFrame = false;
 	double framesInc = 0.0;
 	int fileArgc;
 	for (fileArgc = 1; fileArgc < argc; fileArgc++)
@@ -22,6 +25,11 @@ int main(int argc, char **argv)
 			framesInc = atoi(argv[fileArgc] + framesOpt.length());
 		else if (percentOpt.compare(0, percentOpt.length(), argv[fileArgc], percentOpt.length()) == 0)
 			percent = atof(argv[fileArgc] + percentOpt.length())/100.0;
+		else if (oneFrameOpt.compare(0, oneFrameOpt.length(), argv[fileArgc], oneFrameOpt.length()) == 0)
+		{
+			startFrame = atof(argv[fileArgc] + oneFrameOpt.length());
+			oneFrame = true;
+		}
 		else if (badOpt.compare(0, badOpt.length(), argv[fileArgc], badOpt.length()) == 0)
 		{
 			cerr << "Unknown command line option " << argv[fileArgc] << endl;
@@ -48,7 +56,7 @@ int main(int argc, char **argv)
 		framesInc = frames * percent;
 
 	Mat image;
-	for (double frame = 0.0; frame < frames; frame += framesInc)
+	for (double frame = startFrame; frame < frames; frame += framesInc)
 	{
 		cap.set(CV_CAP_PROP_POS_FRAMES, frame);
 
@@ -63,5 +71,7 @@ int main(int argc, char **argv)
 			fn << ".png";
 			imwrite(fn.str(), image);
 		}
+		if (oneFrame)
+			break;
 	}
 }
