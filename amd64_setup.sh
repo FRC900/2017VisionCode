@@ -54,7 +54,7 @@ rm -rf FFmpeg-n3.2.2 n3.2.2.zip
 # Note that the latest ZED drivers for x86_64 require
 # OpenCV3.1 install should be similar, just download the
 # correct version of the code
-sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+sudo apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev libgtk2.0-dev python-dev python-numpy libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev 
 cd
 git clone https://github.com/opencv/opencv.git
 git clone https://github.com/opencv/opencv_contrib.git
@@ -66,7 +66,7 @@ make -j4
 sudo make install
 
 # Install nv caffe fork - needed for DIGITS
-sudo apt-get install build-essential cmake git gfortran libatlas-base-dev libboost-all-dev libgflags-dev libgoogle-glog-dev libhdf5-serial-dev libleveldb-dev liblmdb-dev libprotobuf-dev libsnappy-dev protobuf-compiler python-all-dev python-dev python-h5py python-matplotlib python-numpy python-pil python-pip python-protobuf python-scipy python-skimage python-sklearn
+sudo apt-get install build-essential cmake git gfortran libatlas-base-dev libboost-all-dev libgflags-dev libgoogle-glog-dev libhdf5-serial-dev libleveldb-dev liblmdb-dev libprotobuf-dev libsnappy-dev protobuf-compiler python-all-dev python-dev python-h5py python-matplotlib python-numpy python-pil python-pip python-protobuf python-scipy python-skimage python-sklearn 
 pip install --upgrade pip
 cd
 git clone https://github.com/NVIDIA/caffe.git caffe-nv
