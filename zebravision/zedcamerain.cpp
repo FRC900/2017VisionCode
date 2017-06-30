@@ -37,14 +37,14 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	}
 
 	InitParameters parameters;
-	parameters.camera_resolution = RESOLUTION_VGA;
+	parameters.camera_resolution = RESOLUTION_HD720;
 
 	// Runs cleanly at 30 FPS on TX1, doesn't init
 	// at 60FPS?
-	parameters.camera_fps = 30;
+	parameters.camera_fps = 60;
 
 	parameters.depth_mode = DEPTH_MODE_PERFORMANCE;
-	parameters.coordinate_units = UNIT_MILLIMETER;
+	parameters.coordinate_units = UNIT_METER;
 	parameters.coordinate_system = COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP ; // Y pointing out and Z pointing up. Only used for point cloud?
 	parameters.sdk_verbose = 1;
 	parameters.camera_buffer_count_linux = 4; // default : experiment with lower
@@ -53,7 +53,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 	// exponentially. The closer it gets the longer the
 	// disparity search will take. In case of limited
 	// computation power, consider increasing the value.
-	parameters.depth_minimum_distance = 1000; // in coordinate_units, so ~1m
+	//parameters.depth_minimum_distance = 1; // in coordinate_units, so ~1m
 
 	// init computation mode of the zed
 	ERROR_CODE err = zed_.open(parameters);
@@ -64,7 +64,7 @@ ZedCameraIn::ZedCameraIn(bool gui, ZvSettings *settings) :
 		return;
 	}
 	opened_ = true;
-	zed_.setCameraFPS(30);
+	zed_.setCameraFPS(parameters.camera_fps);
     // Create sl and cv Mat to get ZED left image and depth image
     // Best way of sharing sl::Mat and cv::Mat :
     // Create a sl::Mat and then construct a cv::Mat using the ptr to sl::Mat data.

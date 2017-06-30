@@ -703,7 +703,6 @@ namespace zed_wrapper {
 			odometry_frame_id = "/" + zed_name + "_initial_frame";
 			odometry_transform_frame_id = "/" + zed_name + "_current_frame";
 
-
             // Get parameters from launch file
             nh_ns.getParam("resolution", resolution);
             nh_ns.getParam("quality", quality);
@@ -758,7 +757,7 @@ namespace zed_wrapper {
                 param.camera_linux_id = zed_id;
             }
 
-            param.coordinate_units = sl::UNIT_MILLIMETER;
+            param.coordinate_units = sl::UNIT_METER;
             param.coordinate_system = sl::COORDINATE_SYSTEM_IMAGE;
             param.depth_mode = static_cast<sl::DEPTH_MODE> (quality);
 			param.sdk_verbose = true;
