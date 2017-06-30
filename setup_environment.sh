@@ -135,6 +135,11 @@ if [ "$jetson" = true ] ; then
 	sudo chmod 755 /usr/local/zed/settings
 	sudo cp ~/2017VisionCode/calibration_files/*.conf /usr/local/zed/settings
 	sudo chmod 644 /usr/local/zed/settings/*
+
+	sudo mkdir -p /lib/modules/4.4.15-tegra/kernel/drivers/usb/serial
+	sudo cp cp210x.ko /lib/modules/4.4.15-tegra/kernel/drivers/usb/serial
+	sudo mkdir -p /lib/modules/4.4.15-tegra/kernel/drivers/usb/class
+	sudo cp cdc-acm.ko /lib/modules/4.4.15-tegra/kernel/drivers/usb/class
 fi
 
 cp ~/2017VisionCode/.vimrc ~/2017VisionCode/.gvimrc ~
