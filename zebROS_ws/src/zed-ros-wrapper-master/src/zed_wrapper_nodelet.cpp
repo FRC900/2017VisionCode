@@ -675,17 +675,17 @@ namespace zed_wrapper {
             string rgb_topic = "rgb/" + img_topic;
             string rgb_raw_topic = "rgb/" + img_raw_topic;
             string rgb_cam_info_topic = "rgb/camera_info";
-			rgb_frame_id = "/" + zed_name + "_current_frame";
+			rgb_frame_id = "/" + zed_name + "_left_camera";
             
             string left_topic = "left/" + img_topic;
             string left_raw_topic = "left/" + img_raw_topic;
             string left_cam_info_topic = "left/camera_info";
-			left_frame_id = "/" + zed_name + "_current_frame";
+			left_frame_id = "/" + zed_name + "_left_camera";
 
             string right_topic = "right/" + img_topic;
             string right_raw_topic = "right/" + img_raw_topic;
             string right_cam_info_topic = "right/camera_info";
-			right_frame_id = "/" + zed_name + "_current_frame";
+			right_frame_id = "/" + zed_name + "_right_camera";
 
             string depth_topic = "depth/";
             if (openniDepthMode)
@@ -694,7 +694,7 @@ namespace zed_wrapper {
                 depth_topic += "depth_registered";
 
             string depth_cam_info_topic = "depth/camera_info";
-			depth_frame_id = "/" + zed_name + "_current_frame";
+			depth_frame_id = "/" + zed_name + "_left_camera"; // KCJ - or maybe depth_frame
 
             string point_cloud_topic = "point_cloud/cloud_registered";
 			cloud_frame_id = "/" + zed_name + "_current_frame";
