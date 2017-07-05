@@ -158,6 +158,9 @@ namespace zed_wrapper {
         string point_cloud_frame_id = "";
         ros::Time point_cloud_time;
 
+		boost::array<double, 36> pose_covariance;
+		boost::array<double, 36> twist_covariance;
+
         /* \brief Convert an sl:Mat to a cv::Mat
          * \param mat : the sl::Mat to convert
          */
@@ -258,18 +261,8 @@ namespace zed_wrapper {
             odom.pose.pose.orientation.z = -quat(1);
             odom.pose.pose.orientation.w = quat(3);
 
-			odom.pose.covariance = STANDARD_POSE_COVARIANCE;
-			odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
-
-			ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/zed-ros-wrapper-master/zed_calib.dat");
-			if(infile.good()) {
-					int ln = 0;
-					std::string line;
-						while(std::getline(infile,line)) {
-								odom.pose.covariance[ln] = std::stod(line);
-									ln++;						
-						}
-			}
+			odom.pose.covariance = pose_covariance;
+			odom.twist.covariance = twist_covariance;
 
             pub_odom.publish(odom);
         }
@@ -666,8 +659,6 @@ namespace zed_wrapper {
             if (!nh_ns.getParam("publish_transform", publish_transform))
 				publish_transform = true;
 
-			cout << "Really read zed_name = " << zed_name << endl;
-
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
 
@@ -788,6 +779,24 @@ namespace zed_wrapper {
             f = boost::bind(&ZEDWrapperNodelet::callback, this, _1, _2);
             server->setCallback(f);
 			nh_ns.getParam("confidence", confidence);
+
+			pose_covariance = STANDARD_POSE_COVARIANCE;
+			twist_covariance = STANDARD_TWIST_COVARIANCE;
+
+			ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/zed-ros-wrapper-master/zed_calib.dat");
+			if(infile.good()) {
+				int ln = 0;
+				std::string line;
+				while(std::getline(infile,line)) {
+					pose_covariance[ln] = std::stod(line);
+					ln++;
+				}
+				ln = 0;
+				while(std::getline(infile,line)) {
+					twist_covariance[ln] = std::stod(line);
+					ln++;
+				}
+			}
 
             // Create all the publishers
             // Image publishers
