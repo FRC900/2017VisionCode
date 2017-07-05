@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 		//read the file with covariances and apply it to the odometry and IMU
 		ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/navx_publisher/navx_calib.dat");
 		if(!infile.good())
-			cerr << "File not opened!" << endl;
+			cerr << "navx_calib.dat file not opened!" << endl;
 		std::string line;
 		int ln = 0;
 		while(std::getline(infile, line))
@@ -120,13 +120,13 @@ int main(int argc, char** argv)
 			//pull orientation data from NavX
 			//all in one shot
 			nx.GetRPYQAccel(nx_roll, nx_pitch, nx_yaw,
-					nx_qx, nx_qy, nx_qz, nx_qw,
-					nx_ax, nx_ay, nx_az,
-					nx_stamp);
+							nx_qx, nx_qy, nx_qz, nx_qw,
+							nx_ax, nx_ay, nx_az,
+							nx_stamp);
 
-			nx_yaw   *= M_PI / 180.;
+			nx_yaw   *=  M_PI / 180.;
 			nx_pitch *= -M_PI / 180.;
-			nx_roll  *= M_PI / 180.;
+			nx_roll  *=  M_PI / 180.;
 
 			tf::Quaternion q = tf::createQuaternionFromRPY(nx_roll, nx_pitch, nx_yaw);
 
