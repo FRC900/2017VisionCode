@@ -158,6 +158,9 @@ namespace zed_wrapper {
         string point_cloud_frame_id = "";
         ros::Time point_cloud_time;
 
+		boost::array<double, 36> pose_covariance;
+		boost::array<double, 36> twist_covariance;
+
         /* \brief Convert an sl:Mat to a cv::Mat
          * \param mat : the sl::Mat to convert
          */
@@ -258,18 +261,8 @@ namespace zed_wrapper {
             odom.pose.pose.orientation.z = -quat(1);
             odom.pose.pose.orientation.w = quat(3);
 
-			odom.pose.covariance = STANDARD_POSE_COVARIANCE;
-			odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
-
-			ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/zed-ros-wrapper-master/zed_calib.dat");
-			if(infile.good()) {
-					int ln = 0;
-					std::string line;
-						while(std::getline(infile,line)) {
-								odom.pose.covariance[ln] = std::stod(line);
-									ln++;						
-						}
-			}
+			odom.pose.covariance = pose_covariance;
+			odom.twist.covariance = twist_covariance;
 
             pub_odom.publish(odom);
         }
@@ -666,8 +659,6 @@ namespace zed_wrapper {
             if (!nh_ns.getParam("publish_transform", publish_transform))
 				publish_transform = true;
 
-			cout << "Really read zed_name = " << zed_name << endl;
-
             std::string img_topic = "image_rect_color";
             std::string img_raw_topic = "image_raw_color";
 
@@ -675,17 +666,17 @@ namespace zed_wrapper {
             string rgb_topic = "rgb/" + img_topic;
             string rgb_raw_topic = "rgb/" + img_raw_topic;
             string rgb_cam_info_topic = "rgb/camera_info";
-			rgb_frame_id = "/" + zed_name + "_current_frame";
+			rgb_frame_id = "/" + zed_name + "_left_camera";
             
             string left_topic = "left/" + img_topic;
             string left_raw_topic = "left/" + img_raw_topic;
             string left_cam_info_topic = "left/camera_info";
-			left_frame_id = "/" + zed_name + "_current_frame";
+			left_frame_id = "/" + zed_name + "_left_camera";
 
             string right_topic = "right/" + img_topic;
             string right_raw_topic = "right/" + img_raw_topic;
             string right_cam_info_topic = "right/camera_info";
-			right_frame_id = "/" + zed_name + "_current_frame";
+			right_frame_id = "/" + zed_name + "_right_camera";
 
             string depth_topic = "depth/";
             if (openniDepthMode)
@@ -694,7 +685,7 @@ namespace zed_wrapper {
                 depth_topic += "depth_registered";
 
             string depth_cam_info_topic = "depth/camera_info";
-			depth_frame_id = "/" + zed_name + "_current_frame";
+			depth_frame_id = "/" + zed_name + "_left_camera"; // KCJ - or maybe depth_frame
 
             string point_cloud_topic = "point_cloud/cloud_registered";
 			cloud_frame_id = "/" + zed_name + "_current_frame";
@@ -702,7 +693,6 @@ namespace zed_wrapper {
             string odometry_topic = "odom";
 			odometry_frame_id = "/" + zed_name + "_initial_frame";
 			odometry_transform_frame_id = "/" + zed_name + "_current_frame";
-
 
             // Get parameters from launch file
             nh_ns.getParam("resolution", resolution);
@@ -758,7 +748,7 @@ namespace zed_wrapper {
                 param.camera_linux_id = zed_id;
             }
 
-            param.coordinate_units = sl::UNIT_MILLIMETER;
+            param.coordinate_units = sl::UNIT_METER;
             param.coordinate_system = sl::COORDINATE_SYSTEM_IMAGE;
             param.depth_mode = static_cast<sl::DEPTH_MODE> (quality);
 			param.sdk_verbose = true;
@@ -789,6 +779,24 @@ namespace zed_wrapper {
             f = boost::bind(&ZEDWrapperNodelet::callback, this, _1, _2);
             server->setCallback(f);
 			nh_ns.getParam("confidence", confidence);
+
+			pose_covariance = STANDARD_POSE_COVARIANCE;
+			twist_covariance = STANDARD_TWIST_COVARIANCE;
+
+			ifstream infile("/home/ubuntu/2017VisionCode/zebROS_ws/src/zed-ros-wrapper-master/zed_calib.dat");
+			if(infile.good()) {
+				int ln = 0;
+				std::string line;
+				while(std::getline(infile,line)) {
+					pose_covariance[ln] = std::stod(line);
+					ln++;
+				}
+				ln = 0;
+				while(std::getline(infile,line)) {
+					twist_covariance[ln] = std::stod(line);
+					ln++;
+				}
+			}
 
             // Create all the publishers
             // Image publishers

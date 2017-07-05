@@ -324,8 +324,7 @@ void NNDetect<MatT, ClassifierT>::generateInitialWindows(
     for (size_t scale = 0; scale < scaledImages.size(); ++scale)
     {
         const float depth_multiplier = 0.2;
-		const float depth_avg = 1000 * 
-			                    objToDetect_.expectedDepth(Rect(0, 0, wsize, wsize), 
+		const float depth_avg = objToDetect_.expectedDepth(Rect(0, 0, wsize, wsize), 
 				                                           scaledImages[scale].first.size(), hfov_);
 
         float depth_min = depth_avg - depth_avg * depth_multiplier;
