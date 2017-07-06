@@ -14,6 +14,35 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
+static const boost::array<double, 36> STANDARD_POSE_COVARIANCE =
+{ { 0.1, 0, 0, 0, 0, 0,
+	0, 0.1, 0, 0, 0, 0,
+	0, 0, 0.1, 0, 0, 0,
+	0, 0, 0, 0.17, 0, 0,
+	0, 0, 0, 0, 0.17, 0,
+	0, 0, 0, 0, 0, 0.17 } };
+static const boost::array<double, 36> STANDARD_TWIST_COVARIANCE =
+{ { 0.05, 0, 0, 0, 0, 0,
+	0, 0.05, 0, 0, 0, 0,
+	0, 0, 0.05, 0, 0, 0,
+	0, 0, 0, 0.09, 0, 0,
+	0, 0, 0, 0, 0.09, 0,
+	0, 0, 0, 0, 0, 0.09 } };
+
+static const boost::array<double, 9> STANDARD_ORIENTATION_COVARIANCE =
+{ { 0.015, 0,     0,
+	0,     0.015, 0,
+	0,     0,     0.015 } };
+
+static const boost::array<double, 9> STANDARD_VELOCITY_COVARIANCE =
+{ { 0.0015, 0,     0,
+	0,     0.0015, 0,
+	0,     0,      0.0015 } };
+
+static const boost::array<double, 9> STANDARD_ACCELERATION_COVARIANCE =
+{ { 0.05, 0,    0,
+	0,    0.05, 0,
+	0,    0,    0.05 } };
 
 int main(int argc, char** argv)
 {
@@ -32,16 +61,12 @@ int main(int argc, char** argv)
 	sensor_msgs::Imu imu_msg_raw;
 	nav_msgs::Odometry odom;
 
-	imu_msg.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
-	imu_msg.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
-	imu_msg.orientation_covariance = {0,0,0,0,0,0,0,0,0};
+	imu_msg.linear_acceleration_covariance = imu_msg_raw.linear_acceleration_covariance = STANDARD_ACCELERATION_COVARIANCE;
+	imu_msg.angular_velocity_covariance = imu_msg_raw.angular_velocity_covariance = STANDARD_VELOCITY_COVARIANCE;
+	imu_msg.orientation_covariance = imu_msg_raw.orientation_covariance = STANDARD_ORIENTATION_COVARIANCE;
 
-	imu_msg_raw.linear_acceleration_covariance = {0,0,0,0,0,0,0,0,0};
-	imu_msg_raw.angular_velocity_covariance = {0,0,0,0,0,0,0,0,0};
-	imu_msg_raw.orientation_covariance = {0,0,0,0,0,0,0,0,0};
-
-	odom.twist.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	odom.pose.covariance = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
+	odom.pose.covariance = STANDARD_POSE_COVARIANCE;
 
 	imu_msg_raw.header.frame_id = "navx_frame";
 	imu_msg.header.frame_id = "navx_frame";
@@ -124,9 +149,9 @@ int main(int argc, char** argv)
 							nx_ax, nx_ay, nx_az,
 							nx_stamp);
 
-			nx_yaw   *=  M_PI / 180.;
-			nx_pitch *= -M_PI / 180.;
-			nx_roll  *=  M_PI / 180.;
+			nx_roll  *=   M_PI / 180.;
+			nx_pitch *=   M_PI / 180.;
+			nx_yaw   *=  -M_PI / 180.;
 
 			tf::Quaternion q = tf::createQuaternionFromRPY(nx_roll, nx_pitch, nx_yaw);
 
