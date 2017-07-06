@@ -246,11 +246,11 @@ namespace zed_wrapper {
          * \param odom_frame_id : the id of the reference frame of the pose
          * \param t : the ros::Time to stamp the image
          */
-        void publishOdom(sl::Pose pose, ros::Publisher &pub_odom, const string &odom_frame_id, const ros::Time &t) {
+		void publishOdom(sl::Pose pose, ros::Publisher &pub_odom, const string &odom_frame_id, const ros::Time &t) {
             nav_msgs::Odometry odom;
             odom.header.stamp = t;
             odom.header.frame_id = odom_frame_id;
-            //odom.child_frame_id = "zed_optical_frame";
+            //odom.child_frame_id = odometry_transform_frame_id; //? enable me
             sl::Translation translation = pose.getTranslation();
             odom.pose.pose.position.x = translation(2);
             odom.pose.pose.position.y = -translation(0);
@@ -666,17 +666,17 @@ namespace zed_wrapper {
             string rgb_topic = "rgb/" + img_topic;
             string rgb_raw_topic = "rgb/" + img_raw_topic;
             string rgb_cam_info_topic = "rgb/camera_info";
-			rgb_frame_id = "/" + zed_name + "_left_camera";
+			rgb_frame_id = zed_name + "_left_camera";
             
             string left_topic = "left/" + img_topic;
             string left_raw_topic = "left/" + img_raw_topic;
             string left_cam_info_topic = "left/camera_info";
-			left_frame_id = "/" + zed_name + "_left_camera";
+			left_frame_id = zed_name + "_left_camera";
 
             string right_topic = "right/" + img_topic;
             string right_raw_topic = "right/" + img_raw_topic;
             string right_cam_info_topic = "right/camera_info";
-			right_frame_id = "/" + zed_name + "_right_camera";
+			right_frame_id = zed_name + "_right_camera";
 
             string depth_topic = "depth/";
             if (openniDepthMode)
@@ -685,14 +685,14 @@ namespace zed_wrapper {
                 depth_topic += "depth_registered";
 
             string depth_cam_info_topic = "depth/camera_info";
-			depth_frame_id = "/" + zed_name + "_left_camera"; // KCJ - or maybe depth_frame
+			depth_frame_id = zed_name + "_left_camera"; // KCJ - or maybe depth_frame
 
             string point_cloud_topic = "point_cloud/cloud_registered";
-			cloud_frame_id = "/" + zed_name + "_current_frame";
+			cloud_frame_id = zed_name + "_current_frame";
 
             string odometry_topic = "odom";
-			odometry_frame_id = "/" + zed_name + "_initial_frame";
-			odometry_transform_frame_id = "/" + zed_name + "_current_frame";
+			odometry_frame_id = zed_name + "_initial_frame";
+			odometry_transform_frame_id = zed_name + "_current_frame";
 
             // Get parameters from launch file
             nh_ns.getParam("resolution", resolution);
