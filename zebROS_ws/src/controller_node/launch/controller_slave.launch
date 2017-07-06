@@ -21,7 +21,7 @@
   <arg name="gain" default="-1" />
   <arg name="exposure" default="-1" />
   <arg name="whitebalance" default="-1" />
-  <arg name="flip" default="true" />
+  <arg name="flip" default="false" />
   <arg name="disable_calibrate" default="false" />
   <arg name="publish_transform" default="false" />
   <arg name="name" default="zed_fuel" />

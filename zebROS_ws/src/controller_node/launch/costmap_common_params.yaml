@@ -13,4 +13,4 @@ observation_sources: laser_scan_sensor point_cloud_sensor
 
 laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
 
-point_cloud_sensor: {sensor_frame: zed_frame, data_type: PointCloud2, topic: /zed_fuel/point_cloud/cloud_registered, marking: true, clearing: true}
+point_cloud_sensor: {sensor_frame: zed_fuel_current_frame, data_type: PointCloud2, topic: /zed_fuel/point_cloud/cloud_registered, marking: true, clearing: true}
