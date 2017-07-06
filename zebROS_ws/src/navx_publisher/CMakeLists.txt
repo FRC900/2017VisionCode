@@ -46,11 +46,8 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
-find_package(OpenCV REQUIRED)
 include_directories(
-  ${OpenCV_INCLUDE_DIRS}
   ../../..
-  ../../../zebravision
   ../../../navXTimeSync
 )
 
@@ -144,7 +141,7 @@ set (NAVX_SRCS
 	../../../navXTimeSync/SerialPort.cpp )
 
 ## Declare a C++ executable
-add_executable( navx_publisher_node src/navx_publisher.cpp ${NAVX_SRCS})
+add_executable(navx_publisher_node src/navx_publisher.cpp ${NAVX_SRCS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -157,10 +154,6 @@ add_dependencies(navx_publisher_node
 target_link_libraries(navx_publisher_node
   ${catkin_LIBRARIES}
 )
-
-#target_link_libraries(navx_publisher_node
-#  ${OpenCV_LIBS}
-#)
 
 #############
 ## Install ##
