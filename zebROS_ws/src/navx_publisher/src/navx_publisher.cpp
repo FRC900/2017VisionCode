@@ -30,9 +30,9 @@ static const boost::array<double, 36> STANDARD_TWIST_COVARIANCE =
 	0, 0, 0, 0, 0, 0.09 } };
 
 static const boost::array<double, 9> STANDARD_ORIENTATION_COVARIANCE =
-{ { 0.015, 0,     0,
-	0,     0.015, 0,
-	0,     0,     0.015 } };
+{ { 0.00015, 0,       0,
+	0,       0.00015, 0,
+	0,       0,       0.00015 } };
 
 static const boost::array<double, 9> STANDARD_VELOCITY_COVARIANCE =
 { { 0.0015, 0,     0,
@@ -114,12 +114,12 @@ int main(int argc, char** argv)
 
 	ros::Time last_time;
 	tf::Quaternion last_rot (tf::Vector3(0.,0.,0.),0.);
-	tf::Quaternion rot;
 
 	bool firstrun = true;
 
 	ros::Rate loop_time(210);
 	AHRS nx("/dev/ttyACM0", AHRS::SerialDataType::kProcessedData, 200);
+	nx.ZeroYaw();
 	while(ros::ok()) {
 		unsigned long long nxstamp = nx.GetLastSensorTimestamp();
 		if (firstrun || (nxstamp != timestamp.data))
@@ -149,11 +149,12 @@ int main(int argc, char** argv)
 							nx_ax, nx_ay, nx_az,
 							nx_stamp);
 
-			nx_roll  *=   M_PI / 180.;
+			nx_roll  *=  -M_PI / 180.;
 			nx_pitch *=   M_PI / 180.;
 			nx_yaw   *=  -M_PI / 180.;
 
-			tf::Quaternion q = tf::createQuaternionFromRPY(nx_roll, nx_pitch, nx_yaw);
+			// roll and pitch are swapped from navx convention to the ros expected one
+			tf::Quaternion q = tf::createQuaternionFromRPY(nx_pitch, nx_roll, nx_yaw);
 
 			//std::cout << "From NX : " << nx_qx << " " << nx_qy << " " << nx_qz << " " << nx_qw << std::endl;
 			//std::cout << "From RPY : " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << std::endl;
@@ -193,11 +194,11 @@ int main(int argc, char** argv)
 			double roll;
 			tf::quaternionMsgToTF(imu_msg_raw.orientation, pose); // or imu_msg? they differ in the z value
 			if(firstrun) last_rot = pose;
-			rot = pose * last_rot.inverse();
+			tf::Quaternion rot = pose * last_rot.inverse();
 			tf::Matrix3x3(rot).getRPY(roll,pitch,yaw);
 			const double dTime = odom.header.stamp.toSec() - last_time.toSec();
-			imu_msg.angular_velocity.x = pitch / dTime;
-			imu_msg.angular_velocity.y = -roll / dTime;
+			imu_msg.angular_velocity.x = roll / dTime;
+			imu_msg.angular_velocity.y = pitch / dTime;
 			imu_msg.angular_velocity.z = -yaw / dTime;
 			imu_msg_raw.angular_velocity = imu_msg.angular_velocity;
 			last_rot = pose;

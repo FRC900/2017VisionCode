@@ -8,9 +8,10 @@ include ("../cmake_modules/CMakeOpt.cmake")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  message_filters
   geometry_msgs
+  sensor_msgs
   message_generation
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -76,6 +77,7 @@ include_directories(
    DEPENDENCIES
    std_msgs
    geometry_msgs
+   sensor_msgs
    navx_publisher
  )
 
@@ -155,6 +157,20 @@ target_link_libraries(navx_publisher_node
   ${catkin_LIBRARIES}
 )
 
+## Declare a C++ executable
+add_executable(imu_to_rpy src/imu_to_rpy.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+add_dependencies(imu_to_rpy
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(imu_to_rpy
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
@@ -170,7 +186,7 @@ target_link_libraries(navx_publisher_node
 # )
 
 # Mark executables and/or libraries for installation
- install(TARGETS navx_publisher_node
+ install(TARGETS navx_publisher_node imu_to_rpy
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
