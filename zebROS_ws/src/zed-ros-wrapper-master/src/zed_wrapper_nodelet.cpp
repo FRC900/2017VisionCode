@@ -250,7 +250,7 @@ namespace zed_wrapper {
             nav_msgs::Odometry odom;
             odom.header.stamp = t;
             odom.header.frame_id = odom_frame_id;
-            //odom.child_frame_id = odometry_transform_frame_id; //? enable me
+            odom.child_frame_id = odometry_transform_frame_id; //? enable me
             sl::Translation translation = pose.getTranslation();
             odom.pose.pose.position.x = translation(2);
             odom.pose.pose.position.y = -translation(0);
