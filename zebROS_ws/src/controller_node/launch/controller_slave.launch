@@ -91,6 +91,6 @@
 
   <!-- Start move_base, which does goal planning and pathing
 	   for the drive code
-	-->
   <include file="$(find controller_node)/launch/move_base.launch"/>
+	-->
 </launch>
