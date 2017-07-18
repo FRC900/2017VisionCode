@@ -21,10 +21,12 @@ class C
 void callback(const geometry_msgs::Twist& vel) 
 {
 	stringstream ss;
-	ss << fixed << setprecision(4) << vel.linear.x << " ";
-	ss << fixed << setprecision(4) << vel.linear.y << " ";
-	ss << fixed << setprecision(4) << vel.angular.z;
+	ss << "C ";
+	ss << fixed << setprecision(6) << vel.linear.x << " ";
+	ss << fixed << setprecision(6) << vel.linear.y << " ";
+	ss << fixed << setprecision(6) << vel.angular.z;
 
+	cout << ss.str() << endl;
 	zmq::message_t grequest(ss.str().length() - 1);
 	memcpy((void *)grequest.data(), ss.str().c_str(), ss.str().length() - 1);
 	publisher.send(grequest);
