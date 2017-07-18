@@ -20,7 +20,9 @@
 
 		<param name="odom0" value="/zed_fuel/odom" />
 		<!--param name="odom1" value="/wheel_encoders/odom" /-->
+		<!-- Figure these out ?
 		<param name="imu0" value="/navx/imu" />
+			-->
 
 		<param name="odom0_differential" value="false" />
 		<param name="odom0_relative" value="false" />
@@ -28,10 +30,10 @@
 		<!-- Figure these out ?
 		<param name="odom1_differential" value="false" />
 		<param name="odom1_relative" value="true" />
-			-->
 
 		<param name="imu0_differential" value="false"/>
 		<param name="imu0_relative" value="false" />
+			-->
 
 		<!--
 			Sensor Configuration:
@@ -71,11 +73,13 @@
 -->
 		<!-- imu0 (NavX): roll, pitch, yaw, x-acc, y-acc, z-acc -->
 		<!-- maybe add in r/p/y velocity? /-->
+<!--
 		<rosparam param="imu0_config"> [false, false, false,
                                         false, false, false,
                                         false, false, false,
                                         false, false, true, 
                                         false, false, false]
         </rosparam>
+-->
 	</node>
 </launch>
