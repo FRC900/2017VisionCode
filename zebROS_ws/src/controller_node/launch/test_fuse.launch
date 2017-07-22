@@ -75,7 +75,7 @@
 
   <!-- TODO : check rotation of the NavX -->
   <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0 0 0.025 1.57 0 0 zed_fuel_center navx_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="0 0 0.025 -1.5708 0 0 zed_fuel_center navx_frame" />
 
   <include file="$(find controller_node)/launch/fuse_odom.launch"/>
 
