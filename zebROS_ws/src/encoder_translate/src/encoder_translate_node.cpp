@@ -5,11 +5,29 @@
   
 ros::Publisher odom_pub;
 
+static const boost::array<double, 36> STANDARD_POSE_COVARIANCE =
+{ { 0.1, 0, 0, 0, 0, 0,
+	0, 0.1, 0, 0, 0, 0,
+	0, 0, 0.1, 0, 0, 0,
+	0, 0, 0, 0.17, 0, 0,
+	0, 0, 0, 0, 0.17, 0,
+	0, 0, 0, 0, 0, 0.17 } };
+static const boost::array<double, 36> STANDARD_TWIST_COVARIANCE =
+{ { 0.05, 0, 0, 0, 0, 0,
+	0, 0.05, 0, 0, 0, 0,
+	0, 0, 0.05, 0, 0, 0,
+	0, 0, 0, 0.09, 0, 0,
+	0, 0, 0, 0, 0.09, 0,
+	0, 0, 0, 0, 0, 0.09 } };
+
 void callback(const geometry_msgs::PointStamped::ConstPtr &msg)
 {
-	ros::Time current_time, last_time;
-	current_time = ros::Time::now();
-	last_time = ros::Time::now();
+	static bool first_time;
+	static ros::Time last_time;
+	static double old_x;
+	static double old_y;
+
+	ros::Time current_time = ros::Time::now();
 
     //first, we'll publish the transform over tf
 	geometry_msgs::TransformStamped odom_trans;
@@ -39,25 +57,34 @@ void callback(const geometry_msgs::PointStamped::ConstPtr &msg)
     odom.pose.pose.position.y = msg->point.y;
     odom.pose.pose.position.z = 0.0;
     odom.pose.pose.orientation = odom_quat;
+	odom.pose.covariance = STANDARD_POSE_COVARIANCE;
 
-#if 0
     //set the velocity
-    odom.twist.twist.linear.x = vx;
-    odom.twist.twist.linear.y = vy;
-    odom.twist.twist.angular.z = vth;
-#endif
+	if (!first_time)
+	{
+		const double dt = msg->header.stamp.toSec() - last_time.toSec();
+		odom.twist.twist.linear.x = (msg->point.x - old_x) / dt;
+		odom.twist.twist.linear.y = (msg->point.y - old_y) / dt;
+		odom.twist.twist.angular.z = 0.0;
+		odom.twist.covariance = STANDARD_TWIST_COVARIANCE;
+	}
 
     //publish the message
     odom_pub.publish(odom);
+
+	last_time = current_time;
+	old_x = msg->point.x;
+	old_y = msg->point.y;
+	first_time = false;
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
   ros::init(argc, argv, "encoder_translate");
 
   ros::NodeHandle n;
-  odom_pub = n.advertise<nav_msgs::Odometry>("odom", 50);
+  odom_pub = n.advertise<nav_msgs::Odometry>("encoder_odom", 2);
   ros::Subscriber sub = n.subscribe("/encoder", 50, callback);
 
   ros::spin();
-
 }
