@@ -12,35 +12,20 @@
   # ukf node to fuse NavX, ZED and wheel encoder odometry
   # move_base
 	-->
-  <arg name="svo_file" default="" />
-  <arg name="zed_id" default="0" />
-  <arg name="brightness" default="-1" />
-  <arg name="contrast" default="-1" />
-  <arg name="hue" default="-1" />
-  <arg name="saturation" default="-1" />
-  <arg name="gain" default="-1" />
-  <arg name="exposure" default="-1" />
-  <arg name="whitebalance" default="-1" />
-  <arg name="flip" default="false" />
-  <arg name="disable_calibrate" default="false" />
-  <arg name="publish_transform" default="false" />
+  <arg name="resolution" default="3" />
+  <arg name="frame_rate" default="60" />
+  <arg name="quality" default="3" />
+
+  <arg name="publish_transform" default="False" />
   <arg name="name" default="zed_fuel" />
   <arg name="record" default="false" />
   
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-      <arg name="svo_file" value="$(arg svo_file)" />
-      <arg name="zed_id" value="$(arg zed_id)" />
+      <arg name="resolution" value="$(arg resolution)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="quality" value="$(arg quality)" />
 	  <arg name="zed_name" value="$(arg name)" />
-      <arg name="brightness" value="$(arg brightness)" />
-      <arg name="contrast" value="$(arg contrast)" />
-      <arg name="hue" value="$(arg hue)" />
-      <arg name="saturation" value="$(arg saturation)" />
-      <arg name="gain" value="$(arg gain)" />
-      <arg name="exposure" value="$(arg exposure)" />
-      <arg name="whitebalance" value="$(arg whitebalance)" />
-      <arg name="flip" value="$(arg flip)" />
-      <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
       <arg name="publish_transform" value="$(arg publish_transform)" />
     </include>
   </group>
@@ -73,7 +58,7 @@
   <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_zed_fuel_initial" args="0.297688 0.0079375 0.1749425 0 0 0 odom $(arg name)_initial_frame" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed_fuel_current" args="0.297688 0.0079375 0.1749425 0 0 0 base_link $(arg name)_current_frame" />
 
-  <!-- TODO : check rotation of the NavX -->
+  <!-- TODO : check rotation of the NavX - might be off by 90 degrees -->
   <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_navx" args="-0.2914015 -0.072263 0.0244348 0 0 0 base_link navx_frame" />
 

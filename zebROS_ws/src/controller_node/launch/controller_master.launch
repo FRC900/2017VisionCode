@@ -8,8 +8,9 @@
   * NavX Publisher Node
   * Rosbag recording (Optional)
 	-->
-  <arg name="svo_file" default="" />
-  <arg name="zed_id" default="0" />
+  <arg name="resolution" default="3" />
+  <arg name="frame_rate" default="60" />
+  <arg name="quality" default="3" />
   <arg name="brightness" default="2" />
   <arg name="contrast" default="5" />
   <arg name="hue" default="6" />
@@ -17,20 +18,19 @@
   <arg name="gain" default="0" />
   <arg name="exposure" default="45" />
   <arg name="whitebalance" default="-1" />
-  <arg name="flip" default="false" />
-  <arg name="disable_calibrate" default="false" />
-  <arg name="publish_transform" default="true" />
   <arg name="name" default="zed_goal" />
-  <arg name="record" default="false" />
-  <arg name="down_sample" default="true" />
+
+  <arg name="record" default="False" />
+  <arg name="down_sample" default="False" />
   <arg name="sub_rate" default="10" />
   <arg name="pub_rate" default="1" />
 
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-      <arg name="svo_file" value="$(arg svo_file)" />
-      <arg name="zed_id" value="$(arg zed_id)" />
       <arg name="zed_name" value="$(arg name)" />
+      <arg name="resolution" value="$(arg resolution)" />
+      <arg name="frame_rate" value="$(arg frame_rate)" />
+      <arg name="quality" value="$(arg quality)" />
       <arg name="brightness" value="$(arg brightness)" />
       <arg name="contrast" value="$(arg contrast)" />
       <arg name="hue" value="$(arg hue)" />
@@ -39,8 +39,6 @@
       <arg name="exposure" value="$(arg exposure)" />
       <arg name="whitebalance" value="$(arg whitebalance)" />
       <arg name="flip" value="$(arg flip)" />
-      <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
-      <arg name="publish_transform" value="$(arg publish_transform)" />
     </include>
 </group>
 
