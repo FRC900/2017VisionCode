@@ -16,7 +16,7 @@
   <arg name="publish_transform" default="true"/>
   <arg name="zed_name" default="zed"/>
 
-  <group ns="$(arg zed_name">
+  <group ns="$(arg zed_name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
       <arg name="svo_file" value="$(arg svo_file)" />
       <arg name="zed_id" value="$(arg zed_id)" />
@@ -28,6 +28,7 @@
 	  <arg name="gain" value="$(arg gain)" />
 	  <arg name="zed_name" value="$(arg zed_name)"/>
 	  <arg name="exposure" value="$(arg exposure)" />
+	  <arg name="whitebalance" value="$(arg whitebalance)" />
 	  <arg name="flip" value="$(arg flip)" />
 	  <arg name="disable_calibrate" value="$(arg disable_calibrate)" />
 	  <arg name="publish_transform" value="$(arg publish_transform)" />
