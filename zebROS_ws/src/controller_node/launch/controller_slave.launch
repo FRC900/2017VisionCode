@@ -12,9 +12,9 @@
   # ukf node to fuse NavX, ZED and wheel encoder odometry
   # move_base
 	-->
-  <arg name="resolution" default="3" />
+  <arg name="resolution" default="2" />
   <arg name="frame_rate" default="60" />
-  <arg name="quality" default="3" />
+  <arg name="quality" default="1" />
 
   <arg name="publish_transform" default="False" />
   <arg name="name" default="zed_fuel" />
