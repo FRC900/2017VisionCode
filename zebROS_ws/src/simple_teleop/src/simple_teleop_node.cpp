@@ -32,7 +32,7 @@ class RobotDriver
 			geometry_msgs::Twist base_cmd;
 			std_msgs::Int32 int32_msg;
 
-			const float scale = 0.25;
+			const float scale = 0.5;
 
 			char cmd[50];
 			bool quit = false;
@@ -43,7 +43,6 @@ class RobotDriver
 				base_cmd.linear.x = base_cmd.linear.y = base_cmd.angular.z = 0;
 				switch (cmd[0])
 				{
-					case '+' :
 					case 'w' :
 						base_cmd.linear.x = scale;
 						break;
@@ -52,21 +51,21 @@ class RobotDriver
 						base_cmd.linear.x = -scale;
 						break;
 
-					case 'a':
+					case 'd':
 						base_cmd.linear.y = -scale;
 						break;
 
-					case 'd':
+					case 'a':
 						base_cmd.linear.y = scale;
 						break;
 
 					case 'l':
-						base_cmd.angular.z = 3 * scale;
+						base_cmd.angular.z = 1.5 * scale;
 						base_cmd.linear.x = scale;
 						break;
 
 					case 'r':
-						base_cmd.angular.z = -3 * scale;
+						base_cmd.angular.z = -1.5 * scale;
 						base_cmd.linear.x = scale;
 						break;
 
