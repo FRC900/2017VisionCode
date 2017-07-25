@@ -20,8 +20,8 @@
     <param name="model_name" value="pattern" />
     <param name="debug_display" value="True" />
 	      
-	<remap from="/visp_auto_tracker/camera_info" to="/zed/rgb/camera_info"/>
-	<remap from="/visp_auto_tracker/image_raw" to="/zed/rgb/image_raw_color"/>
+	<remap from="/visp_auto_tracker/camera_info" to="/zed_fuel/rgb/camera_info"/>
+	<remap from="/visp_auto_tracker/image_raw" to="/zed_fuel/rgb/image_raw_color"/>
   </node>
 
 </launch>
