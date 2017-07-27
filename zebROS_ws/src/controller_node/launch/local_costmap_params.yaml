@@ -6,8 +6,8 @@ local_costmap:
   static_map: false #Change me to true once mapping is running?
   map_type: costmap
   rolling_window: true
-  width: 20.0
-  height: 20.0
-  resolution: 0.05
-  origin_x: 10.0
-  origin_y: 10.0
+  width: 8.0
+  height: 8.0
+  resolution: 0.10
+  origin_x: 4.0
+  origin_y: 4.0

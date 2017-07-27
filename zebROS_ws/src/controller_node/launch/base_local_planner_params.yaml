@@ -1,19 +1,30 @@
 DWAPlannerROS:
-  max_trans_vel: 0.5
-  min_trans_vel: -0.5
-  max_vel_x: 0.5
-  min_vel_x: -0.5
-  max_vel_y: 0.5
-  min_vel_y: -0.5
-  max_rot_vel: 1.0
-  min_rot_vel: -1.0
-  min_in_place_vel_theta: 0.4
+  max_trans_vel: 30.0
+  min_trans_vel: 0 
+  max_vel_x: 30.0
+  min_vel_x: -30.0
+  max_vel_y: 30.0
+  min_vel_y: -30.0
+  max_rot_vel: 30.0
+  min_rot_vel: 3 
+  min_in_place_vel_theta: 3.0
 
   acc_lim_theta: 3.2
-  acc_lim_x: 2.5
-  acc_lim_y: 2.5
-  accel_limit_trans: 0.5
+  acc_lim_x: 5
+  acc_lim_y: 5
+  acc_limit_trans: 5
 
   holonomic_robot: true
   meter_scoring: true
   dwa: true
+
+EBandPlannerROS:
+    Ctrl_Rate: 20
+    differential_drive: False
+    max_acceleration: 1.5
+    max_vel_lin: 3.5
+    min_vel_lin: 0.2
+    max_vel_th: 6.0
+    min_vel_th: 0.5
+    xy_goal_tolerance: 5.0
+    yaw_goal_tolerance: 0.5
