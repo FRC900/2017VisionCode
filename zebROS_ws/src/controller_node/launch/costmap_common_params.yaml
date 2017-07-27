@@ -1,9 +1,9 @@
 obstacle_range: 0.5
-raytrace_range: 5.0
+raytrace_range: 7.0
 
 #Including bumpers we are 35.25x39.25 
 #Check that x and y are correct
-footprint: [[0,0], [.8954,0], [.8954,.997], [0,.997]]
+footprint: [[-0.4927,-0.4985], [0.4927,-0.4985], [0.4927,0.4985], [-0.4927,0.4985]]
 
 # robot_radius: ir_of_robot - we are not a circle so
 # use above footprint instead
