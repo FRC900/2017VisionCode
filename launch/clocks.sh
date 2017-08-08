@@ -1,8 +1,9 @@
 #!/bin/bash
 
-for i in `seq 8`
+for i in `seq 10`
 do
 	sleep 15
-	sudo /home/ubuntu/2017VisionCode/set_freq_tx.sh
+	nvpmodel -m 0
+	/home/ubuntu/jetson_clocks.sh
 done
 

@@ -23,6 +23,15 @@ import sys
 from threading import Thread
 from time import sleep
 
+def qv_mult(q, v):
+    v_unit = None
+    if v == [0, 0, 0]: v_unit = [0.0, 0.0, 0.0]
+    else: v_unit = tf.transformations.unit_vector(v)
+    qp = list(v_unit)
+    qp.append(0.0)
+    
+    return tf.transformations.quaternion_multiply(tf.transformations.quaternion_multiply(q, qp), tf.transformations.quaternion_conjugate(q))
+
 class MapToOdom:
     def __init__(self, args):
         self.is_red = False
@@ -46,6 +55,13 @@ class MapToOdom:
         
     
     def _reset_odom_transform(self, quat, goal_msg):
+        
+        
+        
+        
+        
+        
+
         self.t.header.stamp = rospy.Time.now()
         self.t.header.frame_id = "map"
         self.t.child_frame_id = "odom"

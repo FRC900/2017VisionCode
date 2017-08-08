@@ -10,7 +10,7 @@ sudo sysctl -p
 #systemctl restart networking
 
 sudo chmod a+rw /dev/ttyACM0
-sudo python /home/ubuntu/2017VisionCode/time_sync_server.py & 
+#sudo python /home/ubuntu/2017VisionCode/time_sync_server.py & 
 sudo umount /mnt/900_2
 
 export CUDA_CACHE_MAXSIZE=104857600
@@ -23,5 +23,7 @@ else
 		roslaunch controller_node controller_master.launch
 fi
 
+nvpmodel -m 0
+/home/ubuntu/jetson_clocks.sh
 /home/ubuntu/2017VisionCode/launch/clocks.sh &
 
