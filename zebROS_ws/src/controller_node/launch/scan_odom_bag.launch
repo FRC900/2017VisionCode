@@ -6,4 +6,5 @@
 	
   <include file="$(find controller_node)/launch/fuse_odom.launch"/>
   <include file="$(find controller_node)/launch/gmapping.launch"/>
+  <include file="$(find controller_node)/launch/move_base.launch"/>
 </launch>
