@@ -71,8 +71,8 @@
   <!-- This will eventually be handled by localization of some sort
 	   but for now include a dummy transform so map and odom are 
        linked 
-	-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="dummy_odom_to_map" args="0 0 0 0 0 0 map odom" />
+	-->
 
   <!-- Start move_base, which does goal planning and pathing
 	   for the drive code
