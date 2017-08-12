@@ -46,25 +46,25 @@ make -j4 install
 
 # Install libsodium - this is a prereq for zeromq
 cd
-wget --no-check-certificate https://download.libsodium.org/libsodium/releases/libsodium-1.0.11.tar.gz
-tar -zxvf libsodium-1.0.11.tar.gz
-cd libsodium-1.0.11
+wget --no-check-certificate https://download.libsodium.org/libsodium/releases/libsodium-1.0.13.tar.gz
+tar -zxvf libsodium-1.0.13.tar.gz
+cd libsodium-1.0.13
 ./configure
 make -j4 
 sudo make install
 cd ..
-rm -rf libsodium-1.0.11*
+rm -rf libsodium-1.0.13*
 
 # install zeromq
 cd
-wget --no-check-certificate https://github.com/zeromq/zeromq4-1/releases/download/v4.1.5/zeromq-4.1.5.tar.gz
-tar -xzvf zeromq-4.1.5.tar.gz
-cd zeromq-4.1.5
+wget --no-check-certificate https://github.com/zeromq/libzmq/releases/download/v4.2.2/zeromq-4.2.2.tar.gz
+tar -xzvf zeromq-4.2.2.tar.gz
+cd zeromq-4.2.2
 ./configure
 make -j4
 sudo make install
 cd ..
-rm -rf zeromq-4.1.5*
+rm -rf zeromq-4.2.2*
 cd /usr/local/include/
 sudo wget --no-check-certificate https://raw.githubusercontent.com/zeromq/cppzmq/master/zmq.hpp
 
@@ -136,10 +136,40 @@ if [ "$jetson" = true ] ; then
 	sudo cp ~/2017VisionCode/calibration_files/*.conf /usr/local/zed/settings
 	sudo chmod 644 /usr/local/zed/settings/*
 
-	sudo mkdir -p /lib/modules/4.4.15-tegra/kernel/drivers/usb/serial
-	sudo cp cp210x.ko /lib/modules/4.4.15-tegra/kernel/drivers/usb/serial
-	sudo mkdir -p /lib/modules/4.4.15-tegra/kernel/drivers/usb/class
-	sudo cp cdc-acm.ko /lib/modules/4.4.15-tegra/kernel/drivers/usb/class
+	# For tx2 only
+	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/serial
+	# sudo cp cp210x.ko.`uname -r` /lib/modules/`uname -r`/kernel/drivers/usb/serial
+	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/class
+	# sudo cp cdc-acm.ko.`uname -r` /lib/modules/`uname -r`/kernel/drivers/usb/class
+	# sudo depmod -a
+
+	# Kernel module build steps for TX2 : https://gist.github.com/sauhaardac/9d7a82c23e4b283a1e79009903095655
+	# Not needed unless Jetpack is updated and modules
+	# for a given kernel version aren't already built
+	# cd ~
+	# mkdir l4t-kernel-surgery
+	# mkdir kernel-stuff
+	# cd kernel-stuff
+	# wget http://developer.nvidia.com/embedded/dlc/l4t-sources-28-1 -O source.tbz2
+	# tar xjf source.tbz2
+	# tar xjf sources/kernel_src-tx2.tbz2 -C ~/l4t-kernel-surgery/
+	# cd ..
+	# rm -rf kernel-stuff
+	# cd ~/l4t-kernel-surgery/kernel/kernel-4.4
+	# Add EXTRAVERSION=-tegra to Makefile
+	# zcat /proc/config.gz > .config
+	# echo "CONFIG_USB_ACM=m" >> .config
+	# echo "CONFIG_USB_SERIAL_CP210X=m" >> .config
+	# make -j6 clean
+	# make -j6 prepare
+	# make -j6 modules_prepare
+	# make -j6 M=drivers/usb/class
+	# make -j6 M=drivers/usb/serial
+	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/serial
+	# sudo cp drivers/usb/class/cp210x-acm.ko /lib/modules/`uname -r`/kernel/drivers/usb/serial
+	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/class
+	# sudo cp drivers/usb/serial/cdc-acm.ko /lib/modules/`uname -r`/kernel/drivers/usb/class
+	# sudo depmod -a
 fi
 
 cp ~/2017VisionCode/.vimrc ~/2017VisionCode/.gvimrc ~
