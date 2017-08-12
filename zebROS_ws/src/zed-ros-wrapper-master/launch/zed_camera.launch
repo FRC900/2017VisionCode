@@ -39,6 +39,7 @@
     <param name="openni_depth_mode"     value="0" />
 	<param name="gpu_id"                value="-1" />
 	<param name="confidence"            value="100" /> 
+	<param name="depth_stabilization"   value="1" /> 
 
 	<param name="brightness"            value="$(arg brightness)" />
 	<param name="contrast"              value="$(arg contrast)" />
