@@ -35,6 +35,7 @@ cd ~/2017VisionCode/zebROS_ws
 # Merge the cartographer_ros.rosinstall file and fetch code for dependencies.
 wstool merge -t src https://raw.githubusercontent.com/FRC900/cartographer_ros/master/cartographer_ros.rosinstall
 wstool merge -t src https://raw.githubusercontent.com/FRC900/teleop_twist_joy/indigo-devel/teleop_twist_joy.rosinstall
+wstool merge -t src https://raw.githubusercontent.com/FRC900/zed-ros-wrapper/master/zed_ros_wrapper.rosinstall
 wstool update -t src
 
 # Install deb dependencies.

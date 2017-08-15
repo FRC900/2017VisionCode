@@ -12,24 +12,18 @@
   # ukf node to fuse NavX, ZED and wheel encoder odometry
   # move_base
 	-->
-  <arg name="resolution" default="3" />
-  <arg name="frame_rate" default="30" />
-  <arg name="quality" default="3" />
-
-  <arg name="flip" default="False" />
-  <arg name="publish_transform" default="False" />
   <arg name="name" default="zed_fuel" />
   <arg name="record" default="False" />
   
   <group ns="$(arg name)">
     <include file="$(find zed_wrapper)/launch/zed_camera.launch">
-      <arg name="resolution" value="$(arg resolution)" />
-      <arg name="frame_rate" value="$(arg frame_rate)" />
-      <arg name="quality" value="$(arg quality)" />
+      <arg name="resolution" value="3" />
+      <arg name="frame_rate" value="30" />
+      <arg name="quality" value="3" />
 		
-      <arg name="flip" value="$(arg flip)" />
-      <arg name="publish_transform" value="$(arg publish_transform)" />
 	  <arg name="zed_name" value="$(arg name)" />
+      <arg name="publish_tf" value="False" />
+      <arg name="base_frame" value="base_link" />
     </include>
   </group>
   <include file="$(find controller_node)/launch/record_slave.launch" if="$(arg record)"/>
@@ -43,23 +37,10 @@
 	-->
 
   <!-- 
-	    link position of camera on robot to base_link 
-		Need two of these, both with same x,y,z r,p,y offset
-		First one links the odom fixed starting point to 
-		the fixed starting point of the camera's initial frame. Typically
-		the fixed odom frame is where the base_link of the robot
-		is when it starts up, so an offset is needed to account for
-		where the camera is relative to the base link.
-		The current camera frame is where the camera is now. Since 
-		it is fixed to the robot, it is the same static distance away
-		from base_link at all times.  
-		The cameral frame is defined to be the center of the left
-        camera lens.  There is a urdf file which defines the center
-        of the camera (which is also the depth frame) as well as the
-        right camera frame.
+	   For testing the ZED is the center of the robot, since
+		the ZED is the only bit of hardware we're using.
    -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="odom_to_zed_fuel_initial" args="0 0 0 0 0 0 odom $(arg name)_initial_frame" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_zed_fuel_current" args="0 0 0 0 0 0 base_link $(arg name)_current_frame" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_$(arg name)_center" args="0 0 0 0 0 0 base_link $(arg name)_center" />
 
   <!-- TODO : check rotation of the NavX -->
   <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />

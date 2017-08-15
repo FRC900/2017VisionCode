@@ -38,7 +38,6 @@
       <arg name="gain" value="$(arg gain)" />
       <arg name="exposure" value="$(arg exposure)" />
       <arg name="whitebalance" value="$(arg whitebalance)" />
-      <arg name="flip" value="$(arg flip)" />
     </include>
 </group>
 
@@ -47,7 +46,7 @@
   	<param name="sub_rate" value="$(arg sub_rate)" />
   	<param name="pub_rate" value="$(arg pub_rate)" />
   </node>
-  <!--node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" /-->
+  <node name="navx_publisher_node" pkg="navx_publisher" type="navx_publisher_node" respawn="true" />
   <include file="$(find controller_node)/launch/record_master.launch" if="$(arg record)">
     <arg name="down_sample" value="$(arg down_sample)" />
   </include>

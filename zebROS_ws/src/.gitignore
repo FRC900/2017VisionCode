@@ -2,5 +2,7 @@
 cartographer/*
 cartographer_ros/*
 ceres-solver/*
+teleop_twist_joy
+zed-ros-wrapper
 .rosinstall
 
