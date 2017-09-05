@@ -166,9 +166,9 @@ if [ "$jetson" = true ] ; then
 	# make -j6 M=drivers/usb/class
 	# make -j6 M=drivers/usb/serial
 	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/serial
-	# sudo cp drivers/usb/class/cp210x-acm.ko /lib/modules/`uname -r`/kernel/drivers/usb/serial
+	# sudo cp drivers/usb/class/cp210x-acm.ko.`uname -r` /lib/modules/`uname -r`/kernel/drivers/usb/serial/cp210x-acm.ko
 	# sudo mkdir -p /lib/modules/`uname -r`/kernel/drivers/usb/class
-	# sudo cp drivers/usb/serial/cdc-acm.ko /lib/modules/`uname -r`/kernel/drivers/usb/class
+	# sudo cp drivers/usb/serial/cdc-acm.ko.`uname -r` /lib/modules/`uname -r`/kernel/drivers/usb/class/cdc-acm.ko
 	# sudo depmod -a
 fi
 
