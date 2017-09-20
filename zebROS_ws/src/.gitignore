@@ -2,7 +2,10 @@
 cartographer/*
 cartographer_ros/*
 ceres-solver/*
+steered_wheel_base_controller
+ros_control_boilerplate
 teleop_twist_joy
 zed-ros-wrapper
 .rosinstall
+
 

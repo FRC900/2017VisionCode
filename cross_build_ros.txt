@@ -69,10 +69,16 @@ wget https://downloads.sourceforge.net/project/libuuid/libuuid-1.0.3.tar.gz
 tar -xzvf libuuid-1.0.3.tar.gz
 cd libuuid-1.0.3/
 ./configure --host=arm-frc-linux-gnueabi --prefix=/usr/arm-frc-linux-gnueabi/usr/local 
-sudo make install
+sudo make -j8 install
 
+cd
+git clone https://github.com/gflags/gflags.git
+cd gflags
+cmake -DCMAKE_TOOLCHAIN_FILE=../catkin_arm_cross_ws/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/arm-frc-linux-gnueabi  .
+cmake -DCMAKE_TOOLCHAIN_FILE=../catkin_arm_cross_ws/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/arm-frc-linux-gnueabi  .
+sudo make -j8 install
 
-
+# Actual ros build and install :
 
 
 sudo apt-get install python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential

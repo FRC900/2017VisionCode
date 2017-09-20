@@ -3,7 +3,6 @@ opkg install boost-dev libeigen-dev libpython2 python-core python-dev libcurl4 l
 
 pip install catkin_pkg rospkg rosdistro vcstools rosdep wstool rosinstall rosinstall_generator defusedxml empy
 
-
 cd
 git clone https://github.com/ros/console_bridge
 cd console_bridge
