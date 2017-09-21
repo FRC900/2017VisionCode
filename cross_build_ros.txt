@@ -75,7 +75,6 @@ cd
 git clone https://github.com/gflags/gflags.git
 cd gflags
 cmake -DCMAKE_TOOLCHAIN_FILE=../catkin_arm_cross_ws/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/arm-frc-linux-gnueabi  .
-cmake -DCMAKE_TOOLCHAIN_FILE=../catkin_arm_cross_ws/rostoolchain.cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/arm-frc-linux-gnueabi  .
 sudo make -j8 install
 
 # Actual ros build and install :

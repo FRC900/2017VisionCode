@@ -13,6 +13,14 @@ make install
 cd
 rm -rf console_bridge
 
+cd
+git clone https://github.com/gflags/gflags.git
+cd gflags
+cmake -DCMAKE_BUILD_TYPE=Release  .
+sudo make install
+cd
+rm -rf gflags*
+
 # KCJ - I'm skeptical any of the below libs are really
 # needed.  Many of the produce static libs so installed
 # ROS components are already linked against them during
