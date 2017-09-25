@@ -3,7 +3,6 @@ opkg install boost-dev libeigen-dev libpython2 python-core python-dev libcurl4 l
 
 pip install catkin_pkg rospkg rosdistro vcstools rosdep wstool rosinstall rosinstall_generator defusedxml empy
 
-
 cd
 git clone https://github.com/ros/console_bridge
 cd console_bridge
@@ -13,6 +12,14 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make install
 cd
 rm -rf console_bridge
+
+cd
+git clone https://github.com/gflags/gflags.git
+cd gflags
+cmake -DCMAKE_BUILD_TYPE=Release  .
+sudo make install
+cd
+rm -rf gflags*
 
 # KCJ - I'm skeptical any of the below libs are really
 # needed.  Many of the produce static libs so installed
